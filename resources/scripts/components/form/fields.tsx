@@ -2,6 +2,7 @@ import React, { useId } from 'react';
 import { useFieldContext } from './context';
 import Label from '@/components/elements/Label';
 import { TextInput, TextArea, NumberInput } from './controls';
+import { PasswordInput } from './PasswordInput';
 import { firstError } from './errors';
 import { capitalize } from '@/lib/strings';
 import Select, { type SelectOption } from '@/components/ui/Select';
@@ -87,6 +88,50 @@ export function TextField({
                 aria-describedby={describedBy(ariaDescribedBy, describedById)}
                 $hasError={!!error}
                 $isLight={light}
+            />
+            <HelpText id={helpId} error={error} description={description} />
+        </div>
+    );
+}
+
+export type PasswordFieldProps = BaseProps &
+    Omit<React.InputHTMLAttributes<HTMLInputElement>, 'name' | 'value' | 'onChange' | 'defaultValue' | 'type'>;
+
+export function PasswordField({
+    id,
+    label,
+    description,
+    light,
+    onBlur,
+    className,
+    'aria-describedby': ariaDescribedBy,
+    'aria-invalid': ariaInvalid,
+    ...props
+}: PasswordFieldProps) {
+    const { field, error, fieldId, helpId, describedById } = useFieldState<string>(id, description);
+
+    return (
+        <div>
+            {label && (
+                <Label htmlFor={fieldId} isLight={light}>
+                    {label}
+                </Label>
+            )}
+            <PasswordInput
+                {...props}
+                id={fieldId}
+                noun={label?.toLowerCase()}
+                value={field.state.value ?? ''}
+                onValueChange={field.handleChange}
+                onBlur={(event) => {
+                    field.handleBlur();
+                    onBlur?.(event);
+                }}
+                aria-invalid={error ? true : ariaInvalid}
+                aria-describedby={describedBy(ariaDescribedBy, describedById)}
+                $hasError={!!error}
+                $isLight={light}
+                className={className}
             />
             <HelpText id={helpId} error={error} description={description} />
         </div>

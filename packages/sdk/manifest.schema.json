@@ -19,7 +19,9 @@
                     "pterodactyl",
                     "panel",
                     "core",
-                    "classic"
+                    "classic",
+                    "user-avatars",
+                    "panel-logo"
                 ]
             }
         },

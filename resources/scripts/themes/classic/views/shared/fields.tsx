@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { Input, Label, TextArea, type FieldModel } from '@/sdk';
+import { Input, Label, PasswordInput, TextArea, type FieldModel } from '@/sdk';
 
 interface FieldProps {
     field: FieldModel;
@@ -59,6 +59,43 @@ export function TextField({
                 className={className}
                 title={title}
                 autoFocus={autoFocus}
+                aria-invalid={field.error ? true : undefined}
+                aria-describedby={describedBy}
+                $hasError={!!field.error}
+                $isLight={light}
+            />
+            <HelpText id={helpId} error={field.error} description={description} />
+        </div>
+    );
+}
+
+export function PasswordField({
+    field,
+    label,
+    description,
+    light,
+    id,
+    className,
+    onGenerate,
+}: FieldProps & { onGenerate?: (value: string) => void }) {
+    const { fieldId, helpId, describedBy } = useFieldIds(field, id, description);
+    const { value, onChange: _onChange, ...fieldProps } = field.fieldProps;
+
+    return (
+        <div>
+            {label && (
+                <Label htmlFor={fieldId} isLight={light}>
+                    {label}
+                </Label>
+            )}
+            <PasswordInput
+                {...fieldProps}
+                id={fieldId}
+                noun={label?.toLowerCase()}
+                value={value}
+                onValueChange={field.setValue}
+                onGenerate={onGenerate}
+                className={className}
                 aria-invalid={field.error ? true : undefined}
                 aria-describedby={describedBy}
                 $hasError={!!field.error}

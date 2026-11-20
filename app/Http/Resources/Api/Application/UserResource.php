@@ -42,6 +42,7 @@ class UserResource extends ApplicationResource
             'language' => $user->language,
             'root_admin' => (bool) $user->root_admin,
             '2fa' => (bool) $user->use_totp,
+            'avatar' => $user->avatar_url === null ? null : url($user->avatar_url),
             'relationships' => [],
             'created_at' => $this->formatTimestamp($user->created_at),
             'updated_at' => $this->formatTimestamp($user->updated_at),

@@ -1,12 +1,26 @@
 import http from '@/api/http';
 import type { AxiosError } from 'axios';
+import { endBootstrapSession, hasBootstrapSession } from '@/bootstrap';
 import { router } from '@/router/router';
+import { parseRedirectSearch } from '@/router/redirect';
 import { isObject } from '@/lib/objects';
 
 export const setupInterceptors = () => {
     http.interceptors.response.use(
         (resp) => resp,
         (error: AxiosError) => {
+            // 419 is the CSRF failure a stateful request gets once its session has expired.
+            const status = error.response?.status;
+
+            if ((status === 401 || status === 419) && hasBootstrapSession()) {
+                endBootstrapSession();
+                void router.navigate({
+                    to: '/auth/login',
+                    search: parseRedirectSearch({ redirect: router.latestLocation.href }),
+                    replace: true,
+                });
+            }
+
             if (error.response?.status === 400) {
                 const data = error.response.data;
                 const firstError =

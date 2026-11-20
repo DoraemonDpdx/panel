@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Pterodactyl\Tests\Pest\Integration\Api\Admin\Users\UserControllerTest;
 
 use Illuminate\Http\Response;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\Assert;
 use Pterodactyl\Contracts\Users\DisablesTwoFactor;
 use Pterodactyl\Models\ActivityLog;
@@ -18,7 +20,7 @@ const ADMIN_USER_ATTRIBUTES = ['id', 'external_id', 'uuid', 'username', 'email',
 dataset('userSearchDataProvider', fn (): array => [['username'], ['email'], ['uuid']]);
 dataset('userListSortsDataProvider', fn (): array => [['email'], ['-email'], ['username'], ['-username'], ['created_at'], ['-created_at']]);
 /** Endpoints that should return a 403 error when accessed by a non-root-admin user. */
-dataset('userEndpointsDataProvider', fn (): array => [['getJson', 'api.admin.users'], ['getJson', 'api.admin.users.view'], ['getJson', 'api.admin.users.external'], ['postJson', 'api.admin.users.store'], ['postJson', 'api.admin.users.disable-2fa'], ['putJson', 'api.admin.users.update'], ['delete', 'api.admin.users.delete']]);
+dataset('userEndpointsDataProvider', fn (): array => [['getJson', 'api.admin.users'], ['getJson', 'api.admin.users.view'], ['getJson', 'api.admin.users.external'], ['postJson', 'api.admin.users.store'], ['postJson', 'api.admin.users.disable-2fa'], ['putJson', 'api.admin.users.update'], ['delete', 'api.admin.users.delete'], ['postJson', 'api.admin.users.avatar.update'], ['delete', 'api.admin.users.avatar.delete']]);
 test('returns paginated users with relationship counts', function (): void {
     $admin = $this->getAdminUser();
     $admin->forceFill(['username' => 'admin-list-contract-admin', 'email' => 'admin-list-contract-admin@example.test'])->save();
@@ -193,4 +195,14 @@ test('invalid payloads return validation errors', function (): void {
         expect($error['meta']['rule'])->toBe('required');
         expect($error['detail'])->not->toBeEmpty();
     }
+});
+test('avatar changes are logged against the user', function (): void {
+    Storage::fake(config()->string('extensions.files_disk'));
+    $user = User::factory()->create();
+
+    $this->post(route('api.admin.users.avatar.update', ['user' => $user->id]), ['avatar' => UploadedFile::fake()->image('avatar.png')], ['Accept' => 'application/json'])->assertOk();
+    $this->delete(route('api.admin.users.avatar.delete', ['user' => $user->id]))->assertNoContent();
+
+    expect($user->fresh()->avatar)->toBeNull()
+        ->and(ActivityLog::query()->whereIn('event', ['admin:user.avatar-changed', 'admin:user.avatar-deleted'])->where('properties->email', $user->email)->count())->toBe(2);
 });

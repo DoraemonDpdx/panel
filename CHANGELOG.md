@@ -3,6 +3,32 @@ This file is a running track of new features and fixes to each version of the pa
 
 This project follows [Semantic Versioning](http://semver.org) guidelines.
 
+## v2.0.0-beta.3
+### Fixed
+* The Docker image builds on PHP 8.4.27 and runs PHP-FPM with `session.upload_progress.enabled=0` (CVE-2026-109618, CVE-2026-109619).
+* The Docker image builds on Alpine 3.24, which ships nginx 1.30.7 (CVE-2026-123007, CVE-2026-123633).
+* An expired session, such as after a password change, sends you to the login page and back to where you were.
+* Files with an empty MIME type and a size of 0 or 4096 bytes upload instead of being rejected as folders.
+* The console resizes, selects words and opens links reliably.
+* The file editor highlights nested YAML, selections and search matches correctly.
+* Modals on narrow screens keep the page layout intact.
+* Files over the node's upload limit are refused before the upload starts.
+* The file editor's find and replace fields update on paste and every other edit, not only on key presses.
+
+### Added
+* Adds custom user avatars, managed from the account page and by admins.
+* Adds a copy button for the startup command.
+* Adds the `ReplacesUserAvatars` action contract. `user-avatars` is a reserved extension id.
+* Adds a panel logo, uploaded from the general settings, shown as the favicon, on the login page and in place of the company name. A theme's own logo takes its place.
+* Adds the `ReplacesBrandLogo` action contract. `panel-logo` is a reserved extension id.
+* Adds a button to generate a secure password, and `generateSecurePassword`, `PasswordInput` and `FieldModel.setValue` to the SDK.
+
+### Changed
+* Subuser permission cards are easier to scan.
+
+### Removed
+* The server configuration sent to Wings drops `container.oom_disabled`. Wings reads `build.oom_disabled`.
+
 ## v2.0.0-beta.2
 ### Fixed
 * Exporting an egg from the admin area downloads the egg file instead of a quoted JSON string.

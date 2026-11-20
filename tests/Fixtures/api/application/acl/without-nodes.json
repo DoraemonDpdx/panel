@@ -760,6 +760,7 @@
                             "language": "en",
                             "root_admin": false,
                             "2fa": false,
+                            "avatar": null,
                             "relationships": [],
                             "created_at": "2026-01-02T03:04:05+00:00",
                             "updated_at": "2026-02-03T04:05:06+00:00"
@@ -804,6 +805,7 @@
                                                 "language": "en",
                                                 "root_admin": false,
                                                 "2fa": false,
+                                                "avatar": null,
                                                 "relationships": [],
                                                 "created_at": "2026-01-02T03:04:05+00:00",
                                                 "updated_at": "2026-02-03T04:05:06+00:00"
@@ -894,6 +896,7 @@
                                                 "language": "en",
                                                 "root_admin": false,
                                                 "2fa": false,
+                                                "avatar": null,
                                                 "relationships": [],
                                                 "created_at": "2026-01-02T03:04:05+00:00",
                                                 "updated_at": "2026-02-03T04:05:06+00:00"

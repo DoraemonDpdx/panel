@@ -27,8 +27,14 @@ type MockTerminal = {
     };
     canvas: HTMLCanvasElement;
     canvasPressed: ReturnType<typeof vi.fn>;
+    cols: number;
+    rows: number;
+    wasmTerm: { write: ReturnType<typeof vi.fn>; resize: ReturnType<typeof vi.fn> };
+    rendererClear: ReturnType<typeof vi.fn>;
     write: (data: string) => void;
     writeln: (data: string) => void;
+    clear: () => void;
+    resize: (cols: number, rows: number) => void;
 };
 
 const terminals: MockTerminal[] = [];
@@ -42,6 +48,7 @@ vi.mock('ghostty-web', () => ({
         observeResize() {}
         dispose() {}
     },
+    OSC8LinkProvider: class {},
     UrlRegexProvider: class {},
     Terminal: class {
         dispose = vi.fn();
@@ -62,7 +69,11 @@ vi.mock('ghostty-web', () => ({
                 this.renderedScrollbarOpacity = scrollbarOpacity;
             },
             getMetrics: () => ({ width: 8, height: 10, baseline: 8 }),
+            resize: vi.fn(),
+            clear: () => this.rendererClear(),
         };
+        rendererClear = vi.fn();
+        wasmTerm = { write: vi.fn(), resize: vi.fn(), getLine: () => null, getScrollbackLine: () => null };
         cols = 80;
         rows = 30;
         element: HTMLElement | undefined;
@@ -106,6 +117,11 @@ vi.mock('ghostty-web', () => ({
         writeln(data: string) {
             this.write(`${data}\r\n`);
         }
+        clear() {}
+        scrollToBottom() {
+            this.viewportY = 0;
+        }
+        resize() {}
     },
 }));
 
@@ -219,6 +235,22 @@ describe('useTerminal', () => {
 
         expect(container.firstElementChild).toHaveAttribute('inputmode', 'none');
         expect(container.querySelector('textarea')).toHaveAttribute('inputmode', 'none');
+    });
+
+    it('keeps the page where it is when a press focuses the terminal', async () => {
+        const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+        const { container } = render(<Harness />);
+
+        await waitFor(() => expect(container.firstElementChild).toHaveAttribute('data-ready', 'true'));
+
+        const mount = container.firstElementChild as HTMLElement;
+        const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
+
+        mount.focus();
+        textarea.focus();
+
+        expect(focus.mock.contexts).toEqual([mount, textarea]);
+        expect(focus.mock.calls).toEqual([[{ preventScroll: true }], [{ preventScroll: true }]]);
     });
 
     it('scrolls the history with a vertical swipe', async () => {
@@ -375,5 +407,36 @@ describe('useTerminal', () => {
 
         await waitFor(() => expect(terminals).toHaveLength(1));
         await waitFor(() => expect(container.firstElementChild).toHaveAttribute('data-ready', 'true'));
+    });
+    it('clears the scrollback as well as the screen, so a reconnect does not repeat history', async () => {
+        render(<Harness />);
+        await waitFor(() => expect(terminals).toHaveLength(1));
+
+        const term = terminals[0];
+
+        term.write('one\ntwo\n');
+        term.scrollbackLength = 40;
+        term.viewportY = 12;
+        term.clear();
+
+        expect(term.wasmTerm.write).toHaveBeenCalledWith('\x1b[2J\x1b[3J\x1b[H');
+        expect(term.viewportY).toBe(0);
+        expect(term.rendererClear).toHaveBeenCalledOnce();
+    });
+
+    it('keeps a scrolled-up view inside the history when the terminal resizes', async () => {
+        render(<Harness />);
+        await waitFor(() => expect(terminals).toHaveLength(1));
+
+        const term = terminals[0];
+
+        term.scrollbackLength = 5;
+        term.viewportY = 9;
+        term.resize(100, 20);
+
+        expect([term.cols, term.rows]).toEqual([100, 20]);
+        expect(term.wasmTerm.resize).toHaveBeenCalledWith(100, 20);
+        expect(term.viewportY).toBe(5);
+        expect(term.renderedViewportY).toBe(5);
     });
 });

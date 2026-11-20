@@ -1,5 +1,6 @@
 import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { basicSetup } from 'codemirror';
+import { indentWithTab } from '@codemirror/commands';
 import { Compartment, EditorState, Prec } from '@codemirror/state';
 import { HighlightStyle, indentUnit, syntaxHighlighting } from '@codemirror/language';
 import { EditorView, keymap, type Panel, type ViewUpdate } from '@codemirror/view';
@@ -16,6 +17,7 @@ import {
     setSearchQuery,
 } from '@codemirror/search';
 import { tags } from '@lezer/highlight';
+import { searchScrollbarMarkers } from '@/components/elements/codemirror/searchMarkers';
 import { resolveCodemirrorLanguage } from '@/components/elements/codemirror/languages';
 import { editorContainerClass } from '@/components/elements/codemirror/layout';
 import { cn } from '@/lib/cn';
@@ -69,8 +71,11 @@ const panelEditorTheme = EditorView.theme(
         '.cm-line': {
             padding: '0 calc(var(--spacing) * 3)',
         },
-        '.cm-selectionBackground, &.cm-focused .cm-selectionBackground': {
-            backgroundColor: 'var(--editor-selection)',
+        '& > .cm-scroller > .cm-layer.cm-selectionLayer .cm-selectionBackground': {
+            background: 'var(--editor-selection) !important',
+        },
+        '&.cm-focused > .cm-scroller > .cm-layer.cm-selectionLayer .cm-selectionBackground': {
+            background: 'var(--editor-selection) !important',
         },
         '.cm-cursor': {
             borderLeftColor: 'var(--editor-caret)',
@@ -93,7 +98,10 @@ const panelEditorTheme = EditorView.theme(
             color: 'var(--editor-foreground)',
             margin: '0 var(--spacing)',
         },
-        '.cm-activeLine, .cm-activeLineGutter': {
+        '.cm-activeLine': {
+            backgroundColor: 'color-mix(in srgb, var(--editor-active-line) 45%, transparent)',
+        },
+        '.cm-activeLineGutter': {
             backgroundColor: 'var(--editor-active-line)',
         },
         '.cm-matchingBracket, .cm-nonmatchingBracket': {
@@ -105,6 +113,36 @@ const panelEditorTheme = EditorView.theme(
         },
         '.cm-searchMatch.cm-searchMatch-selected': {
             backgroundColor: 'var(--editor-search-match-selected)',
+        },
+        '.cm-search-scrollbar-markers': {
+            position: 'absolute',
+            top: '0',
+            right: '0',
+            bottom: '0',
+            width: '7px',
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            zIndex: '150',
+        },
+        '.cm-search-scrollbar-marker': {
+            position: 'absolute',
+            left: '1px',
+            right: '1px',
+            height: '3px',
+            borderRadius: '2px',
+            backgroundColor: 'var(--editor-search-match)',
+        },
+        '.cm-search-scrollbar-marker-selected': {
+            backgroundColor: 'var(--editor-search-match-selected)',
+        },
+        '.cm-yaml-boolean': {
+            color: 'var(--editor-syntax-keyword)',
+        },
+        '.cm-yaml-number': {
+            color: 'var(--editor-syntax-type)',
+        },
+        '.cm-yaml-null': {
+            color: 'var(--editor-syntax-constant)',
         },
         '.cm-tooltip, .cm-tooltip.cm-tooltip-autocomplete': {
             backgroundColor: 'var(--editor-tooltip)',
@@ -431,6 +469,7 @@ const panelEditorTheme = EditorView.theme(
 
 const panelHighlightStyle = HighlightStyle.define([
     { tag: tags.keyword, color: 'var(--editor-syntax-keyword)' },
+    { tag: tags.definition(tags.propertyName), color: 'var(--editor-syntax-definition)' },
     {
         tag: [tags.name, tags.deleted, tags.character, tags.macroName],
         color: 'var(--editor-syntax-name)',
@@ -474,6 +513,12 @@ const panelHighlightStyle = HighlightStyle.define([
     },
     { tag: tags.invalid, color: 'var(--editor-syntax-invalid)' },
 ]);
+
+const sameSearch = (a: SearchQuery, b: SearchQuery): boolean =>
+    a.search === b.search &&
+    a.caseSensitive === b.caseSensitive &&
+    a.regexp === b.regexp &&
+    a.wholeWord === b.wholeWord;
 
 class CustomSearchPanel implements Panel {
     dom: HTMLElement;
@@ -560,8 +605,7 @@ class CustomSearchPanel implements Panel {
         this.searchField.setAttribute('aria-label', 'Find');
         this.searchField.setAttribute('main-field', 'true');
         this.searchField.value = query.search;
-        this.searchField.onchange = this.commit;
-        this.searchField.onkeyup = this.commit;
+        this.searchField.oninput = this.commit;
 
         const togglesWrap = document.createElement('div');
 
@@ -654,8 +698,7 @@ class CustomSearchPanel implements Panel {
             this.replaceField.placeholder = 'Replace';
             this.replaceField.setAttribute('aria-label', 'Replace');
             this.replaceField.value = query.replace;
-            this.replaceField.onchange = this.commit;
-            this.replaceField.onkeyup = this.commit;
+            this.replaceField.oninput = this.commit;
 
             replaceWrap.appendChild(this.replaceField);
 
@@ -780,8 +823,30 @@ class CustomSearchPanel implements Panel {
         });
 
         if (!query.eq(this.query)) {
+            const previous = this.query;
+
             this.query = query;
             this.view.dispatch({ effects: setSearchQuery.of(query) });
+
+            // A new search selects the first match at or after the cursor; editing only the
+            // replacement leaves the selection where it is.
+            if (query.valid && !sameSearch(previous, query)) {
+                this.selectMatchFromCursor(query);
+            }
+        }
+    }
+
+    selectMatchFromCursor(query: SearchQuery) {
+        const { state } = this.view;
+        const next = query.getCursor(state, state.selection.main.from).next();
+        const match = next.done ? query.getCursor(state).next() : next;
+
+        if (!match.done) {
+            this.view.dispatch({
+                selection: { anchor: match.value.from, head: match.value.to },
+                scrollIntoView: true,
+                userEvent: 'select.search',
+            });
         }
     }
 
@@ -888,6 +953,7 @@ const createEditorState = (
         extensions: [
             basicSetup,
             search({ createPanel: (view) => new CustomSearchPanel(view), top: true }),
+            searchScrollbarMarkers,
             panelEditorTheme,
             syntaxHighlighting(panelHighlightStyle),
             EditorState.tabSize.of(4),
@@ -911,6 +977,7 @@ const createEditorState = (
                     },
                 ])
             ),
+            keymap.of([indentWithTab]),
             languageCompartment.of(resolveCodemirrorLanguage(mode)),
             EditorView.updateListener.of((update) => {
                 if (update.docChanged) {

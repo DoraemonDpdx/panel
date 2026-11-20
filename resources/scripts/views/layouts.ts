@@ -19,7 +19,10 @@ import { useTheme, type ThemeScheme, type ThemeSchemePreference } from './theme'
 export interface LayoutBrand {
     /** The panel's name. */
     readonly name: string;
-    /** The image the active theme's setting mapped to `--brand-logo` holds, if it has one. */
+    /**
+     * The logo: the image the active theme's setting mapped to `--brand-logo` holds, else the one uploaded in
+     * the admin settings, if either is set.
+     */
     readonly logoUrl: string | null;
 }
 
@@ -46,6 +49,8 @@ export interface AppLayoutModel {
         readonly uuid: string;
         readonly username: string;
         readonly email: string;
+        /** The user's uploaded picture, for `Avatar`'s `image`; null draws the pattern `uuid` seeds. */
+        readonly avatar: string | null;
         readonly rootAdmin: boolean;
     };
     /** The scheme in use. */
@@ -126,8 +131,8 @@ declare module './registry' {
 }
 
 function useBrand(): LayoutBrand {
-    const { name } = useSiteSettings();
-    const logoUrl = useBrandLogo();
+    const { name, logo } = useSiteSettings();
+    const logoUrl = useBrandLogo() ?? logo;
 
     return useMemo(() => ({ name, logoUrl }), [name, logoUrl]);
 }
@@ -253,7 +258,7 @@ function useAppArea(): AppArea {
 
 function useAppLayoutModel(): AppLayoutModel {
     const brand = useBrand();
-    const { uuid, username, email, rootAdmin } = useCurrentUser();
+    const { uuid, username, email, avatar, rootAdmin } = useCurrentUser();
     const { scheme, preference, schemes, setScheme } = useTheme();
     const { mutate, isPending } = useLogout();
     const area = useAppArea();
@@ -263,7 +268,7 @@ function useAppLayoutModel(): AppLayoutModel {
             brand,
             links: appLinks(rootAdmin),
             area,
-            user: { uuid, username, email, rootAdmin },
+            user: { uuid, username, email, avatar: avatar ?? null, rootAdmin },
             scheme,
             preference,
             schemes,
@@ -271,7 +276,21 @@ function useAppLayoutModel(): AppLayoutModel {
             signOut: () => mutate({}),
             signingOut: isPending,
         }),
-        [brand, area, uuid, username, email, rootAdmin, scheme, preference, schemes, setScheme, mutate, isPending]
+        [
+            brand,
+            area,
+            uuid,
+            username,
+            email,
+            avatar,
+            rootAdmin,
+            scheme,
+            preference,
+            schemes,
+            setScheme,
+            mutate,
+            isPending,
+        ]
     );
 }
 
@@ -288,7 +307,13 @@ const appLayoutFixture = (
     brand,
     links: appLinks(rootAdmin),
     area,
-    user: { uuid: '11111111-1111-4111-8111-111111111111', username: 'alex', email: 'alex@example.test', rootAdmin },
+    user: {
+        uuid: '11111111-1111-4111-8111-111111111111',
+        username: 'alex',
+        email: 'alex@example.test',
+        avatar: null,
+        rootAdmin,
+    },
     scheme: schemes[0] ?? 'dark',
     preference: schemes[0] ?? 'dark',
     schemes,

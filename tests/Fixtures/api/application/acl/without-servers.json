@@ -656,6 +656,7 @@
                 "language": "en",
                 "root_admin": false,
                 "2fa": false,
+                "avatar": null,
                 "relationships": {
                     "servers": {
                         "object": "null_resource",

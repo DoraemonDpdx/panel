@@ -9,6 +9,7 @@ use Knuckles\Scribe\Attributes\Endpoint;
 use Knuckles\Scribe\Attributes\Group;
 use Knuckles\Scribe\Attributes\Response as ScribeResponse;
 use Knuckles\Scribe\Attributes\Subgroup;
+use Pterodactyl\Actions\Settings\ReplaceBrandLogo;
 use Pterodactyl\Http\Controllers\Api\Admin\AdminApiController;
 use Pterodactyl\Http\Requests\Api\Admin\Settings\GetSettingsRequest;
 
@@ -19,7 +20,9 @@ class SettingsController extends AdminApiController
     private const array SETTINGS_EXAMPLE = [
         'general' => [
             'app:name' => 'Pterodactyl',
+            'app:logo' => null,
             'pterodactyl:auth:2fa_required' => 0,
+            'pterodactyl:client_features:avatars:enabled' => false,
             'app:locale' => 'en',
         ],
         'mail' => [
@@ -58,7 +61,9 @@ class SettingsController extends AdminApiController
         return new JsonResponse([
             'general' => [
                 'app:name' => config('app.name'),
+                'app:logo' => ReplaceBrandLogo::url(),
                 'pterodactyl:auth:2fa_required' => config('pterodactyl.auth.2fa_required'),
+                'pterodactyl:client_features:avatars:enabled' => config('pterodactyl.client_features.avatars.enabled'),
                 'app:locale' => config('app.locale'),
             ],
             'mail' => [

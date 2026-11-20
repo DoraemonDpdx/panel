@@ -12,9 +12,13 @@ use Knuckles\Scribe\Attributes\Endpoint;
 use Knuckles\Scribe\Attributes\Group;
 use Knuckles\Scribe\Attributes\Response as ScribeResponse;
 use Knuckles\Scribe\Attributes\Subgroup;
+use Pterodactyl\Contracts\Users\ReplacesUserAvatars;
 use Pterodactyl\Contracts\Users\UpdatesUserEmails;
 use Pterodactyl\Contracts\Users\UpdatesUserPasswords;
 use Pterodactyl\Extensions\Scribe\Attributes\ResponseFromResource;
+use Pterodactyl\Facades\Activity;
+use Pterodactyl\Http\Requests\Api\Client\Account\DeleteAvatarRequest;
+use Pterodactyl\Http\Requests\Api\Client\Account\UpdateAvatarRequest;
 use Pterodactyl\Http\Requests\Api\Client\Account\UpdateEmailRequest;
 use Pterodactyl\Http\Requests\Api\Client\Account\UpdatePasswordRequest;
 use Pterodactyl\Http\Resources\Api\Client\AccountResource;
@@ -81,6 +85,29 @@ class AccountController extends ClientApiController
     public function updatePassword(UpdatePasswordRequest $request, UpdatesUserPasswords $passwords): JsonResponse
     {
         $passwords->update($request->user(), $request->string('password')->toString());
+
+        return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    #[Endpoint('Update account avatar', "Stores the uploaded image as the authenticated user's avatar and deletes the one it replaces.")]
+    #[BodyParam('avatar', 'file', 'PNG, JPEG, SVG, WebP, AVIF or ICO image of at most 10 MiB.', required: true)]
+    #[ResponseFromResource(AccountResource::class, User::class, description: 'Avatar updated.', resourceKey: 'user')]
+    public function updateAvatar(UpdateAvatarRequest $request, ReplacesUserAvatars $avatars): AccountResource
+    {
+        $user = $avatars->replace($request->user(), $request->avatar());
+
+        Activity::event('user:account.avatar-changed')->subject($user)->log();
+
+        return AccountResource::make($user);
+    }
+
+    #[Endpoint('Delete account avatar', "Deletes the authenticated user's avatar.")]
+    #[ScribeResponse(status: 204, description: 'Avatar deleted.')]
+    public function deleteAvatar(DeleteAvatarRequest $request, ReplacesUserAvatars $avatars): JsonResponse
+    {
+        $user = $avatars->replace($request->user(), null);
+
+        Activity::event('user:account.avatar-deleted')->subject($user)->log();
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
     }

@@ -1005,7 +1005,8 @@ theme does not offer falls back to its first scheme. The `layout.app` model carr
 ### Branding
 
 - **Logo.** An `image` setting that writes `--brand-logo` becomes `model.brand.logoUrl` of `layout.app`
-  and `layout.auth`. Classic shows it in place of the panel's name.
+  and `layout.auth`. Without one, `logoUrl` is the logo uploaded in the admin settings, if there is one.
+  Classic shows it in place of the panel's name and on the sign-in card.
 - **Icons.** `defineTheme({ icons: { server: Boxes } })` maps lucide icon names to components.
   `<NamedIcon>`, which draws navigation and extension icons by name, uses the theme's icon first.
 - **Browser colour.** The `--theme-color` token sets `<meta name="theme-color">`.
@@ -1243,7 +1244,7 @@ leaves `*.map` files out unless `p:extension:pack` is given `--sourcemaps`.
   type error, and the panel keeps its own.
 - **Import CSS from JavaScript.** The build fails: the panel loads only `dist/theme.css`.
 - **Bypass the engine on forms.** A layer over a form spreads each field's `fieldProps` (name, type,
-  autocomplete, value and handlers) onto an input. A layer over `page.auth.login` also submits through
+  autocomplete, value and handlers) onto an input, or calls `setValue` to fill it without an input event. A layer over `page.auth.login` also submits through
   `model.submit`, renders `Captcha` when the panel requires one, and keeps the `auth.login.form.after`
   slot.
 
@@ -1495,7 +1496,7 @@ the view's layers; a page's **engine slots** are rendered around it by the engin
 | --- | --- | --- | --- | --- | --- | --- |
 | `page.account.activity` | account | `ActivityPageModel` |  |  | `account.activity.before` `account.activity.after` | default |
 | `page.account.api` | account | `PageStatusModel` |  |  | `account.api.before` `account.api.after` | default, loading, error |
-| `page.account.overview` | account | `AccountOverviewModel` |  | `account.overview.before` `account.overview.after` |  | default, twoFactorRequired |
+| `page.account.overview` | account | `AccountOverviewModel` |  | `account.overview.before` `account.overview.after` |  | default, twoFactorRequired, avatars |
 | `page.account.ssh` | account | `PageStatusModel` |  |  | `account.ssh.before` `account.ssh.after` | default, loading, error |
 | `page.auth.checkpoint` | auth | `CheckpointFormModel` |  |  | `auth.checkpoint.before` `auth.checkpoint.after` | code, recovery |
 | `page.auth.login` | auth | `LoginFormModel` |  | `auth.login.form.after` | `auth.login.before` `auth.login.after` | default, invalid, submitting |
@@ -1522,6 +1523,7 @@ the view's layers; a page's **engine slots** are rendered around it by the engin
 | --- | --- | --- | --- | --- | --- |
 | `account.apiKeys.create` | account | `ApiKeyCreateModel` |  |  | default, invalid, created |
 | `account.apiKeys.list` | account | `ApiKeyListModel` |  |  | keys, empty, loading, deleting |
+| `account.avatar` | account | `AccountAvatarModel` |  |  | default, uploaded, picked |
 | `account.email` | account | `AccountEmailModel` |  |  | default, submitting |
 | `account.password` | account | `AccountPasswordModel` |  |  | default, invalid |
 | `account.sshKeys.create` | account | `SshKeyCreateModel` |  |  | default, submitting |

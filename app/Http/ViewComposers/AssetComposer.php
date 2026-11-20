@@ -7,6 +7,7 @@ namespace Pterodactyl\Http\ViewComposers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Pterodactyl\Actions\Settings\ReplaceBrandLogo;
 use Pterodactyl\Services\Extensions\ExtensionHeadTags;
 use Pterodactyl\Services\Extensions\ExtensionRepository;
 use Pterodactyl\Services\Helpers\AssetHashService;
@@ -39,7 +40,9 @@ class AssetComposer
         $view->with('theme', $theme);
         $view->with('siteConfiguration', [
             'name' => config('app.name', 'Pterodactyl'),
+            'logo' => ReplaceBrandLogo::url(),
             'locale' => config('app.locale', 'en'),
+            'userAvatarsEnabled' => config('pterodactyl.client_features.avatars.enabled', false),
             'recaptcha' => [
                 'enabled' => config('recaptcha.enabled', false),
                 'siteKey' => config('recaptcha.website_key', ''),
