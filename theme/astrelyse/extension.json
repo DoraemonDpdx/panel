@@ -1,0 +1,62 @@
+{
+    "$schema": "./node_modules/@pterodactyl/sdk/manifest.schema.json",
+    "id": "astrelyse",
+    "type": "theme",
+    "name": "Astrelyse",
+    "version": "1.0.0",
+    "description": "Astrelyse Liquid Glass: refracting glass controls over a still, dark backdrop.",
+    "icon": "palette",
+    "requires": {
+        "panel": "^2.0.0-dev",
+        "sdk": ">=2.0.0-beta.5 <3.0"
+    },
+    "ui": {
+        "entry": "dist/client.js"
+    },
+    "theme": {
+        "extends": "classic",
+        "stylesheet": "dist/theme.css",
+        "schemes": [
+            "dark"
+        ],
+        "settings": {
+            "logo": {
+                "type": "image",
+                "label": "Logo",
+                "help": "Shown in the navigation and on the sign-in page.",
+                "token": "--brand-logo"
+            },
+            "lens": {
+                "type": "toggle",
+                "label": "Refraction lens",
+                "help": "Bend the page behind glass controls (Chromium browsers). Off keeps the frosted glass only.",
+                "default": true,
+                "attribute": "data-ast-lens"
+            },
+            "density": {
+                "type": "select",
+                "label": "Density",
+                "help": "Compact tightens table cells, list rows and tabs; comfortable keeps the default spacing.",
+                "default": "comfortable",
+                "options": {
+                    "comfortable": "Comfortable",
+                    "compact": "Compact"
+                },
+                "attribute": "data-density"
+            },
+            "accent": {
+                "type": "select",
+                "label": "Accent colour",
+                "help": "The colour of accent-tone badges, bars and stats. Green stays reserved for go and online.",
+                "default": "blue",
+                "options": {
+                    "blue": "Blue",
+                    "violet": "Violet",
+                    "teal": "Teal",
+                    "rose": "Rose"
+                },
+                "attribute": "data-ast-accent"
+            }
+        }
+    }
+}

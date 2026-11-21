@@ -1,0 +1,881 @@
+/*
+ * ==========================================================================
+ *  ____  ____  ____  __  __
+ * |  _ \|  _ \|  _ \ \ \/ /
+ * | | | | |_) | | | | \  /
+ * | |_| |  __/| |_| | /  \
+ * |____/|_|   |____/ /_/\_\
+ *
+ * BUILT BY  DPDX DEVELOPMENT  ·  BENGALURU, INDIA  ·  dpdx.in
+ * BUILT FOR ASTRELYSE
+ * ==========================================================================
+ *
+ * PROPRIETARY & CONFIDENTIAL. This file belongs to DPDX. A customer who receives
+ * it inside a site, panel theme or bot built and shipped by DPDX may run it as
+ * delivered, but does not own it, and no right to copy, modify, resell or reuse
+ * it elsewhere is granted without prior written authorisation from DPDX.
+ */
+
+/*
+ * Shell stream: app shell, navigation, sign-in, dashboard and account pages.
+ * Put rules inside @layer components so a utility at the call site still wins. Contract: ../../../PANEL_DESIGN.md
+ * Nothing here animates by itself: every transition is a reply to hover, focus or press, in --t-fast (120ms).
+ */
+
+@layer components {
+    /* ---------- the top bar ---------- */
+
+    /* One slim bar, identical on every page. Nothing page-specific ever goes in it. */
+    /* .lq.sh-nav: .lq sets position: relative later in the same layer, which would undo the fixed bar. */
+    .lq.sh-nav {
+        position: fixed !important;
+        inset: 0.75rem 0.75rem auto 0.75rem;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        height: 3.5rem;
+        padding: 0 0.5rem;
+        border-radius: 9999px;
+    }
+
+    /* Room under the fixed bar: its height, its top offset and a gap. */
+    .sh-offset {
+        height: 4.75rem;
+    }
+
+    .sh-brand {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        padding-left: 0.25rem;
+        color: var(--foreground);
+        text-decoration: none;
+    }
+
+    .sh-tools {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-left: auto;
+    }
+
+    /* A link, a trigger or a tab: a plain tinted fill on hover and when active, never glass on glass. */
+    .sh-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        height: 2.5rem;
+        padding: 0 0.875rem;
+        border: 0;
+        border-radius: 9999px;
+        background: transparent;
+        color: var(--muted-foreground);
+        font-size: 0.875rem;
+        white-space: nowrap;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+            background-color var(--t-fast) ease-out,
+            color var(--t-fast) ease-out;
+    }
+
+    .sh-link:hover {
+        background: rgb(255 255 255 / 0.08);
+        color: var(--foreground);
+    }
+
+    .sh-link:active {
+        background: rgb(255 255 255 / 0.12);
+    }
+
+    .sh-link[data-status='active'] {
+        background: rgb(184 184 255 / 0.16);
+        color: var(--foreground);
+    }
+
+    .sh-nav-user {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        height: 2.5rem;
+        padding: 0 0.5rem 0 0.375rem;
+        border: 0;
+        border-radius: 9999px;
+        background: transparent;
+        color: var(--foreground);
+        cursor: pointer;
+        transition: background-color var(--t-fast) ease-out;
+    }
+
+    .sh-nav-user:hover,
+    .sh-nav-user[data-popup-open] {
+        background: rgb(255 255 255 / 0.08);
+    }
+
+    .sh-burger {
+        padding: 0;
+        width: 2.5rem;
+        justify-content: center;
+    }
+
+    /* ---------- the menu: a drawer below lg, a sidebar from lg up ---------- */
+
+    .sh-body {
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .sh-page {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .lq.sh-menu {
+        position: fixed !important;
+        inset: 4.75rem auto 0.75rem 0.75rem;
+        z-index: 40;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: min(20rem, calc(100vw - 1.5rem));
+        padding: 0.75rem;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        border-radius: 1.5rem;
+    }
+
+    .sh-menu[hidden] {
+        display: none;
+    }
+
+    .sh-scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 35;
+        border: 0;
+        background: rgb(0 0 0 / 0.45);
+        cursor: default;
+    }
+
+    .sh-body[data-wide] .sh-menu {
+        position: sticky !important;
+        inset: auto;
+        top: 4.75rem;
+        flex-shrink: 0;
+        width: var(--layout-sidebar-width);
+        max-height: calc(100dvh - 5.5rem);
+        margin-left: 0.75rem;
+    }
+
+    .sh-area {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+        min-width: 0;
+    }
+
+    .sh-area-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.875rem 0.5rem;
+        color: var(--foreground);
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    .sh-menu-link {
+        width: 100%;
+        height: 2.5rem;
+        border-radius: 1rem;
+    }
+
+    /* ---------- sign-in ---------- */
+
+    .sh-auth {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.75rem;
+        min-height: 100dvh;
+        padding: 2rem 1rem;
+    }
+
+    .sh-auth > main {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .sh-auth-card-wrap {
+        width: 100%;
+        max-width: 26rem;
+    }
+
+    .sh-auth-link {
+        font-size: 0.75rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted-foreground);
+        text-decoration: none;
+        transition: color var(--t-fast) ease-out;
+    }
+
+    .sh-auth-link:hover {
+        color: var(--foreground);
+    }
+
+    .sh-auth-button {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+    }
+
+    /* ---------- dashboard ---------- */
+
+    .sh-tile {
+        position: relative;
+        min-width: 0;
+    }
+
+    /* The whole card is the link. Hover tints it in 120ms; nothing moves. */
+    .sh-tile-link {
+        position: absolute;
+        inset: 0;
+        border-radius: 1.5rem;
+        transition: background-color var(--t-fast) ease-out;
+    }
+
+    .sh-tile-link:hover {
+        background: rgb(255 255 255 / 0.05);
+    }
+
+    .sh-tile-body {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.25rem;
+        pointer-events: none;
+    }
+
+    .sh-tile-body a,
+    .sh-tile-body button,
+    .sh-tile-body [role='button'] {
+        pointer-events: auto;
+    }
+
+    /* Live state. Green means running and nothing else. */
+    .sh-chip {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        gap: 0.4rem;
+        height: 1.5rem;
+        padding: 0 0.625rem;
+        border-radius: 9999px;
+        background: rgb(255 255 255 / 0.06);
+        color: var(--muted-foreground);
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .sh-chip-dot {
+        width: 0.4rem;
+        height: 0.4rem;
+        border-radius: 9999px;
+        background: var(--ink-3);
+    }
+
+    .sh-chip[data-tone='online'] {
+        color: var(--green);
+    }
+
+    .sh-chip[data-tone='online'] .sh-chip-dot {
+        background: var(--green);
+    }
+
+    .sh-chip[data-tone='warning'] .sh-chip-dot {
+        background: var(--warning);
+    }
+
+    .sh-chip[data-tone='danger'] {
+        color: var(--destructive);
+    }
+
+    .sh-chip[data-tone='danger'] .sh-chip-dot {
+        background: var(--destructive);
+    }
+
+    /* A usage bar: it follows data, it is not decoration. */
+    .sh-meter {
+        height: 3px;
+        margin-top: 0.5rem;
+        overflow: hidden;
+        border-radius: 9999px;
+        background: rgb(255 255 255 / 0.08);
+    }
+
+    .sh-meter > span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--lav);
+    }
+
+    [data-metric='warning'] .sh-meter > span {
+        background: var(--warning);
+    }
+
+    [data-metric='danger'] .sh-meter > span {
+        background: var(--destructive);
+    }
+
+    /* ---------- dashboard: selection, filters, bulk bar, list layout (plain fills, no glass per row) ---------- */
+
+    .sh-tile-select {
+        position: absolute;
+        z-index: 1;
+        top: 1.5rem;
+        left: 0.875rem;
+    }
+
+    .sh-tile:has(.sh-tile-select) .sh-tile-body {
+        padding-left: 2.75rem;
+    }
+
+    .sh-tile[data-selected] {
+        box-shadow: var(--mat-rim), var(--lg-drop), inset 0 0 0 2px rgb(184 184 255 / 0.55);
+    }
+
+    .sh-pin {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        padding: 0.25rem;
+        border-radius: 0.5rem;
+        color: var(--muted-foreground);
+        transition: color var(--t-fast) ease-out, background-color var(--t-fast) ease-out;
+    }
+
+    .sh-pin:hover {
+        color: var(--foreground);
+        background: rgb(255 255 255 / 0.08);
+    }
+
+    .sh-pin[aria-pressed='true'] {
+        color: var(--lav);
+    }
+
+    .sh-toolbar {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .sh-toolbar-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .sh-filter {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        height: 2rem;
+        padding: 0 0.75rem;
+        border-radius: 9999px;
+        background: rgb(255 255 255 / 0.05);
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+        color: var(--muted-foreground);
+        font-size: 0.875rem;
+        transition: background-color var(--t-fast) ease-out, color var(--t-fast) ease-out;
+    }
+
+    .sh-filter:hover {
+        background: rgb(255 255 255 / 0.09);
+        color: var(--foreground);
+    }
+
+    /* Pressed is a lavender ring and bright text, never tint alone. */
+    .sh-filter[aria-pressed='true'] {
+        background: rgb(184 184 255 / 0.14);
+        box-shadow: inset 0 0 0 1px rgb(184 184 255 / 0.6);
+        color: var(--foreground);
+    }
+
+    .sh-filter-count {
+        font-variant-numeric: tabular-nums;
+        color: var(--muted-foreground);
+    }
+
+    .sh-bulk,
+    .sh-note {
+        margin-bottom: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+    }
+
+    .sh-note {
+        font-size: 0.875rem;
+        color: var(--muted-foreground);
+    }
+
+    .sh-steps {
+        margin: 0;
+        padding-left: 1.25rem;
+        list-style: decimal;
+        text-align: left;
+        font-size: 0.875rem;
+        color: var(--muted-foreground);
+    }
+
+    .sh-steps li + li {
+        margin-top: 0.25rem;
+    }
+
+    /* List layout: identity, address and metrics side by side from lg. */
+    @media (min-width: 64rem) {
+        .sh-card-row {
+            flex-direction: row;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .sh-card-row > :nth-child(1) {
+            flex: 1 1 0;
+        }
+
+        .sh-card-row > :nth-child(2) {
+            flex: 0 0 12rem;
+        }
+
+        .sh-card-row > :nth-child(3) {
+            flex: 1.4 1 0;
+        }
+    }
+
+    /* ---------- the sidebar, v2: a sectioned glass rail ---------- */
+
+    .lq.sh-menu {
+        --lg-tint: linear-gradient(180deg, rgb(24 70 255 / 0.12), rgb(8 10 22 / 0.5) 46%);
+        --lg-frost: 6;
+        gap: 0.5rem;
+        padding: 0.625rem;
+        overflow: hidden;
+    }
+
+    .sh-body[data-wide] .sh-menu {
+        width: 17rem;
+        height: calc(100dvh - 5.5rem);
+        max-height: none;
+    }
+
+    /* The menu scrolls inside the glass, so the rim and the corners never scroll away. */
+    .sh-menu-scroll {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 1.125rem;
+        min-height: 0;
+        margin-right: -0.375rem;
+        padding-right: 0.125rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+    }
+
+    .sh-eyebrow {
+        padding: 0.375rem 0.875rem 0.25rem;
+        color: var(--ink-3);
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    /* A page link: icon tile, label, optional badge. Active gets a lit tile and a light bar on the edge. */
+    .sh-menu-link {
+        position: relative;
+        gap: 0.75rem;
+        height: 2.75rem;
+        padding: 0 0.5rem;
+        border-radius: 1rem;
+        font-weight: 500;
+    }
+
+    .sh-ico {
+        display: grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 1.875rem;
+        height: 1.875rem;
+        border-radius: 0.65rem;
+        background: rgb(255 255 255 / 0.05);
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.05);
+        color: var(--ink-2);
+        transition:
+            background var(--t-fast) ease-out,
+            color var(--t-fast) ease-out,
+            box-shadow var(--t-fast) ease-out;
+    }
+
+    .sh-menu-link:hover .sh-ico {
+        background: rgb(184 184 255 / 0.16);
+        color: var(--foreground);
+    }
+
+    .sh-menu-link[data-status='active'],
+    .sh-menu-link[aria-current='page'] {
+        background: linear-gradient(90deg, rgb(24 70 255 / 0.34), rgb(184 184 255 / 0.07));
+        box-shadow: inset 0 0 0 1px rgb(184 184 255 / 0.2);
+        color: var(--foreground);
+    }
+
+    .sh-menu-link[data-status='active'] .sh-ico,
+    .sh-menu-link[aria-current='page'] .sh-ico {
+        background: linear-gradient(135deg, #4d74ff, #1846ff);
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 0.4),
+            0 6px 16px -6px #1846ff;
+        color: #fff;
+    }
+
+    .sh-menu-link[data-status='active']::before,
+    .sh-menu-link[aria-current='page']::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: -0.625rem;
+        width: 3px;
+        height: 1.375rem;
+        translate: 0 -50%;
+        border-radius: 0 3px 3px 0;
+        background: var(--lav);
+        box-shadow: 0 0 12px rgb(184 184 255 / 0.9);
+    }
+
+    /* The server you are in: avatar tile, name and live state. */
+    .sh-server {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.375rem;
+        padding: 0.625rem;
+        border-radius: 1.125rem;
+        background: linear-gradient(135deg, rgb(24 70 255 / 0.26), rgb(184 184 255 / 0.06));
+        box-shadow: inset 0 0 0 1px rgb(184 184 255 / 0.18);
+    }
+
+    .sh-server-av,
+    .ast-server-av {
+        display: grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.85rem;
+        background: linear-gradient(135deg, #4d74ff 0%, #b8b8ff 100%);
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 0.5),
+            0 8px 20px -8px #1846ff;
+        color: #05060a;
+        font-family: var(--font-header);
+        font-size: 0.95rem;
+        letter-spacing: 0.02em;
+    }
+
+    .sh-server-name {
+        display: block;
+        overflow: hidden;
+        color: var(--foreground);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* In the rail the name and state words are gone, so the state rides on the avatar as a dot. */
+    .sh-server-av {
+        position: relative;
+    }
+
+    .sh-server-av::after {
+        content: '';
+        position: absolute;
+        right: -0.1875rem;
+        bottom: -0.1875rem;
+        display: none;
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 9999px;
+        background: var(--ink-3);
+        box-shadow: 0 0 0 2px #0b0e1f;
+    }
+
+    .sh-body[data-rail] .sh-server-av::after {
+        display: block;
+    }
+
+    .sh-server-av[data-state='running']::after {
+        background: var(--green);
+        box-shadow:
+            0 0 0 2px #0b0e1f,
+            0 0 10px var(--green);
+    }
+
+    .sh-server-av[data-state='starting']::after,
+    .sh-server-av[data-state='stopping']::after {
+        background: var(--warning);
+    }
+
+    .sh-server-state {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        color: var(--ink-2);
+        font-size: 0.75rem;
+        text-transform: capitalize;
+    }
+
+    .sh-server-state i {
+        width: 0.4375rem;
+        height: 0.4375rem;
+        border-radius: 9999px;
+        background: var(--ink-3);
+    }
+
+    .sh-server-state[data-state='running'] {
+        color: var(--green);
+    }
+
+    .sh-server-state[data-state='running'] i {
+        background: var(--green);
+        box-shadow: 0 0 8px var(--green);
+    }
+
+    .sh-server-state[data-state='starting'] i,
+    .sh-server-state[data-state='stopping'] i {
+        background: var(--warning);
+        box-shadow: 0 0 8px var(--warning);
+    }
+
+    /* Account and the collapse control: pinned to the bottom of the glass. */
+    .sh-foot {
+        display: flex;
+        flex-shrink: 0;
+        flex-direction: column;
+        gap: 0.125rem;
+        padding-top: 0.375rem;
+        border-top: 1px solid rgb(255 255 255 / 0.08);
+    }
+
+    .sh-body[data-rail] .sh-foot .sh-menu-link {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .sh-collapse {
+        flex-shrink: 0;
+        width: 100%;
+        height: 2.5rem;
+        gap: 0.75rem;
+        padding: 0 0.5rem;
+        border-radius: 1rem;
+    }
+
+    .sh-kbd {
+        margin-left: auto;
+        padding: 0.0625rem 0.4375rem;
+        border-radius: 0.4rem;
+        background: rgb(255 255 255 / 0.08);
+        color: var(--ink-2);
+        font: 0.6875rem var(--font-mono);
+    }
+
+    /*
+     * Open and close, as one liquid move. The glass itself changes width on a spring (a touch of overshoot, so it
+     * settles like a drop), its corners go from card to capsule and the labels melt out instead of vanishing. The rim's
+     * colour fringing is real refraction from the lens, not decoration. All of it answers a click or the [ key.
+     * Nothing here waits on the pointer: every control stays live the whole time.
+     */
+    .sh-label {
+        max-width: 11rem;
+        overflow: hidden;
+        white-space: nowrap;
+        transition:
+            max-width 420ms var(--ease),
+            opacity 200ms ease-out 80ms;
+    }
+
+    .sh-eyebrow {
+        max-height: 2rem;
+        transition:
+            max-height 420ms var(--ease),
+            padding 420ms var(--ease),
+            opacity 160ms ease-out;
+    }
+
+    .sh-menu-link,
+    .sh-collapse,
+    .sh-server {
+        transition:
+            background-color var(--t-fast) ease-out,
+            color var(--t-fast) ease-out,
+            padding 420ms var(--ease),
+            gap 420ms var(--ease);
+    }
+
+    .sh-body[data-wide] .sh-menu {
+        transform-origin: left center;
+        transition:
+            width 520ms var(--spring),
+            border-radius 520ms var(--ease);
+    }
+
+    .sh-body[data-rail] .sh-menu {
+        width: 4.75rem;
+        border-radius: 2.375rem;
+    }
+
+    /* The labels' exit. Padding is tuned so each 1.875rem tile lands exactly centred in the 3.5rem inner width. */
+    .sh-body[data-rail] .sh-label {
+        max-width: 0;
+        opacity: 0;
+        transition:
+            max-width 420ms var(--ease),
+            opacity 120ms ease-out;
+    }
+
+    .sh-body[data-rail] .sh-eyebrow {
+        max-width: 0;
+        opacity: 0;
+        max-height: 0;
+        padding-block: 0;
+    }
+
+    .sh-body[data-rail] .sh-menu-link,
+    .sh-body[data-rail] .sh-collapse {
+        gap: 0;
+        padding: 0 0.8125rem;
+    }
+
+    .sh-body[data-rail] .sh-server {
+        gap: 0;
+        padding: 0.4375rem 0.5rem;
+    }
+
+    .sh-body[data-rail] .sh-menu-scroll {
+        margin-right: 0;
+        padding-right: 0;
+        scrollbar-width: none;
+    }
+
+    .sh-body[data-rail] .sh-menu-scroll::-webkit-scrollbar {
+        display: none;
+    }
+
+    .sh-body[data-rail] .sh-menu-link[data-status='active']::before,
+    .sh-body[data-rail] .sh-menu-link[aria-current='page']::before {
+        left: -0.5rem;
+    }
+
+    .sh-collapse svg {
+        transition: rotate 420ms var(--ease);
+    }
+
+    .sh-body[data-rail] .sh-collapse svg {
+        rotate: 180deg;
+    }
+
+    /* A small settle while the glass moves; the refraction itself is the lens (lens.ts), which re-fits when it stops. */
+    .sh-body[data-morph='a'] .sh-menu {
+        animation: sh-liquid-a 560ms var(--ease);
+    }
+
+    .sh-body[data-morph='b'] .sh-menu {
+        animation: sh-liquid-b 560ms var(--ease);
+    }
+
+    .sh-body:not([data-wide]) .sh-menu {
+        animation-name: sh-drawer;
+        animation-duration: 340ms;
+        animation-timing-function: var(--ease);
+    }
+
+    @keyframes sh-liquid-a {
+        0% { scale: 1 1; }
+        30% { scale: 0.99 1.008; }
+        100% { scale: 1 1; }
+    }
+
+    @keyframes sh-liquid-b {
+        0% { scale: 1 1; }
+        30% { scale: 0.99 1.008; }
+        100% { scale: 1 1; }
+    }
+
+    @keyframes sh-drawer {
+        from { opacity: 0; translate: -1.25rem 0; }
+        to { opacity: 1; translate: 0 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .sh-menu,
+        .sh-label,
+        .sh-eyebrow,
+        .sh-menu-link,
+        .sh-collapse,
+        .sh-server,
+        .sh-collapse svg {
+            transition: none !important;
+            animation: none !important;
+        }
+    }
+
+    /* Back to the server list: top left of the bar, only inside a server. */
+    .sh-back {
+        flex-shrink: 0;
+        gap: 0.375rem;
+        padding: 0 0.875rem 0 0.625rem;
+        background: rgb(184 184 255 / 0.14);
+        box-shadow: inset 0 0 0 1px rgb(184 184 255 / 0.26);
+        color: var(--foreground);
+        font-weight: 500;
+    }
+
+    .sh-back:hover {
+        background: rgb(184 184 255 / 0.26);
+    }
+
+    .sh-back svg {
+        transition: translate var(--t-fast) ease-out;
+    }
+
+    .sh-back:hover svg {
+        translate: -3px 0;
+    }
+
+    @media (max-width: 30rem) {
+        .sh-back-label {
+            display: none;
+        }
+
+        .sh-back {
+            padding: 0;
+            width: 2.5rem;
+            justify-content: center;
+        }
+    }
+}
+
+/* ― Built by DPDX Development · Bengaluru · dpdx.in · for Astrelyse ― */

@@ -1,0 +1,390 @@
+/*
+ * ==========================================================================
+ *  ____  ____  ____  __  __
+ * |  _ \|  _ \|  _ \ \ \/ /
+ * | | | | |_) | | | | \  /
+ * | |_| |  __/| |_| | /  \
+ * |____/|_|   |____/ /_/\_\
+ *
+ * BUILT BY  DPDX DEVELOPMENT  ·  BENGALURU, INDIA  ·  dpdx.in
+ * BUILT FOR ASTRELYSE
+ * ==========================================================================
+ *
+ * PROPRIETARY & CONFIDENTIAL. This file belongs to DPDX. A customer who receives
+ * it inside a site, panel theme or bot built and shipped by DPDX may run it as
+ * delivered, but does not own it, and no right to copy, modify, resell or reuse
+ * it elsewhere is granted without prior written authorisation from DPDX.
+ */
+
+/*
+ * Server stream: databases, schedules, users, backups, network, startup, settings, activity and conflict screens.
+ * Put rules inside @layer components so a utility at the call site still wins. Contract: ../../../PANEL_DESIGN.md
+ */
+
+@layer components {
+    /* Page frame: one heading, then the blocks stacked with one rhythm. Nothing here moves. */
+    .srv-heading {
+        margin-bottom: 1.25rem;
+    }
+
+    .srv-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .srv-stack > * {
+        min-width: 0;
+    }
+
+    /* Fields inside a card. Gap, not margins, so a field that renders nothing leaves no hole. */
+    .srv-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .srv-note {
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        color: var(--ink-2);
+    }
+
+    .srv-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+
+    .srv-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        align-self: flex-start;
+        font-size: 0.875rem;
+        color: var(--ink-2);
+        text-decoration: none;
+        transition: color var(--t-fast) ease-out;
+    }
+
+    .srv-back:hover {
+        color: var(--ink);
+    }
+
+    /* Settings: two columns from lg, the danger card last in its column. */
+    .srv-settings {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.25rem;
+        align-items: start;
+    }
+
+    .srv-col {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        min-width: 0;
+    }
+
+    @media (min-width: 64rem) {
+        .srv-settings {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    /* Reinstall is the one destructive card: the glass token is tinted red, nothing else is redrawn. */
+    .srv-danger {
+        --lg-tint: rgb(255 77 94 / 0.07);
+    }
+
+    /* Debug facts: label left, mono value right, each a plain fill. */
+    .srv-facts {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin: 0;
+    }
+
+    .srv-fact {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        border-radius: 1rem;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .srv-fact dd {
+        margin: 0;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        text-align: right;
+    }
+
+    .srv-fact code,
+    .srv-code {
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+    }
+
+    /* Startup: command beside image from lg; the command is dense text on a near-solid fill. */
+    .srv-startup {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.25rem;
+    }
+
+    @media (min-width: 64rem) {
+        .srv-startup {
+            grid-template-columns: minmax(0, 1fr) 22rem;
+        }
+    }
+
+    .srv-code {
+        margin: 0;
+        border-radius: 1rem;
+        background: var(--terminal-background);
+        padding: 0.75rem 1rem;
+        color: var(--terminal-foreground);
+        overflow-wrap: anywhere;
+        user-select: all;
+    }
+
+    .srv-variables {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.75rem;
+    }
+
+    @media (min-width: 48rem) {
+        .srv-variables {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    .srv-variable {
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+        border-radius: 1rem;
+        padding: 1rem;
+    }
+
+    .srv-variable-name {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 0;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink);
+    }
+
+    /* Ports and environment: a Material card, plain-fill tiles inside, capsule controls from the kit. */
+    .srv-ports-section + .srv-ports-section {
+        margin-top: 1.5rem;
+    }
+
+    .srv-ports-title {
+        margin: 0 0 0.75rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink);
+    }
+
+    .srv-ports-table {
+        overflow-x: auto;
+        border-radius: 1rem;
+        padding: 0.25rem 1rem;
+    }
+
+    .srv-ports-table table {
+        width: 100%;
+        text-align: left;
+        font-size: 0.875rem;
+    }
+
+    .srv-ports-table th {
+        padding: 0.625rem 0.75rem 0.5rem 0;
+        font-size: 0.75rem;
+        font-weight: 400;
+        color: var(--ink-2);
+    }
+
+    .srv-ports-table td {
+        padding: 0.5rem 0.75rem 0.5rem 0;
+        border-top: 1px solid var(--hairline, rgb(127 127 127 / 0.2));
+        vertical-align: middle;
+    }
+
+    .srv-ports-add {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .srv-ports-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+    }
+
+    .srv-ports-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.75rem;
+    }
+
+    @media (min-width: 40rem) {
+        .srv-ports-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    .srv-ports-extras {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .srv-ports-extra {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 1rem;
+        padding: 0.625rem 0.75rem;
+    }
+
+    /* Preview: the Copy button lives in a header row above the code, never over it. Long lines scroll inside. */
+    .srv-ports .srv-codebox {
+        overflow: hidden;
+        border-radius: 1rem;
+        background: var(--terminal-background);
+        color: var(--terminal-foreground);
+    }
+
+    .srv-ports .srv-codebox-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.5rem 0.75rem 0.25rem 1rem;
+    }
+
+    .srv-ports .srv-codebox-name {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        opacity: 0.7;
+    }
+
+    .srv-ports pre.srv-code {
+        overflow-x: auto;
+        border-radius: 0;
+        background: transparent;
+        padding: 0.25rem 1rem 0.75rem;
+        overflow-wrap: normal;
+        white-space: pre;
+        user-select: text;
+    }
+
+    /* The calm centred screen of server.conflict: a still icon, plain words, one way out. */
+    .srv-conflict {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 3rem auto;
+        max-width: 28rem;
+        border-radius: 1.875rem;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        font-size: 0.9375rem;
+        line-height: 1.55;
+    }
+
+    .srv-conflict h2 {
+        margin: 0;
+        font-family: var(--font-header);
+        font-size: 1.75rem;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+    }
+
+    .srv-conflict p {
+        margin: 0;
+    }
+
+    .srv-conflict .srv-back {
+        align-self: center;
+        margin-top: 0.75rem;
+    }
+
+    .srv-conflict-icon {
+        display: grid;
+        place-items: center;
+        width: 3.5rem;
+        height: 3.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 999px;
+        background: rgb(255 255 255 / 0.06);
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+        color: var(--lav);
+    }
+
+    .srv-conflict-icon svg {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    /*
+     * Classic blocks this stream keeps (schedule header, subuser form) still carry raw utility classes: sharp corners,
+     * a 4px rule. Utilities outrank the components layer, so these few declarations are !important. These rules, scoped to the frame we put around them, bring them to the same shapes without
+     * rewriting the block. They hang on classic's own class names, so a panel update that renames them degrades to
+     * classic's look, never to a broken page.
+     */
+    .srv-schedule .rounded-sm {
+        border-radius: 1rem !important;
+    }
+
+    .srv-schedule .rounded-t-sm {
+        border-top-left-radius: 1.5rem !important;
+        border-top-right-radius: 1.5rem !important;
+    }
+
+    .srv-schedule .border-b-4 {
+        border-bottom-width: 1px !important;
+    }
+
+    .srv-schedule .border-l-4,
+    .srv-perms .border-l-4 {
+        border-left-width: 2px !important;
+    }
+
+    .srv-schedule h3,
+    .srv-perms h2 {
+        font-family: var(--font-header) !important;
+        font-weight: 400 !important;
+        letter-spacing: -0.01em !important;
+    }
+
+    .srv-schedule .bg-card {
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06) !important;
+    }
+
+    .srv-schedule .shadow-sm {
+        box-shadow: none !important;
+    }
+}
+
+/* ― Built by DPDX Development · Bengaluru · dpdx.in · for Astrelyse ― */
