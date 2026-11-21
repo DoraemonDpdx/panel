@@ -20,6 +20,7 @@ import ExtensionFormFields from '@/components/admin/extensions/ExtensionFormFiel
 import UserAvatarCard from './UserAvatarCard';
 import { initialExtensionValues, useExtensionPayload } from '@/extensions/forms';
 import AdminContentBlock from '@/components/admin/AdminContentBlock';
+import UserRoleField from '@/components/admin/users/UserRoleField';
 import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import Icon from '@/components/elements/Icon';
 import Button from '@/components/elements/Button';
@@ -127,6 +128,9 @@ const IdentityCard = ({
                     />
                 )}
             </form.AppField>
+        </div>
+        <div className='mt-6'>
+            <UserRoleField form={form} />
         </div>
         <div className='flex justify-end mt-6'>
             <form.AppForm>

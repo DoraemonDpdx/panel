@@ -6,9 +6,12 @@ export { lazyView } from "../views/lazy.js";
 export { Main } from "../views/a11y.js";
 export { usePageTitle } from "../views/pageTitle.js";
 export { Navigation, NavigationLink, useActiveNavItem, useNavigation, type NavArea, type NavigationLinkProps, type NavigationModel, type NavigationProps, type NavigationRenderer, type NavItem, type NavItemState, } from "../views/navigation.js";
+export { WORKLOAD_LABELS, WORKLOAD_PROFILES, appliesToWorkload, type WorkloadProfile, type WorkloadScope, } from "../views/workload.js";
+export { DASHBOARD_GROUPS, DASHBOARD_STATUS_FILTERS, GROUP_LABELS, STATUS_FILTER_LABELS, type BulkResult, type BulkSignal, type DashboardGroup, type DashboardStatusFilter, type DashboardView, type ListGroup, } from "../views/dashboardList.js";
 export { default as Slot } from "../extensions/Slot.js";
 export type { DefaultViewProps, ThemeViews, ViewComponent, ViewContext, ViewImporter, ViewInput, ViewInputs, ViewModel, ViewModels, ViewName, ViewOverride, ViewProps, } from "../views/registry.js";
 export type * from "../views/models.js";
+export { displayText, formatClock, splitHighlights } from "../components/server/console/logParser.js";
 /**
  * Calls `listener`, at most once a frame, after a stylesheet or an `<html>` attribute changes.
  * It is a hint, not a diff: compare the values you read. Returns the unsubscribe function.

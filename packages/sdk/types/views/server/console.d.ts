@@ -2,8 +2,13 @@
 import { type ComponentType } from 'react';
 import type { Server } from "../../api/server/types.js";
 import { type ServerGraphPoint, type ServerNetworkPoint } from "../../components/server/console/chart.js";
+import type { ServerConsoleToolbar, ServerLogViewerModel } from "../../components/server/console/toolbarTypes.js";
+import type { ServerSavedCommands } from "../../components/server/console/useSavedCommands.js";
 import { type ServerRunState, type ServerStatMetric } from "./state.js";
 import { type ServerFeatureView } from "./features.js";
+export type { ServerConsoleToolbar, ServerLogViewerModel, ServerSavedCommands };
+export type { LogEntry, LogFilter, LogLevel, LogLine } from "../../components/server/console/logParser.js";
+export type { SavedCommand } from "../../api/server/savedCommands.js";
 export type { ServerGraphPoint, ServerNetworkPoint, ServerRunState, ServerStatMetric };
 export interface ServerConsoleModel {
     readonly name: string;
@@ -46,6 +51,12 @@ export interface ServerTerminalModel {
     readonly scrolledUp: boolean;
     readonly scrollToBottom: () => void;
     readonly command: ServerConsoleCommand;
+    /** The commands pinned to this server, shown as buttons above the command line. */
+    readonly saved: ServerSavedCommands;
+    /** Search, filter chips, pause, clear, download and the structured-view switches. */
+    readonly toolbar: ServerConsoleToolbar;
+    /** The lines of the structured view; when set it replaces the terminal canvas. */
+    readonly viewer: ServerLogViewerModel | null;
 }
 export interface ServerPowerModel {
     readonly state: ServerRunState | null;
@@ -69,6 +80,8 @@ export interface ServerPowerModel {
         readonly stop: () => void;
         readonly restart: () => void;
         readonly kill: () => void;
+        /** Sends a console command, such as a `say` warning before a delayed restart. */
+        readonly command: (command: string) => void;
     };
     /** The server as the API returns it, which the power slots receive. */
     readonly server: Server;

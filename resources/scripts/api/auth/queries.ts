@@ -1,8 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
+    authBeginPasskeyLoginStepMutation,
     authCompleteLoginCheckpointMutation,
+    authCompletePasskeyLoginStepMutation,
     authLoginMutation,
+    authContinueADiscordSignInMutation,
+    authLoginWithGoogleMutation,
     authLogoutMutation,
     authRequestPasswordResetEmailMutation,
     authResetPasswordMutation,
@@ -17,6 +21,36 @@ export const useLogin = () =>
             await authGetCsrfCookie();
         },
         onError: (error) => notifyHttpError(error, 'Unable to log in'),
+    });
+
+export const useGoogleLogin = () =>
+    useMutation({
+        ...authLoginWithGoogleMutation(),
+        onMutate: async () => {
+            await authGetCsrfCookie();
+        },
+        onError: (error) => notifyHttpError(error, 'Unable to sign in with Google'),
+    });
+
+/** Creates a panel account for the Discord identity the person confirmed on the sign-in screen. */
+export const useDiscordRegister = () =>
+    useMutation({
+        ...authContinueADiscordSignInMutation(),
+        onMutate: async () => {
+            await authGetCsrfCookie();
+        },
+    });
+
+export const usePasskeyLoginOptions = () =>
+    useMutation({
+        ...authBeginPasskeyLoginStepMutation(),
+        onError: (error) => notifyHttpError(error, 'Unable to start the passkey check'),
+    });
+
+export const usePasskeyLoginVerify = () =>
+    useMutation({
+        ...authCompletePasskeyLoginStepMutation(),
+        onError: (error) => notifyHttpError(error, 'That passkey did not work'),
     });
 
 export const useLoginCheckpoint = () =>

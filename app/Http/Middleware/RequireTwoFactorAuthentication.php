@@ -24,7 +24,7 @@ class RequireTwoFactorAuthentication
     /**
      * The route to redirect a user to enable 2FA.
      */
-    protected string $redirectRoute = '/account';
+    protected string $redirectRoute = '/account/two-factor?required=1';
 
     /**
      * Check the user state on the incoming request to determine if they should be allowed to
@@ -44,20 +44,26 @@ class RequireTwoFactorAuthentication
         $uri = mb_rtrim($request->getRequestUri(), '/').'/';
         $current = $this->resolvedRoute($request)->getName() ?? '';
 
-        if (! $user || Str::startsWith($uri, ['/auth/']) || Str::startsWith($current, ['auth.', 'account.'])) {
+        if (! $user || $request->is('account/two-factor') || Str::startsWith($uri, ['/auth/']) || Str::startsWith($current, ['auth.', 'account.'])) {
             return $next($request);
         }
 
         $level = config('pterodactyl.auth.2fa_required');
-        // If this setting is not configured, or the user is already using 2FA then we can just
-        // send them right through, nothing else needs to be checked.
+
+        // Two-factor is compulsory for staff (owners, root administrators and role holders)
+        // whatever the panel-wide setting says; it can only ever raise the requirement.
+        if ($user->mustUseTwoFactor()) {
+            $level = max($level, self::LEVEL_ADMIN);
+        }
+
+        // If nothing is required, or the user is already using 2FA, send them straight through.
         //
         // If the level is set as admin and the user is not an admin, pass them through as well.
         if ($level === self::LEVEL_NONE || $user->use_totp) {
             return $next($request);
         }
 
-        if ($level === self::LEVEL_ADMIN && ! $user->root_admin) {
+        if ($level === self::LEVEL_ADMIN && ! $user->mustUseTwoFactor()) {
             return $next($request);
         }
 

@@ -19,7 +19,7 @@ class SettingsController extends AdminApiController
 {
     private const array SETTINGS_EXAMPLE = [
         'general' => [
-            'app:name' => 'Pterodactyl',
+            'app:name' => 'Astrelyse',
             'app:logo' => null,
             'pterodactyl:auth:2fa_required' => 0,
             'pterodactyl:client_features:avatars:enabled' => false,
@@ -33,12 +33,13 @@ class SettingsController extends AdminApiController
             'mail:mailers:smtp:username' => 'panel@example.com',
             'mail:mailers:smtp:password' => '',
             'mail:from:address' => 'panel@example.com',
-            'mail:from:name' => 'Pterodactyl',
+            'mail:from:name' => 'Astrelyse',
         ],
         'advanced' => [
             'recaptcha:enabled' => false,
             'recaptcha:secret_key' => '',
             'recaptcha:website_key' => 'website',
+            'curseforge:api_key' => '',
             'pterodactyl:guzzle:timeout' => 15,
             'pterodactyl:guzzle:connect_timeout' => 5,
             'pterodactyl:client_features:allocations:enabled' => false,
@@ -48,6 +49,7 @@ class SettingsController extends AdminApiController
         'meta' => [
             'load_environment_only' => false,
             'show_recaptcha_warning' => false,
+            'curseforge_api_key_set' => false,
         ],
     ];
 
@@ -81,6 +83,8 @@ class SettingsController extends AdminApiController
                 'recaptcha:enabled' => config('recaptcha.enabled'),
                 'recaptcha:secret_key' => '',
                 'recaptcha:website_key' => config('recaptcha.website_key'),
+                // Never return the CurseForge API key to the client; meta.curseforge_api_key_set says whether one is set.
+                'curseforge:api_key' => '',
                 'pterodactyl:guzzle:timeout' => config('pterodactyl.guzzle.timeout'),
                 'pterodactyl:guzzle:connect_timeout' => config('pterodactyl.guzzle.connect_timeout'),
                 'pterodactyl:client_features:allocations:enabled' => config('pterodactyl.client_features.allocations.enabled'),
@@ -89,6 +93,7 @@ class SettingsController extends AdminApiController
             ],
             'meta' => [
                 'load_environment_only' => config('pterodactyl.load_environment_only'),
+                'curseforge_api_key_set' => is_string(config('curseforge.api_key')) && mb_trim(config('curseforge.api_key')) !== '',
                 'show_recaptcha_warning' => config('recaptcha._shipped_secret_key') === config('recaptcha.secret_key')
                     || config('recaptcha._shipped_website_key') === config('recaptcha.website_key'),
             ],

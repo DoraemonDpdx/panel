@@ -22,16 +22,21 @@ final readonly class CompleteLogin implements CompletesLogins
 
     public function complete(User $user): LoginResult
     {
-        if (! $user->use_totp) {
+        $passkey = $user->passkeys()->exists();
+        if (! $user->use_totp && ! $passkey) {
             return $this->establish($user);
         }
 
         Activity::event('auth:checkpoint')->withRequestMetadata()->subject($user)->log();
 
-        $checkpoint = LoginCheckpoint::issue($user->id);
-        Session::put(self::CHECKPOINT_KEY, $checkpoint);
+        return $this->checkpoint($user, LoginCheckpoint::issue($user->id, $user->use_totp, $passkey));
+    }
 
-        return LoginResult::checkpoint($user, $checkpoint, self::INTENDED);
+    public function factorPassed(User $user, string $step): LoginResult
+    {
+        $next = $this->pendingCheckpoint()?->after($step);
+
+        return $next instanceof LoginCheckpoint ? $this->checkpoint($user, $next) : $this->establish($user);
     }
 
     public function establish(User $user): LoginResult
@@ -51,5 +56,12 @@ final readonly class CompleteLogin implements CompletesLogins
         $checkpoint = Session::get(self::CHECKPOINT_KEY);
 
         return LoginCheckpoint::isPending($checkpoint) ? $checkpoint : null;
+    }
+
+    private function checkpoint(User $user, LoginCheckpoint $checkpoint): LoginResult
+    {
+        Session::put(self::CHECKPOINT_KEY, $checkpoint);
+
+        return LoginResult::checkpoint($user, $checkpoint, self::INTENDED);
     }
 }

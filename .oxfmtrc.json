@@ -9,5 +9,5 @@
   "endOfLine": "lf",
   "trailingComma": "es5",
   "sortPackageJson": false,
-  "ignorePatterns": ["resources/scripts/api/generated/**"]
+  "ignorePatterns": ["resources/scripts/api/generated/**", "resources/scripts/components/auth/metallic/**"]
 }

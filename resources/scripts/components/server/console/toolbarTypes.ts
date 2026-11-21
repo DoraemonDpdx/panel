@@ -1,0 +1,32 @@
+import type { LogEntry, LogFilter } from './logParser';
+
+// Kept apart from `useConsoleToolbar` so the SDK's published view types do not pull in the terminal library.
+export interface ServerConsoleToolbar {
+    readonly search: string;
+    readonly setSearch: (value: string) => void;
+    /** Selected chips; none means every line shows. */
+    readonly filters: readonly LogFilter[];
+    readonly toggleFilter: (filter: LogFilter) => void;
+    readonly clearFilters: () => void;
+    /** Show when each line arrived; this uses the structured view. */
+    readonly timestamps: boolean;
+    readonly setTimestamps: (value: boolean) => void;
+    /** Show the structured view, with level filters and collapsed traces, instead of the raw terminal. */
+    readonly structured: boolean;
+    readonly setStructured: (value: boolean) => void;
+    /** Hold new output back until resumed. */
+    readonly paused: boolean;
+    readonly setPaused: (value: boolean) => void;
+    readonly clear: () => void;
+    readonly download: () => void;
+}
+
+export interface ServerLogViewerModel {
+    /** The entries that pass the filters and search, oldest first. */
+    readonly entries: readonly LogEntry[];
+    /** Lines stored, before filtering. */
+    readonly total: number;
+    readonly search: string;
+    readonly timestamps: boolean;
+    readonly paused: boolean;
+}

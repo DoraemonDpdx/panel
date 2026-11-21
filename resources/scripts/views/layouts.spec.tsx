@@ -110,7 +110,7 @@ describe('layout.app', () => {
     it('shows the theme logo in place of the panel name', async () => {
         await renderLayout('layout.app', { fixtures: { 'layout.app': 'logo' } });
 
-        expect(await screen.findByRole('img', { name: 'Pterodactyl' })).toHaveAttribute(
+        expect(await screen.findByRole('img', { name: 'Astrelyse' })).toHaveAttribute(
             'src',
             '/favicons/android-chrome-192x192.png'
         );

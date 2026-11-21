@@ -24,6 +24,13 @@ interface CompletesLogins
     public function complete(User $user): LoginResult;
 
     /**
+     * Record that the pending checkpoint's current factor (`totp` or `passkey`)
+     * was verified. Returns the next checkpoint when another factor is still
+     * outstanding, or establishes the session once every factor is satisfied.
+     */
+    public function factorPassed(User $user, string $step): LoginResult;
+
+    /**
      * Sign in a user who has passed every factor their account requires,
      * discarding any pending checkpoint. Callers are responsible for having
      * verified the second factor of accounts that use one.

@@ -38,6 +38,7 @@ use Pterodactyl\Models\Mount;
 use Pterodactyl\Models\Node;
 use Pterodactyl\Models\Schedule;
 use Pterodactyl\Models\Server;
+use Pterodactyl\Models\Role;
 use Pterodactyl\Models\Tag;
 use Pterodactyl\Models\Task;
 use Pterodactyl\Models\User;
@@ -109,6 +110,7 @@ class AppServiceProvider extends ServiceProvider
             'server_database' => Database::class,
             'ssh_key' => UserSSHKey::class,
             'tag' => Tag::class,
+            'role' => Role::class,
             'task' => Task::class,
             'user' => User::class,
         ]);

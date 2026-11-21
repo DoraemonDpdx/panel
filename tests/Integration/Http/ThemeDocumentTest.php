@@ -151,6 +151,16 @@ test('safe mode renders classic without extension bundles for the rest of the se
     expect(session()->has(ThemeResolver::SAFE_MODE))->toBeFalse();
 });
 
+test('safe mode still renders the bundled theme', function (): void {
+    aurora();
+    installTheme('astrelyse');
+
+    $safe = $this->get('/auth/login?safe_mode=1')->assertOk()->assertSee('data-theme="astrelyse"', false);
+    expect(themePayload($safe))->toMatchArray(['id' => 'astrelyse', 'safeMode' => true]);
+    expect(themePayload($safe)['chain'])->toHaveCount(1);
+    $safe->assertDontSee('aurora', false);
+});
+
 test('a root admin previewing a theme sees it alone', function (): void {
     installTheme('aurora');
     installTheme('nebula');

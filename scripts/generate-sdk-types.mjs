@@ -61,7 +61,11 @@ function visit(path) {
                   : undefined;
         if (literal && ts.isStringLiteral(literal)) {
             const specifier = literal.text;
-            if (specifier.startsWith('@/') || specifier.startsWith('@feature/') || specifier.startsWith('.')) {
+            if (specifier.endsWith('.css')) {
+                // Side-effect stylesheet imports carry no types, and a consumer cannot resolve them: drop the statement.
+                if (ts.isImportDeclaration(node))
+                    replacements.push({ start: node.getFullStart(), end: node.end, text: '' });
+            } else if (specifier.startsWith('@/') || specifier.startsWith('@feature/') || specifier.startsWith('.')) {
                 const target = (
                     specifier.startsWith('@/')
                         ? specifier.slice(2)

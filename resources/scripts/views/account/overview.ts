@@ -13,16 +13,30 @@ import {
     useDisableAccountTwoFactor,
     useEnableAccountTwoFactor,
 } from '@/api/account/two-factor/queries';
+import {
+    useBeginPasskeyRegistration,
+    usePasskeys,
+    useRegisterPasskey,
+    useRemovePasskey,
+} from '@/api/account/passkeys/queries';
 import { httpErrorToHuman } from '@/api/http';
 import { imageUploadAccept } from '@/lib/images';
 import { useObjectUrl } from '@/plugins/useObjectUrl';
 import { useSiteSettings } from '@/api/settings/queries';
+import {
+    createPasskey,
+    PASSKEY_FAILED,
+    passkeyBody,
+    passkeyErrorMessage,
+    type PasskeyCreationOptions,
+} from '@/lib/webauthn';
 import { boundField, fixtureField, stateField, type FieldAttributes } from '../forms';
 import { implementViews } from '../registry';
 import type {
     AccountEmailModel,
     AccountAvatarModel,
     AccountOverviewModel,
+    AccountPasskeysModel,
     AccountPasswordModel,
     AccountTwoFactorModel,
     TwoFactorDialog,
@@ -257,6 +271,83 @@ function useAccountTwoFactorModel(): AccountTwoFactorModel {
     };
 }
 
+const DEVICES: readonly (readonly [RegExp, string])[] = [
+    [/iPhone/, 'iPhone'],
+    [/iPad/, 'iPad'],
+    [/Android/, 'Android phone'],
+    [/Macintosh|Mac OS X/, 'Mac'],
+    [/Windows/, 'Windows PC'],
+    [/CrOS/, 'Chromebook'],
+    [/Linux/, 'Linux PC'],
+];
+
+/** A name for the device in hand that no existing passkey already uses. */
+function deviceName(taken: readonly string[]): string {
+    const base = DEVICES.find(([pattern]) => pattern.test(navigator.userAgent))?.[1] ?? 'My passkey';
+    const used = new Set(taken.map((name) => name.toLowerCase()));
+
+    for (let n = 1; ; n++) {
+        const candidate = n === 1 ? base : `${base} ${n}`;
+
+        if (!used.has(candidate.toLowerCase())) {
+            return candidate;
+        }
+    }
+}
+
+function useAccountPasskeysModel(): AccountPasskeysModel {
+    const list = usePasskeys();
+    const begin = useBeginPasskeyRegistration();
+    const register = useRegisterPasskey();
+    const removePasskey = useRemovePasskey();
+    const [adding, setAdding] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const passkeys = (list.data?.data ?? []).map((passkey) => ({
+        id: passkey.id ?? 0,
+        name: passkey.name ?? 'Passkey',
+        createdAt: passkey.created_at ?? '',
+        lastUsedAt: passkey.last_used_at ?? null,
+    }));
+
+    return {
+        passkeys,
+        loading: list.isLoading,
+        adding,
+        removing: removePasskey.isPending,
+        error,
+        suggestName: () => deviceName(passkeys.map((passkey) => passkey.name)),
+        add: async (name) => {
+            setAdding(true);
+            setError(null);
+
+            try {
+                const begun = await begin.mutateAsync({});
+                const attestation = await createPasskey(begun.data?.options as PasskeyCreationOptions);
+
+                await register.mutateAsync({ body: { name, response: passkeyBody(attestation) } });
+
+                return true;
+            } catch (e) {
+                setError(e instanceof Error ? passkeyErrorMessage(e) : PASSKEY_FAILED);
+
+                return false;
+            } finally {
+                setAdding(false);
+            }
+        },
+        remove: async (id, password) => {
+            try {
+                await removePasskey.mutateAsync({ path: { id }, body: { password } });
+
+                return true;
+            } catch {
+                // Error toast is handled by the mutation.
+                return false;
+            }
+        },
+    };
+}
+
 const noop = () => {};
 
 const passwordFixture = (error: string | null = null): AccountPasswordModel => ({
@@ -311,7 +402,7 @@ function twoFactorFixture(overrides: Partial<AccountTwoFactorModel> = {}): Accou
             canSubmit: false,
             submitting: false,
             secret: SECRET,
-            qrCode: `otpauth://totp/Pterodactyl:alex%40example.test?secret=${SECRET}&issuer=Pterodactyl`,
+            qrCode: `otpauth://totp/Astrelyse:alex%40example.test?secret=${SECRET}&issuer=Astrelyse`,
             error: null,
             retry: noop,
         },
@@ -326,6 +417,18 @@ function twoFactorFixture(overrides: Partial<AccountTwoFactorModel> = {}): Accou
         ...overrides,
     };
 }
+
+const passkeysFixture = (overrides: Partial<AccountPasskeysModel> = {}): AccountPasskeysModel => ({
+    passkeys: [],
+    loading: false,
+    adding: false,
+    removing: false,
+    error: null,
+    add: () => Promise.resolve(true),
+    remove: () => Promise.resolve(true),
+    suggestName: () => 'Mac',
+    ...overrides,
+});
 
 implementViews({
     'page.account.overview': {
@@ -353,6 +456,26 @@ implementViews({
             default: () => avatarFixture(null),
             uploaded: () => avatarFixture(picture),
             picked: () => avatarFixture(null, new File(['avatar'], 'avatar.png', { type: 'image/png' })),
+        },
+    },
+    'account.passkeys': {
+        use: useAccountPasskeysModel,
+        fixtures: {
+            empty: () => passkeysFixture(),
+            loading: () => passkeysFixture({ loading: true }),
+            list: () =>
+                passkeysFixture({
+                    passkeys: [
+                        {
+                            id: 1,
+                            name: 'MacBook',
+                            createdAt: '2026-11-01T10:00:00+00:00',
+                            lastUsedAt: '2026-11-17T08:30:00+00:00',
+                        },
+                        { id: 2, name: 'YubiKey', createdAt: '2026-11-10T10:00:00+00:00', lastUsedAt: null },
+                    ],
+                }),
+            failed: () => passkeysFixture({ error: 'The passkey prompt was cancelled or timed out. Try again.' }),
         },
     },
     'account.twoFactor': {

@@ -22,6 +22,7 @@ const legacySlotNames = [
 
 const anchorFiles = [
     '../../resources/scripts/themes/classic/views/auth/LoginPage.tsx',
+    '../../resources/scripts/components/auth/AuthShell.tsx',
     '../../resources/scripts/themes/classic/views/server/users/SubuserForm.tsx',
     '../../resources/scripts/views/pages.ts',
     '../../resources/scripts/router/routeTree.ts',

@@ -5,6 +5,8 @@ export interface UserData {
     language: string;
     rootAdmin: boolean;
     avatar?: string | null;
+    /** admin:* abilities held through root or a role; for hiding UI only, the API enforces them. */
+    adminPermissions?: string[];
     useTotp: boolean;
     createdAt: Date;
     updatedAt: Date;

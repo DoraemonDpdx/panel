@@ -9,6 +9,7 @@ use Pterodactyl\Http\Controllers\Api\Client\AccountController;
 use Pterodactyl\Http\Controllers\Api\Client\ActivityLogController;
 use Pterodactyl\Http\Controllers\Api\Client\ActivityLogFilterController;
 use Pterodactyl\Http\Controllers\Api\Client\ApiKeyController;
+use Pterodactyl\Http\Controllers\Api\Client\DashboardPreferencesController;
 use Pterodactyl\Http\Controllers\Api\Client\ClientController;
 use Pterodactyl\Http\Controllers\Api\Client\ExtensionProgressController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\BackupController;
@@ -18,16 +19,22 @@ use Pterodactyl\Http\Controllers\Api\Client\Servers\FileController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\FileUploadController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\LogController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\NetworkAllocationController;
+use Pterodactyl\Http\Controllers\Api\Client\Servers\ContentController;
+use Pterodactyl\Http\Controllers\Api\Client\Servers\ModsController;
+use Pterodactyl\Http\Controllers\Api\Client\Servers\PortsController;
+use Pterodactyl\Http\Controllers\Api\Client\Servers\SavedCommandController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\PowerController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\ResourceUtilizationController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\ScheduleController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\ScheduleTaskController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\ServerController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\SettingsController;
+use Pterodactyl\Http\Controllers\Api\Client\Servers\SoftwareController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\StartupController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\SubuserController;
 use Pterodactyl\Http\Controllers\Api\Client\Servers\WebsocketController;
 use Pterodactyl\Http\Controllers\Api\Client\SSHKeyController;
+use Pterodactyl\Http\Controllers\Api\Client\PasskeyController;
 use Pterodactyl\Http\Controllers\Api\Client\TwoFactorController;
 use Pterodactyl\Http\Middleware\Activity\AccountSubject;
 use Pterodactyl\Http\Middleware\Activity\ServerSubject;
@@ -51,8 +58,16 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function ():
     Route::prefix('/')->withoutMiddleware(RequireTwoFactorAuthentication::class)->group(function (): void {
         Route::get('/', [AccountController::class, 'index'])->name('api:client.account');
         Route::get('/two-factor', [TwoFactorController::class, 'index']);
+        Route::post('/two-factor/password', [TwoFactorController::class, 'verifyPassword']);
         Route::post('/two-factor', [TwoFactorController::class, 'store']);
         Route::post('/two-factor/disable', [TwoFactorController::class, 'delete']);
+
+        // Passkeys are an extra sign-in step. Staff must be able to manage them while still
+        // being forced to finish enabling two-factor, so they sit beside the 2FA routes.
+        Route::get('/passkeys', [PasskeyController::class, 'index']);
+        Route::post('/passkeys/options', [PasskeyController::class, 'options']);
+        Route::post('/passkeys', [PasskeyController::class, 'store']);
+        Route::post('/passkeys/{id}/remove', [PasskeyController::class, 'delete'])->whereNumber('id');
     });
 
     Route::put('/email', [AccountController::class, 'updateEmail'])
@@ -61,6 +76,9 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function ():
     Route::put('/password', [AccountController::class, 'updatePassword'])->name('api:client.account.update-password');
     Route::post('/avatar', [AccountController::class, 'updateAvatar'])->name('api:client.account.update-avatar');
     Route::delete('/avatar', [AccountController::class, 'deleteAvatar'])->name('api:client.account.delete-avatar');
+
+    Route::get('/dashboard-preferences', [DashboardPreferencesController::class, 'index'])->name('api:client.account.dashboard-preferences');
+    Route::put('/dashboard-preferences', [DashboardPreferencesController::class, 'update']);
 
     Route::get('/activity', ActivityLogController::class)->name('api:client.account.activity');
     Route::get('/activity/filters', ActivityLogFilterController::class)->name('api:client.account.activity.filters');
@@ -130,6 +148,14 @@ Route::group([
         Route::get('/upload', FileUploadController::class);
     });
 
+    Route::group(['prefix' => '/console/commands'], function (): void {
+        Route::get('/', [SavedCommandController::class, 'index']);
+        Route::post('/', [SavedCommandController::class, 'store']);
+        Route::put('/order', [SavedCommandController::class, 'reorder']);
+        Route::put('/{savedCommand}', [SavedCommandController::class, 'update'])->whereNumber('savedCommand');
+        Route::delete('/{savedCommand}', [SavedCommandController::class, 'delete'])->whereNumber('savedCommand');
+    });
+
     Route::group(['prefix' => '/schedules'], function (): void {
         Route::get('/', [ScheduleController::class, 'index']);
         Route::middleware([ResourceLimit::Schedule->middleware()])
@@ -182,5 +208,52 @@ Route::group([
         Route::post('/rename', [SettingsController::class, 'rename']);
         Route::post('/reinstall', [SettingsController::class, 'reinstall']);
         Route::put('/docker-image', [SettingsController::class, 'dockerImage']);
+
+        Route::get('/ports', [PortsController::class, 'index']);
+        Route::put('/ports', [PortsController::class, 'update']);
+        Route::post('/ports/preview', [PortsController::class, 'preview']);
+        Route::post('/ports/regenerate', [PortsController::class, 'regenerate']);
+        Route::post('/ports/reassign', [PortsController::class, 'reassign']);
+    });
+
+    Route::group(['prefix' => '/software'], function (): void {
+        Route::get('/', [SoftwareController::class, 'index']);
+        Route::get('/catalog', [SoftwareController::class, 'catalog']);
+        Route::post('/install', [SoftwareController::class, 'install']);
+        Route::post('/reinstall', [SoftwareController::class, 'reinstall']);
+        Route::post('/clear', [SoftwareController::class, 'clear']);
+        Route::post('/convert', [SoftwareController::class, 'convert']);
+        Route::get('/operations/{operation}', [SoftwareController::class, 'operation'])->whereNumber('operation');
+    });
+
+    Route::group(['prefix' => '/content'], function (): void {
+        Route::get('/modpacks/search', [ContentController::class, 'searchModpacks']);
+        Route::get('/modpacks/{provider}/{projectId}/versions', [ContentController::class, 'modpackVersions'])->whereIn('provider', ['modrinth', 'curseforge']);
+        Route::post('/modpacks/preview', [ContentController::class, 'previewModpack']);
+        Route::post('/modpacks/install', [ContentController::class, 'installModpack']);
+        Route::post('/modpacks/import-local', [ContentController::class, 'importModpack']);
+        Route::get('/worlds/search', [ContentController::class, 'searchWorlds']);
+        Route::get('/worlds/curseforge/{projectId}/versions', [ContentController::class, 'worldVersions']);
+        Route::post('/worlds/install', [ContentController::class, 'installWorld']);
+        Route::post('/worlds/import-local', [ContentController::class, 'importWorld']);
+        Route::post('/resolve', [ContentController::class, 'resolve']);
+        Route::post('/import/prism/preview', [ContentController::class, 'previewPrism']);
+        Route::post('/import/prism/install', [ContentController::class, 'installPrism']);
+    });
+
+    Route::group(['prefix' => '/mods'], function (): void {
+        Route::get('/platform', [ModsController::class, 'platform']);
+        Route::get('/search', [ModsController::class, 'search']);
+        Route::get('/categories', [ModsController::class, 'categories']);
+        Route::get('/projects/{projectId}', [ModsController::class, 'project']);
+        Route::get('/projects/{projectId}/versions', [ModsController::class, 'versions']);
+        Route::get('/installed', [ModsController::class, 'installed']);
+        Route::middleware([ResourceLimit::FilePull->middleware()])
+            ->post('/install', [ModsController::class, 'install']);
+        Route::post('/installed/toggle', [ModsController::class, 'toggle']);
+        Route::post('/installed/delete', [ModsController::class, 'delete']);
+        Route::middleware([ResourceLimit::FilePull->middleware()])
+            ->post('/installed/{install}/version', [ModsController::class, 'changeVersion'])->whereNumber('install');
+        Route::delete('/installed/{install}', [ModsController::class, 'remove'])->whereNumber('install');
     });
 });

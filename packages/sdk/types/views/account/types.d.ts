@@ -53,6 +53,27 @@ export interface AccountTwoFactorModel {
     readonly recoveryTokens: readonly string[];
     readonly dismissRecoveryTokens: () => void;
 }
+export interface PasskeyItem {
+    readonly id: number;
+    readonly name: string;
+    readonly createdAt: string;
+    readonly lastUsedAt: string | null;
+}
+/**
+ * Passkeys: an extra sign-in step after the password and authenticator code. `add` shows the device
+ * prompt and settles once it does; a failure is shown in `error`. `remove` asks for the account password.
+ */
+export interface AccountPasskeysModel {
+    readonly passkeys: readonly PasskeyItem[];
+    readonly loading: boolean;
+    readonly adding: boolean;
+    readonly removing: boolean;
+    readonly error: string | null;
+    readonly add: (name: string) => Promise<boolean>;
+    readonly remove: (id: number, password: string) => Promise<boolean>;
+    /** A name to start from, based on the device in hand. */
+    readonly suggestName: () => string;
+}
 export interface ApiKeyItem {
     readonly identifier: string;
     readonly description: string;
@@ -94,6 +115,7 @@ declare module '../registry' {
         'account.email': AccountEmailModel;
         'account.avatar': AccountAvatarModel;
         'account.twoFactor': AccountTwoFactorModel;
+        'account.passkeys': AccountPasskeysModel;
         'account.apiKeys.list': ApiKeyListModel;
         'account.apiKeys.create': ApiKeyCreateModel;
         'account.sshKeys.list': SshKeyListModel;

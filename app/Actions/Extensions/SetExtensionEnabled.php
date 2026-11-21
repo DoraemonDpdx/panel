@@ -66,6 +66,7 @@ final readonly class SetExtensionEnabled implements SetsExtensionEnabled
     private function checkStateChange(ExtensionManifest $manifest, bool $enabled): void
     {
         if (! $enabled) {
+            $this->themes->assertNotBundled($manifest->id);
             $this->themes->assertNotActive($manifest->id);
             $this->compatibility->assertCanDisable($manifest->id, $this->extensions->enabled());
 

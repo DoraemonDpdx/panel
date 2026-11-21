@@ -28,6 +28,7 @@ class SettingsServiceProvider extends ServiceProvider
         'recaptcha:enabled',
         'recaptcha:secret_key',
         'recaptcha:website_key',
+        'curseforge:api_key',
         'pterodactyl:guzzle:timeout',
         'pterodactyl:guzzle:connect_timeout',
         'pterodactyl:console:count',
@@ -63,6 +64,7 @@ class SettingsServiceProvider extends ServiceProvider
      */
     protected static array $encrypted = [
         'mail:mailers:smtp:password',
+        'curseforge:api_key',
     ];
 
     /**

@@ -11,6 +11,7 @@ import {
     useUpdateAllocationNotes,
     type ServerAllocation,
 } from '@/api/server/network/queries';
+import { useServerPortsQuery } from '@/api/server/ports';
 import { useCurrentServer } from '@/api/server/queries';
 import { ip } from '@/lib/formatters';
 import { usePermissions } from '@/plugins/usePermissions';
@@ -25,6 +26,8 @@ export interface ServerAllocationItem {
     readonly address: string;
     readonly port: number;
     readonly notes: string | null;
+    /** The port roles bound to this allocation, such as `PORT`; empty when none. */
+    readonly roles: readonly string[];
     /** The allocation the server binds to; it cannot be removed. */
     readonly primary: boolean;
 }
@@ -59,13 +62,14 @@ declare module '../registry' {
 
 const noAllocations: ServerAllocation[] = [];
 
-const allocationItem = ({ attributes }: ServerAllocation): ServerAllocationItem => ({
+const allocationItem = ({ attributes }: ServerAllocation, roles: readonly string[]): ServerAllocationItem => ({
     id: attributes.id,
     ip: attributes.ip,
     alias: attributes.ip_alias,
     address: attributes.ip_alias || ip(attributes.ip),
     port: attributes.port,
     notes: attributes.notes,
+    roles,
     primary: attributes.is_default,
 });
 
@@ -86,11 +90,23 @@ function useServerAllocationsModel(): ServerAllocationsModel {
     const { mutateAsync: setPrimary } = useSetPrimaryAllocation();
     const { mutateAsync: setNotes } = useUpdateAllocationNotes();
     const { mutateAsync: deleteAllocation } = useDeleteServerAllocation();
+    const ports = useServerPortsQuery(uuid).data;
     const listed = query.data?.data ?? noAllocations;
     const loading = query.data === undefined;
 
     return useMemo(() => {
-        const allocations = listed.map(allocationItem);
+        const rolesByAllocation = new Map<number, string[]>();
+
+        for (const role of ports?.roles ?? []) {
+            if (role.allocation) {
+                rolesByAllocation.set(role.allocation.id, [
+                    ...(rolesByAllocation.get(role.allocation.id) ?? []),
+                    role.role,
+                ]);
+            }
+        }
+
+        const allocations = listed.map((item) => allocationItem(item, rolesByAllocation.get(item.attributes.id) ?? []));
         const canManage = create && limit > 0;
 
         return {
@@ -126,6 +142,7 @@ function useServerAllocationsModel(): ServerAllocationsModel {
         setPrimary,
         setNotes,
         deleteAllocation,
+        ports,
         uuid,
     ]);
 }
@@ -139,14 +156,15 @@ const allocation = (id: number, port: number, options: Partial<ServerAllocationI
     address: '203.0.113.10',
     port,
     notes: null,
+    roles: [],
     primary: false,
     ...options,
 });
 
 const allocationsFixture = (options: Partial<ServerAllocationsModel> = {}): ServerAllocationsModel => ({
     allocations: [
-        allocation(1, 25565, { primary: true, notes: 'Game port' }),
-        allocation(2, 25575, { notes: 'RCON' }),
+        allocation(1, 25565, { primary: true, notes: 'Game port', roles: ['PORT'] }),
+        allocation(2, 25575, { notes: 'RCON', roles: ['RCON_PORT'] }),
         allocation(3, 8123, { alias: 'play.example.com', address: 'play.example.com' }),
     ],
     loading: false,

@@ -52,6 +52,8 @@ export interface AdvancedSettingsValues {
     recaptchaEnabled: boolean;
     recaptchaSecretKey: string;
     recaptchaWebsiteKey: string;
+    // Blank keeps the saved key; "!e" removes it.
+    curseforgeApiKey: string;
     guzzleTimeout: number;
     guzzleConnectTimeout: number;
     allocationsEnabled: boolean;
@@ -99,6 +101,7 @@ export const updateAdminAdvancedSettingsInput = (
         'recaptcha:enabled': values.recaptchaEnabled ? 'true' : 'false',
         'recaptcha:secret_key': values.recaptchaSecretKey === '' ? null : values.recaptchaSecretKey,
         'recaptcha:website_key': values.recaptchaWebsiteKey,
+        'curseforge:api_key': values.curseforgeApiKey === '' ? null : values.curseforgeApiKey,
         'pterodactyl:guzzle:timeout': values.guzzleTimeout,
         'pterodactyl:guzzle:connect_timeout': values.guzzleConnectTimeout,
         'pterodactyl:client_features:allocations:enabled': values.allocationsEnabled ? 'true' : 'false',
@@ -134,10 +137,14 @@ export const useUpdateAdminGeneralSettings = () => {
                 locale: body.default_locale,
                 userAvatarsEnabled: body.misc?.user_avatars_enabled === 'true',
             }));
-            await queryClient.invalidateQueries({ queryKey: adminGetSettingsQueryKey() });
+            await queryClient.invalidateQueries({
+                queryKey: adminGetSettingsQueryKey(),
+            });
             const notification = adminSettingsUpdateToast('General');
 
-            toast.success(notification.title, { description: notification.description });
+            toast.success(notification.title, {
+                description: notification.description,
+            });
         },
         onError: (error) => notifyHttpError(error, 'Unable to update general settings'),
     });
@@ -145,10 +152,20 @@ export const useUpdateAdminGeneralSettings = () => {
 
 const setAdminLogo = async (queryClient: QueryClient, logo: string | null) => {
     queryClient.setQueryData<AdminSettings>(adminGetSettingsQueryKey(), (settings) =>
-        settings ? { ...settings, general: { ...settings.general, 'app:logo': logo } } : settings
+        settings
+            ? {
+                  ...settings,
+                  general: { ...settings.general, 'app:logo': logo },
+              }
+            : settings
     );
-    setSiteSettingsQueryData(queryClient, (settings) => ({ ...settings, logo }));
-    await queryClient.invalidateQueries({ queryKey: adminGetSettingsQueryKey() });
+    setSiteSettingsQueryData(queryClient, (settings) => ({
+        ...settings,
+        logo,
+    }));
+    await queryClient.invalidateQueries({
+        queryKey: adminGetSettingsQueryKey(),
+    });
 };
 
 export const useUploadAdminLogo = () => {
@@ -183,11 +200,15 @@ export const useUpdateAdminMailSettings = ({ successNotification = true }: Updat
     return useMutation({
         ...adminUpdateMailSettingsMutation(),
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: adminGetSettingsQueryKey() });
+            await queryClient.invalidateQueries({
+                queryKey: adminGetSettingsQueryKey(),
+            });
             if (successNotification) {
                 const notification = adminSettingsUpdateToast('Mail');
 
-                toast.success(notification.title, { description: notification.description });
+                toast.success(notification.title, {
+                    description: notification.description,
+                });
             }
         },
         onError: (error) => notifyHttpError(error, 'Unable to update mail settings'),
@@ -217,10 +238,14 @@ export const useUpdateAdminAdvancedSettings = () => {
                     siteKey: body['recaptcha:website_key'],
                 },
             }));
-            await queryClient.invalidateQueries({ queryKey: adminGetSettingsQueryKey() });
+            await queryClient.invalidateQueries({
+                queryKey: adminGetSettingsQueryKey(),
+            });
             const notification = adminSettingsUpdateToast('Advanced');
 
-            toast.success(notification.title, { description: notification.description });
+            toast.success(notification.title, {
+                description: notification.description,
+            });
         },
         onError: (error) => notifyHttpError(error, 'Unable to update advanced settings'),
     });

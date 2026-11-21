@@ -24,6 +24,9 @@ class ThemeRepository
     /** Classic's light tokens are unaudited, so it only offers its dark scheme. */
     public const array CLASSIC_SCHEMES = ['dark'];
 
+    /** The bundled theme: it cannot be disabled or removed, and safe mode still renders it. */
+    public const string BUNDLED = 'astrelyse';
+
     /** The `settings` row naming the active theme; without it classic is active. */
     public const string SETTING = 'pterodactyl:theme';
 
@@ -144,6 +147,12 @@ class ThemeRepository
     public function assertNotActive(string $id): void
     {
         throw_if($id === $this->active(), InvalidExtensionException::class, sprintf('Theme "%s" is active; activate another theme or reset to classic first.', $id));
+    }
+
+    /** @throws InvalidExtensionException for the bundled theme */
+    public function assertNotBundled(string $id): void
+    {
+        throw_if($id === self::BUNDLED, InvalidExtensionException::class, sprintf('"%s" is built in and cannot be disabled or removed.', $id));
     }
 
     /** Why the theme cannot be activated, or null when it can. */

@@ -11,13 +11,36 @@ import type { FormModel } from "../forms.js";
 interface AuthFormModel<F extends string> extends FormModel<F> {
     readonly Captcha: ComponentType | null;
 }
+/** "Continue with Google": the panel renders Google's button and hands back the signed ID token. */
+export interface GoogleSignInModel {
+    readonly clientId: string;
+    readonly busy: boolean;
+    readonly onCredential: (credential: string) => void;
+}
+/** "Continue with Discord": a full-page redirect through Discord's OAuth2 screen. */
+export interface DiscordSignInModel {
+    readonly href: string;
+}
+/** The passkey step of a sign-in: `run` shows the device prompt and settles once it does. */
+export interface PasskeyStepModel {
+    readonly run: () => void;
+    readonly busy: boolean;
+    readonly error: string | null;
+}
 export interface LoginFormModel extends AuthFormModel<'username' | 'password'> {
+    /** Set when the panel has Google sign-in configured. */
+    readonly google: GoogleSignInModel | null;
+    /** Set when the panel has Discord sign-in configured. */
+    readonly discord: DiscordSignInModel | null;
     readonly forgotPassword: CorePanelDestination;
     /** What the `auth.login.form.after` slot receives. */
     readonly route: RouteSlotData;
 }
 /** The second step of a two-factor sign-in, by authenticator code or by recovery code. */
 export interface CheckpointFormModel extends FormModel<'code'> {
+    /** Which factor the sign-in is waiting on: the authenticator code form, or the passkey prompt. */
+    readonly step: 'totp' | 'passkey';
+    readonly passkey: PasskeyStepModel;
     /** The code field takes a recovery code instead of an authenticator code. */
     readonly recovery: boolean;
     readonly toggleRecovery: () => void;

@@ -1,5 +1,6 @@
 import type { AdminEgg, EggConfigurationBody, EggVariableBody } from '@/api/admin/eggs/queries';
 import { type ExtensionFormValues, initialExtensionValues } from '@/extensions/forms';
+import type { WorkloadProfile } from '@/views/workload';
 
 export interface EggFormValues {
     name: string;
@@ -8,6 +9,7 @@ export interface EggFormValues {
     startup: string;
     featuresText: string;
     forceOutgoingIp: boolean;
+    workloadProfile: WorkloadProfile;
     configFrom: number;
     configStop: string;
     configStartup: string;
@@ -102,6 +104,7 @@ export const eggToFormValues = (egg: AdminEgg): EggFormValues => ({
     startup: egg.attributes.startup,
     featuresText: featuresToString(egg.attributes.features),
     forceOutgoingIp: egg.attributes.force_outgoing_ip ?? false,
+    workloadProfile: egg.attributes.workload_profile ?? 'generic',
     configFrom: egg.attributes.config.extends ?? 0,
     configStop: egg.attributes.config.stop ?? '',
     configStartup: prettyJson(egg.attributes.config.startup),
@@ -117,6 +120,7 @@ export const emptyEggFormValues = (): EggFormValues => ({
     startup: '',
     featuresText: '',
     forceOutgoingIp: false,
+    workloadProfile: 'generic',
     configFrom: 0,
     configStop: '',
     configStartup: '',
@@ -138,6 +142,7 @@ export const toApiValues = (
         startup: values.startup,
         features: stringToFeatures(values.featuresText),
         force_outgoing_ip: values.forceOutgoingIp,
+        workload_profile: values.workloadProfile,
         // Not edited here, but the API requires an array.
         file_denylist: [],
         config_from: usingParent ? Number(values.configFrom) : null,

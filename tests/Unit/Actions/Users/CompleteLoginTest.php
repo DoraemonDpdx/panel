@@ -117,5 +117,5 @@ test('a checkpoint result exposes only the confirmation token', function (): voi
 
     expect($result->complete)->toBeFalse()
         ->and($result->confirmationToken)->toBe($checkpoint->token)
-        ->and($result->toResponseData())->toBe(['complete' => false, 'confirmation_token' => $checkpoint->token]);
+        ->and($result->toResponseData())->toBe(['complete' => false, 'confirmation_token' => $checkpoint->token, 'step' => 'totp']);
 });

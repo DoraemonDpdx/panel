@@ -100,6 +100,22 @@ it('renders the classic server list from a fixture, with a link and power state 
     expect(screen.getByRole('switch')).toBeInTheDocument();
 });
 
+it('shows a type filter row of the workloads on the page, with a workload icon on each server', async () => {
+    await renderInApp(
+        <ViewFixtureProvider fixtures={{ 'dashboard.serverList': 'servers' }}>
+            <View name='dashboard.serverList' />
+        </ViewFixtureProvider>
+    );
+
+    const filter = await screen.findByRole('group', { name: 'Filter by type' });
+    const buttons = [...filter.querySelectorAll('button')].map((button) => button.textContent);
+
+    expect(buttons).toEqual(['All', 'Game', 'Bot']);
+    expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('link', { name: 'Survival' }).querySelector('[title="Game"] svg')).not.toBeNull();
+    expect(screen.getByRole('link', { name: 'Lobby' }).querySelector('[title="Bot"] svg')).not.toBeNull();
+});
+
 it('shows the empty state and the dashboard error from fixtures', async () => {
     await renderInApp(
         <ViewFixtureProvider fixtures={{ 'dashboard.serverList': 'empty', 'page.dashboard': 'error' }}>

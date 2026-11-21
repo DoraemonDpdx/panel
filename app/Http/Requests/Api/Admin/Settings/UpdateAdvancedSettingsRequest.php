@@ -25,6 +25,7 @@ class UpdateAdvancedSettingsRequest extends AdminApiRequest
             'recaptcha:enabled' => ['required', 'in:true,false'],
             'recaptcha:secret_key' => ['nullable', 'string', 'max:191'],
             'recaptcha:website_key' => ['required', 'string', 'max:191'],
+            'curseforge:api_key' => ['nullable', 'string', 'max:191'],
             'pterodactyl:guzzle:timeout' => ['required', 'integer', 'between:1,60'],
             'pterodactyl:guzzle:connect_timeout' => ['required', 'integer', 'between:1,60'],
             'pterodactyl:client_features:allocations:enabled' => ['required', 'in:true,false'],
@@ -51,6 +52,7 @@ class UpdateAdvancedSettingsRequest extends AdminApiRequest
             'recaptcha:enabled' => 'reCAPTCHA Enabled',
             'recaptcha:secret_key' => 'reCAPTCHA Secret Key',
             'recaptcha:website_key' => 'reCAPTCHA Website Key',
+            'curseforge:api_key' => 'CurseForge API Key',
             'pterodactyl:guzzle:timeout' => 'HTTP Request Timeout',
             'pterodactyl:guzzle:connect_timeout' => 'HTTP Connection Timeout',
             'pterodactyl:client_features:allocations:enabled' => 'Auto Create Allocations Enabled',
@@ -83,6 +85,12 @@ class UpdateAdvancedSettingsRequest extends AdminApiRequest
 
         if ($this->filled('recaptcha:secret_key')) {
             $values['recaptcha:secret_key'] = $this->string('recaptcha:secret_key')->toString();
+        }
+
+        // Like the SMTP password: a blank value keeps the stored key, and "!e" removes it.
+        if ($this->filled('curseforge:api_key')) {
+            $key = $this->string('curseforge:api_key')->toString();
+            $values['curseforge:api_key'] = $key === '!e' ? '' : $key;
         }
 
         return $values;

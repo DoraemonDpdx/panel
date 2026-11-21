@@ -10,9 +10,11 @@ interface SecretInputProps {
     id?: string;
     value: string | null | undefined;
     label: string;
+    /** Called each time the value is revealed, for an audit entry. */
+    onReveal?: () => void;
 }
 
-const SecretInput = ({ id, value, label }: SecretInputProps) => {
+const SecretInput = ({ id, value, label, onReveal }: SecretInputProps) => {
     const [visible, setVisible] = useState(false);
     const toggleLabel = `${visible ? 'Hide' : 'Show'} ${label.toLowerCase()}`;
     const copyLabel = `Copy ${label.toLowerCase()}`;
@@ -38,7 +40,13 @@ const SecretInput = ({ id, value, label }: SecretInputProps) => {
                             aria-label={toggleLabel}
                             aria-pressed={visible}
                             disabled={!value}
-                            onClick={() => setVisible((current) => !current)}
+                            onClick={() => {
+                                if (!visible) {
+                                    onReveal?.();
+                                }
+
+                                setVisible((current) => !current);
+                            }}
                         >
                             <Icon icon={visible ? EyeOff : Eye} className='h-3.5 w-3.5' />
                         </Button.Text>

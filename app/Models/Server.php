@@ -186,6 +186,22 @@ class Server extends Model implements Identifiable
     }
 
     /**
+     * @return HasMany<ServerPortBinding, $this>
+     */
+    public function portBindings(): HasMany
+    {
+        return $this->hasMany(ServerPortBinding::class, 'server_id');
+    }
+
+    /**
+     * @return HasOne<ServerEnvSetting, $this>
+     */
+    public function envSetting(): HasOne
+    {
+        return $this->hasOne(ServerEnvSetting::class, 'server_id');
+    }
+
+    /**
      * @return HasOne<Egg, $this>
      */
     public function egg(): HasOne
@@ -329,6 +345,22 @@ class Server extends Model implements Identifiable
     public function transfer(): HasOne
     {
         return $this->hasOne(ServerTransfer::class)->whereNull('successful')->orderByDesc('id');
+    }
+
+    /**
+     * @return HasMany<ServerModInstall, $this>
+     */
+    public function modInstalls(): HasMany
+    {
+        return $this->hasMany(ServerModInstall::class, 'server_id');
+    }
+
+    /**
+     * @return HasOne<ServerModpack, $this>
+     */
+    public function modpack(): HasOne
+    {
+        return $this->hasOne(ServerModpack::class, 'server_id');
     }
 
     /**

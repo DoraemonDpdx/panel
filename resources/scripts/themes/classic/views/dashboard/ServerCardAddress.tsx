@@ -1,5 +1,5 @@
-import { EthernetPort } from 'lucide-react';
-import { cn } from '@/sdk';
+import { Copy, EthernetPort } from 'lucide-react';
+import { cn, CopyOnClick } from '@/sdk';
 import type { ViewProps } from '@/sdk/theme';
 
 export default function ServerCardAddress({ model, className }: ViewProps<'dashboard.serverCard.address'>) {
@@ -8,6 +8,26 @@ export default function ServerCardAddress({ model, className }: ViewProps<'dashb
             <div className='flex justify-center'>
                 <EthernetPort size='1em' className='inline-block shrink-0 text-muted-foreground' />
                 <p className='text-sm text-muted-foreground ml-2'>{model.address}</p>
+                {model.address && (
+                    // The card sits in a link; a click here copies and must not navigate.
+                    <span
+                        onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }}
+                        className='ml-2'
+                    >
+                        <CopyOnClick text={model.address}>
+                            <button
+                                type='button'
+                                aria-label={`Copy address ${model.address}`}
+                                className='text-muted-foreground hover:text-foreground'
+                            >
+                                <Copy size='1em' aria-hidden />
+                            </button>
+                        </CopyOnClick>
+                    </span>
+                )}
             </div>
         </div>
     );

@@ -6,6 +6,7 @@ import type { CodemirrorEditorHandle } from '@/components/elements/LazyCodemirro
 import CodemirrorEditor from '@/components/elements/LazyCodemirrorEditor';
 import type { AdminEggListItem } from '@/api/admin/eggs/queries';
 import type { EggFormValues } from '@/components/admin/eggs/helpers';
+import { WORKLOAD_LABELS, WORKLOAD_PROFILES } from '@/views/workload';
 
 export type EggForm = AppForm<EggFormValues>;
 
@@ -95,6 +96,22 @@ const EggConfigurationFields = ({
                                 label='Description'
                                 rows={6}
                                 description='A description of this Egg.'
+                            />
+                        )}
+                    </form.AppField>
+                    <form.AppField name='workloadProfile'>
+                        {(field) => (
+                            <field.SelectField
+                                id='workloadProfile'
+                                label='Workload Profile'
+                                description={
+                                    'What this egg runs. Servers only show the tabs and widgets that fit their ' +
+                                    'profile; Other shows everything.'
+                                }
+                                options={WORKLOAD_PROFILES.map((profile) => ({
+                                    value: profile,
+                                    label: WORKLOAD_LABELS[profile],
+                                }))}
                             />
                         )}
                     </form.AppField>

@@ -39,18 +39,33 @@ class AssetComposer
         $view->with('extensionHead', $this->extensionHeadTags);
         $view->with('theme', $theme);
         $view->with('siteConfiguration', [
-            'name' => config('app.name', 'Pterodactyl'),
+            'name' => config('app.name', 'Astrelyse'),
             'logo' => ReplaceBrandLogo::url(),
+            'google' => [
+                'clientId' => config('services.google.client_id', ''),
+            ],
+            'discord' => [
+                'enabled' => (string) config('services.discord.client_id', '') !== '' && (string) config('services.discord.client_secret', '') !== '',
+            ],
             'locale' => config('app.locale', 'en'),
             'userAvatarsEnabled' => config('pterodactyl.client_features.avatars.enabled', false),
             'recaptcha' => [
                 'enabled' => config('recaptcha.enabled', false),
                 'siteKey' => config('recaptcha.website_key', ''),
             ],
-            // Safe mode loads no extension bundles at all.
-            'extensions' => $theme->safeMode ? [] : $this->extensionPayload(array_column($theme->chain, 'id')),
+            // Safe mode loads only the bundled theme's bundle, no other extensions.
+            'extensions' => $this->safeExtensions($theme->safeMode, $this->extensionPayload(array_column($theme->chain, 'id'))),
             'theme' => $theme->bootstrap(),
         ]);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $payload
+     * @return array<int, array<string, mixed>>
+     */
+    private function safeExtensions(bool $safeMode, array $payload): array
+    {
+        return $safeMode ? array_values(array_filter($payload, fn (array $entry): bool => ($entry['theme'] ?? false) === true)) : $payload;
     }
 
     /**

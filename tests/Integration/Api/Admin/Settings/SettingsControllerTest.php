@@ -93,6 +93,36 @@ test('non admin forbidden', function (string $method, string $routeName) {
     $this->assertAccessDeniedJson($response);
 })->with('settingsEndpointsDataProvider');
 /** Return a valid payload for updating the general Panel settings. */
+test('the curseforge api key is stored encrypted and never returned', function () {
+    $payload = array_merge(validAdvancedPayload(), ['curseforge:api_key' => 'cf-live-key-123']);
+    $this->putJson(route('api.admin.settings.advanced'), $payload)->assertStatus(Response::HTTP_NO_CONTENT);
+
+    $stored = Setting::fetch('settings::curseforge:api_key');
+    expect($stored)->not->toBe('cf-live-key-123')->and($this->app->make(Encrypter::class)->decrypt($stored))->toBe('cf-live-key-123');
+
+    // A saved key wins over the environment value once settings are loaded.
+    config()->set('curseforge.api_key', 'cf-live-key-123');
+    $response = $this->getJson(route('api.admin.settings'))->assertOk()->assertJsonPath('advanced.curseforge:api_key', '')->assertJsonPath('meta.curseforge_api_key_set', true);
+    $this->assertStringNotContainsString('cf-live-key-123', $response->getContent());
+});
+test('a blank curseforge api key keeps the stored key and !e removes it', function () {
+    $this->putJson(route('api.admin.settings.advanced'), array_merge(validAdvancedPayload(), ['curseforge:api_key' => 'cf-live-key-123']))->assertNoContent();
+    $before = Setting::fetch('settings::curseforge:api_key');
+
+    $this->putJson(route('api.admin.settings.advanced'), array_merge(validAdvancedPayload(), ['curseforge:api_key' => '']))->assertNoContent();
+    expect(Setting::fetch('settings::curseforge:api_key'))->toBe($before);
+
+    $this->putJson(route('api.admin.settings.advanced'), array_merge(validAdvancedPayload(), ['curseforge:api_key' => '!e']))->assertNoContent();
+    expect(Setting::fetch('settings::curseforge:api_key'))->toBe('');
+});
+test('a saved curseforge api key overrides the environment config on boot', function () {
+    config()->set('curseforge.api_key', 'from-env');
+    Setting::put('settings::curseforge:api_key', $this->app->make(Encrypter::class)->encrypt('from-settings'));
+
+    (new \Pterodactyl\Providers\SettingsServiceProvider($this->app))->boot(config(), $this->app->make(Encrypter::class), $this->app->make(\Psr\Log\LoggerInterface::class));
+
+    expect(config('curseforge.api_key'))->toBe('from-settings');
+});
 function validGeneralPayload(): array
 {
     return ['branding' => ['name' => 'Test Panel'], 'misc' => ['required_2fa' => 1, 'user_avatars_enabled' => 'true'], 'default_locale' => 'en'];

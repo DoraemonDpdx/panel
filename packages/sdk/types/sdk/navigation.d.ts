@@ -49,4 +49,4 @@ export interface PanelLinkProps extends Omit<ComponentProps<'a'>, 'href'> {
     includeSearch?: boolean;
 }
 export declare function PanelLink({ destination, exact, includeSearch, ...props }: PanelLinkProps): ReactElement;
-export declare function useOpenLoginCheckpoint(): (confirmationToken: string) => Promise<void>;
+export declare function useOpenLoginCheckpoint(): (confirmationToken: string, step?: 'totp' | 'passkey') => Promise<void>;

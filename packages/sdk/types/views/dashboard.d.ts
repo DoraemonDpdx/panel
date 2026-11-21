@@ -2,6 +2,8 @@
 import type { Server } from "../api/server/types.js";
 import { type PageStatusModel } from "./pageStatus.js";
 import { type ServerConflict, type ServerRunState, type ServerStatMetric } from "./server/state.js";
+import { type BulkResult, type BulkSignal, type DashboardGroup, type DashboardStatusFilter, type DashboardView, type ListGroup } from "./dashboardList.js";
+import { type WorkloadProfile } from "./workload.js";
 /** Why a server's card shows a notice instead of its usage: a conflict, or Wings cannot be reached. */
 export type ServerUnavailableReason = ServerConflict | 'connection-error' | 'unavailable';
 export type ServerCardState = {
@@ -31,14 +33,25 @@ export interface ServerCardModel {
     readonly uuid: string;
     readonly name: string;
     readonly description: string | null;
+    /** What the server's egg runs. */
+    readonly workload: WorkloadProfile;
     readonly address: string | null;
+    /** The node's name. */
+    readonly node: string;
+    /** The slugs of the egg's tags. */
+    readonly tags: readonly string[];
     readonly state: ServerCardState;
     readonly permissions: ServerCardPermissions;
+    /** The user pinned the server. */
+    readonly pinned: boolean;
+    /** Changes whenever a fresh usage reading arrives, so a sparkline can tell a new sample from a re-render. */
+    readonly sample: unknown;
     /** Send a power signal through the client API, with no console connection; the panel reports a failure. */
     readonly actions: {
         readonly start: () => void;
         readonly stop: () => void;
         readonly restart: () => void;
+        readonly togglePin: () => void;
     };
     /** A power signal is on its way. */
     readonly sending: boolean;
@@ -64,8 +77,32 @@ export interface ServerListTotals {
     /** Offline servers on the loaded page only; unavailable and loading servers are neither. */
     readonly offlineOnPage: number;
 }
+/** `all`, or one workload profile of the list. */
+export type WorkloadFilter = WorkloadProfile | 'all';
+/** The outcome of a bulk power action, per server. */
+export interface BulkState {
+    readonly signal: BulkSignal | null;
+    readonly running: boolean;
+    readonly results: readonly BulkResult[];
+}
 export interface ServerListModel {
+    /** The servers of the page that pass the type and status filters, pinned first. */
     readonly servers: readonly ServerListItem[];
+    /** `servers` split by `group`; a single unlabelled group when not grouping. */
+    readonly groups: readonly ListGroup<ServerListItem>[];
+    readonly view: DashboardView;
+    readonly group: DashboardGroup;
+    readonly statusFilter: DashboardStatusFilter;
+    /** Servers of the page per status chip. */
+    readonly statusCounts: Readonly<Record<DashboardStatusFilter, number>>;
+    /** UUIDs of the selected servers. */
+    readonly selection: ReadonlySet<string>;
+    readonly bulk: BulkState;
+    /** The account owns none of the servers on the page, so it only has subuser access. */
+    readonly subuserOnly: boolean;
+    /** The profiles present on the page, for the type filter row; a single one needs no filter. */
+    readonly workloads: readonly WorkloadProfile[];
+    readonly workloadFilter: WorkloadFilter;
     readonly totals: ServerListTotals;
     /** The page has not loaded yet. */
     readonly loading: boolean;
@@ -76,6 +113,16 @@ export interface ServerListModel {
     readonly actions: {
         readonly setPage: (page: number) => void;
         readonly setScope: (scope: DashboardScope) => void;
+        readonly setWorkloadFilter: (filter: WorkloadFilter) => void;
+        readonly setView: (view: DashboardView) => void;
+        readonly setGroup: (group: DashboardGroup) => void;
+        readonly setStatusFilter: (filter: DashboardStatusFilter) => void;
+        readonly toggleSelected: (uuid: string) => void;
+        readonly selectAll: () => void;
+        readonly clearSelection: () => void;
+        /** Sends `signal` to every selected server that may take it, and records each server's result. */
+        readonly runBulk: (signal: BulkSignal) => Promise<void>;
+        readonly dismissBulk: () => void;
     };
 }
 declare module './registry' {

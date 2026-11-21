@@ -1,9 +1,11 @@
+import type { ChangeEvent } from 'react';
 import {
     Alert,
     Button,
     CopyOnClick,
     Dialog,
     Input,
+    OtpInput,
     QrCode,
     Spinner,
     Tooltip,
@@ -52,7 +54,18 @@ function SetupForm({ setup, onClose }: { setup: TwoFactorSetupModel; onClose: ()
                 Scan the QR code above using the two-step authentication app of your choice. Then, enter the 6-digit
                 code generated into the field below.
             </p>
-            <Input {...code.fieldProps} aria-labelledby='totp-code-description' className='mt-3' placeholder='000000' />
+            <div className='mt-3'>
+                <OtpInput
+                    name={code.fieldProps.name}
+                    value={code.fieldProps.value}
+                    onChange={(next) =>
+                        code.fieldProps.onChange({ currentTarget: { value: next } } as ChangeEvent<HTMLInputElement>)
+                    }
+                    status={code.error ? 'error' : 'idle'}
+                    ariaLabel='Authenticator code'
+                    disabled={setup.submitting}
+                />
+            </div>
             <label htmlFor='totp-password' className='block mt-3'>
                 Account Password
             </label>

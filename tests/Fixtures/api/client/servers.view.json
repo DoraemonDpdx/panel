@@ -39,6 +39,7 @@
                     "minecraft",
                     "premium"
                 ],
+                "workload_profile": "generic",
                 "feature_limits": {
                     "databases": 5,
                     "allocations": 5,
@@ -156,6 +157,7 @@
                     "minecraft",
                     "premium"
                 ],
+                "workload_profile": "generic",
                 "feature_limits": {
                     "databases": 5,
                     "allocations": 5,
@@ -280,6 +282,7 @@
                     "minecraft",
                     "premium"
                 ],
+                "workload_profile": "generic",
                 "feature_limits": {
                     "databases": 5,
                     "allocations": 5,
@@ -453,6 +456,7 @@
                     "minecraft",
                     "premium"
                 ],
+                "workload_profile": "generic",
                 "feature_limits": {
                     "databases": 5,
                     "allocations": 5,

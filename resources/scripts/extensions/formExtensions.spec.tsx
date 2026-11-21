@@ -53,6 +53,8 @@ const user: AdminUserFormSlotData['resource'] = {
         last_name: 'User',
         language: 'en',
         root_admin: false,
+        role_id: null,
+        is_owner: false,
         '2fa': false,
         image: '',
         avatar: null,

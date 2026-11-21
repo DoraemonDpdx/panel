@@ -55,6 +55,21 @@
             "export": "default"
         }
     },
+    "account.passkeys": {
+        "kind": "block",
+        "context": "account",
+        "slots": [],
+        "fixtures": [
+            "empty",
+            "loading",
+            "list",
+            "failed"
+        ],
+        "classic": {
+            "file": "views/account/PasskeysCard.tsx",
+            "export": "default"
+        }
+    },
     "account.password": {
         "kind": "block",
         "context": "account",
@@ -387,7 +402,8 @@
         ],
         "fixtures": [
             "code",
-            "recovery"
+            "recovery",
+            "passkey"
         ],
         "classic": {
             "file": "views/auth/CheckpointPage.tsx",
@@ -407,7 +423,9 @@
         "fixtures": [
             "default",
             "invalid",
-            "submitting"
+            "submitting",
+            "discord",
+            "google"
         ],
         "classic": {
             "file": "views/auth/LoginPage.tsx",
@@ -564,6 +582,20 @@
         ],
         "classic": {
             "file": "views/server/files/EditorPage.tsx",
+            "export": "default"
+        }
+    },
+    "page.server.mods": {
+        "kind": "page",
+        "context": "server",
+        "slots": [],
+        "fixtures": [
+            "default",
+            "loading",
+            "error"
+        ],
+        "classic": {
+            "file": "views/server/mods/ModsPage.tsx",
             "export": "default"
         }
     },
@@ -985,6 +1017,38 @@
             "export": "default"
         }
     },
+    "server.mods": {
+        "kind": "block",
+        "context": "server",
+        "slots": [],
+        "fixtures": [
+            "installed",
+            "browse",
+            "readOnly",
+            "unsupported",
+            "loading"
+        ],
+        "classic": {
+            "file": "views/server/mods/Mods.tsx",
+            "export": "default"
+        }
+    },
+    "server.ports": {
+        "kind": "block",
+        "context": "server",
+        "slots": [],
+        "fixtures": [
+            "default",
+            "restartRequired",
+            "readOnly",
+            "loading",
+            "full"
+        ],
+        "classic": {
+            "file": "views/server/settings/ServerPorts.tsx",
+            "export": "default"
+        }
+    },
     "server.power": {
         "kind": "block",
         "context": "server",
@@ -1190,7 +1254,10 @@
             "connecting",
             "failed",
             "scrolledUp",
-            "readOnly"
+            "readOnly",
+            "structured",
+            "filtered",
+            "noSavedCommands"
         ],
         "classic": {
             "file": "views/server/console/Terminal.tsx",

@@ -8,6 +8,7 @@
     "name": "Custom Source Engine Game",
     "author": "support@pterodactyl.io",
     "description": "This option allows modifying the startup arguments and other details to run a custom SRCDS based game on the panel.",
+    "workload_profile": "game",
     "features": [
         "steam_disk_space"
     ],

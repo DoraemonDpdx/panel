@@ -1,29 +1,33 @@
-import { Dialog } from '@/sdk';
+import { HardDrive } from 'lucide-react';
 import type { ViewProps } from '@/sdk/theme';
-import { Close } from './parts';
+import PromptCard from './PromptCard';
 
-export default function SteamDiskSpacePrompt({ model }: ViewProps<'server.feature.steamDiskSpace'>) {
+export default function SteamDiskSpacePrompt({ model, className }: ViewProps<'server.feature.steamDiskSpace'>) {
     return (
-        <Dialog open={model.open} title='Out of available disk space' onClose={model.close}>
+        <PromptCard
+            className={className}
+            open={model.open}
+            title='Out of available disk space'
+            icon={HardDrive}
+            onClose={model.close}
+        >
             {model.admin ? (
                 <>
-                    <p className='mt-4'>
-                        This server has run out of available disk space and cannot complete the install or update
-                        process.
+                    <p>
+                        The machine hosting this server has run out of disk space, so the install or update cannot
+                        finish.
                     </p>
-                    <p className='mt-4'>
-                        Ensure the machine has enough disk space by typing{' '}
-                        <code className='font-mono bg-muted rounded-sm py-1 px-2'>df -h</code> on the machine hosting
-                        this server. Delete files or increase the available disk space to resolve the issue.
+                    <p>
+                        Run <code className='font-mono bg-muted rounded-sm py-1 px-2'>df -h</code> on that machine, then
+                        free space or add more.
                     </p>
                 </>
             ) : (
-                <p className='mt-4'>
-                    This server has run out of available disk space and cannot complete the install or update process.
-                    Please get in touch with the administrator(s) and inform them of disk space issues.
+                <p>
+                    The install or update cannot finish because the machine is out of disk space. Please tell an
+                    administrator.
                 </p>
             )}
-            <Close onClick={model.close} />
-        </Dialog>
+        </PromptCard>
     );
 }

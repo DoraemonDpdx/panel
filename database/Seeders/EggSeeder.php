@@ -64,7 +64,8 @@ class EggSeeder extends Seeder
         $this->command->alert('Updating Eggs from: '.$directory);
         /** @var DirectoryIterator $file */
         foreach ($files as $file) {
-            if (! $file->isFile() || ! $file->isReadable()) {
+            // Eggs may ship with support files (the Astrelyse install script lives beside its egg).
+            if (! $file->isFile() || ! $file->isReadable() || $file->getExtension() !== 'json') {
                 continue;
             }
 

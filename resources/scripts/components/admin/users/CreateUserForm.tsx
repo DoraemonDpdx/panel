@@ -18,6 +18,7 @@ const initialValues = (language: string): UserValues => ({
     nameLast: '',
     password: '',
     rootAdmin: false,
+    roleId: '',
     language,
     extensions: initialExtensionValues(),
 });

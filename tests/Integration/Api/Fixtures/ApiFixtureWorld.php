@@ -432,7 +432,7 @@ final class ApiFixtureWorld
     private static function users(array $stamps): void
     {
         $users = [
-            [self::ADMIN, self::ADMIN_UUID, null, 'admin', 'admin@example.test', 'Ada', 'Admin', true, false],
+            [self::ADMIN, self::ADMIN_UUID, null, 'admin', 'admin@example.test', 'Ada', 'Admin', true, true],
             [self::OWNER, self::OWNER_UUID, 'ext-owner', 'owner', 'owner@example.test', 'Olive', 'Owner', false, false],
             [self::HELPER, self::HELPER_UUID, null, 'helper', 'helper@example.test', 'Hal', 'Helper', false, false],
             [self::LIMITED, self::LIMITED_UUID, null, 'limited', 'limited@example.test', 'Lim', 'Ited', false, false],

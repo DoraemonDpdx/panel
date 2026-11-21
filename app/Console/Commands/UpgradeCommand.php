@@ -16,7 +16,7 @@ use InvalidArgumentException;
 use Pterodactyl\Services\FilesystemChanges;
 use Symfony\Component\Console\Helper\ProgressBar;
 
-#[Description('Downloads a new archive for Pterodactyl from GitHub and then executes the normal upgrade commands.')]
+#[Description('Downloads a new archive for Astrelyse from GitHub and then executes the normal upgrade commands.')]
 #[Signature('p:upgrade
         {--user= : The user that PHP runs under. All files will be owned by this user.}
         {--group= : The group that PHP runs under. All files will be owned by this group.}

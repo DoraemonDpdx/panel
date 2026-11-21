@@ -27,5 +27,15 @@ class AuthServiceProvider extends ServiceProvider
 
         // Root administrators implicitly hold every ability, including all admin API permissions.
         Gate::before(fn (User $user): ?true => $user->root_admin ? true : null);
+
+        // Role holders are granted only the admin:* abilities their role lists. Anything
+        // else falls through to the normal gate/policy resolution (and is denied).
+        Gate::before(function (User $user, string $ability): ?true {
+            if ($user->root_admin || $user->role_id === null || ! str_starts_with($ability, 'admin:')) {
+                return null;
+            }
+
+            return $user->hasRolePermission($ability) ? true : null;
+        });
     }
 }

@@ -51,3 +51,7 @@ result
 /packages/sdk/testing-runtime/
 /packages/sdk/core-classes.txt
 /packages/sdk/classic/
+
+# Local generated knowledge graph and Claude Code session locks
+/graphify-out/
+/.claude/scheduled_tasks.lock

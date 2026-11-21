@@ -8,6 +8,8 @@ export interface ServerAllocationItem {
     readonly address: string;
     readonly port: number;
     readonly notes: string | null;
+    /** The port roles bound to this allocation, such as `PORT`; empty when none. */
+    readonly roles: readonly string[];
     /** The allocation the server binds to; it cannot be removed. */
     readonly primary: boolean;
 }

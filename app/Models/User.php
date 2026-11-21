@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -42,8 +43,9 @@ use Pterodactyl\Traits\Helpers\AvailableLanguages;
     'totp_authenticated_at',
     'gravatar',
     'root_admin',
+    'role_id',
 ])]
-#[Hidden(['password', 'remember_token', 'totp_secret', 'totp_authenticated_at'])]
+#[Hidden(['password', 'remember_token', 'totp_secret', 'totp_authenticated_at', 'google_id', 'discord_id'])]
 #[RouteKey('uuid')]
 class User extends Authenticatable implements Identifiable
 {
@@ -71,6 +73,8 @@ class User extends Authenticatable implements Identifiable
     protected $attributes = [
         'external_id' => null,
         'root_admin' => false,
+        'is_owner' => false,
+        'role_id' => null,
         'language' => 'en',
         'use_totp' => false,
         'totp_secret' => null,
@@ -84,6 +88,7 @@ class User extends Authenticatable implements Identifiable
     {
         return [
             'root_admin' => 'boolean',
+            'is_owner' => 'boolean',
             'use_totp' => 'boolean',
             'gravatar' => 'boolean',
             'password' => 'hashed',
@@ -106,6 +111,9 @@ class User extends Authenticatable implements Identifiable
      */
     public function toVueObject(): array
     {
+        // Resolve permissions first: it loads the role relation, and toArray() must see the same
+        // relations every call or the first and later payloads for one user differ.
+        $permissions = $this->adminPermissions();
         $attributes = $this->toArray();
         unset($attributes['id'], $attributes['external_id']);
 
@@ -113,7 +121,23 @@ class User extends Authenticatable implements Identifiable
             ...$attributes,
             'avatar' => $this->avatar_url,
             'identifier' => $this->identifier,
+            'admin_permissions' => $permissions,
         ];
+    }
+
+    /**
+     * The admin:* abilities this user holds: everything for root, the role's list for
+     * role holders, nothing for everyone else. Used by the UI to hide controls only.
+     *
+     * @return list<string>
+     */
+    public function adminPermissions(): array
+    {
+        if ($this->root_admin) {
+            return Role::grantablePermissions();
+        }
+
+        return array_values($this->role?->permissions ?? []);
     }
 
     /**
@@ -127,6 +151,33 @@ class User extends Authenticatable implements Identifiable
             ->log('sending password reset email');
 
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    /**
+     * The admin role granting this user a subset of administrator abilities.
+     *
+     * @return BelongsTo<Role, $this>
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Whether the user holds any administrative access: root, or a role.
+     */
+    public function isStaff(): bool
+    {
+        return $this->root_admin || $this->role_id !== null;
+    }
+
+    /**
+     * Whether the user's role (if any) grants the given admin ability. Root
+     * administrators are handled separately by the Gate.
+     */
+    public function hasRolePermission(string $ability): bool
+    {
+        return $this->role?->allows($ability) ?? false;
     }
 
     /**
@@ -146,6 +197,24 @@ class User extends Authenticatable implements Identifiable
     {
         return $this->hasMany(ApiKey::class)
             ->where('key_type', ApiKey::TYPE_ACCOUNT);
+    }
+
+    /**
+     * @return HasMany<UserPasskey, $this>
+     */
+    public function passkeys(): HasMany
+    {
+        return $this->hasMany(UserPasskey::class);
+    }
+
+    /**
+     * Whether the user must clear a staff-grade two-factor requirement, which
+     * applies to owners, root administrators and role holders regardless of
+     * the panel-wide two-factor setting.
+     */
+    public function mustUseTwoFactor(): bool
+    {
+        return $this->is_owner || $this->isStaff();
     }
 
     /**

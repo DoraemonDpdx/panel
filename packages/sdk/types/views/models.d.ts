@@ -13,6 +13,7 @@ export type * from "./server/console.js";
 export type * from "./server/databases.js";
 export type * from "./server/features.js";
 export type * from "./server/files.js";
+export type * from "./server/mods.js";
 export type * from "./server/network.js";
 export type * from "./server/schedules.js";
 export type * from "./server/settings.js";

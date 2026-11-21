@@ -17,7 +17,7 @@ export type CorePanelPath =
     | '/auth/login'
     | '/auth/password'
     | `/account${'' | '/api' | '/ssh' | '/activity'}`
-    | `/server/$id${'' | '/files' | '/databases' | '/schedules' | '/users' | '/users/new' | '/backups' | '/network' | '/startup' | '/settings' | '/activity'}`
+    | `/server/$id${'' | '/files' | '/databases' | '/schedules' | '/users' | '/users/new' | '/backups' | '/network' | '/startup' | '/settings' | '/activity' | '/software'}`
     | '/server/$id/files/$action'
     | '/server/$id/schedules/$scheduleId'
     | `/panel${'' | '/users' | '/locations' | '/nodes' | '/servers' | '/databases' | '/mounts' | '/eggs' | '/tags' | '/extensions' | '/api' | '/activity' | '/settings' | '/settings/mail' | '/settings/advanced'}`
@@ -126,17 +126,17 @@ export function PanelLink({
     );
 }
 
-export function useOpenLoginCheckpoint(): (confirmationToken: string) => Promise<void> {
+export function useOpenLoginCheckpoint(): (confirmationToken: string, step?: 'totp' | 'passkey') => Promise<void> {
     const navigate = useNavigate();
     const { redirect } = parseRedirectSearch(useSearch({ strict: false }));
 
     return useCallback(
-        (confirmationToken: string) =>
+        (confirmationToken: string, step: 'totp' | 'passkey' = 'totp') =>
             navigate({
                 to: '/auth/login/checkpoint',
                 search: { redirect },
                 replace: true,
-                state: { token: confirmationToken } as never,
+                state: { token: confirmationToken, step } as never,
             }),
         [navigate, redirect]
     );

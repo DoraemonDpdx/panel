@@ -11,7 +11,7 @@ export interface QrCodeProps {
 export function QrCode({ value, className }: QrCodeProps): ReactElement {
     return (
         <Suspense fallback={<Spinner />}>
-            <QRCodeSVG value={value} className={className} />
+            <QRCodeSVG value={value} className={className} level='M' marginSize={4} />
         </Suspense>
     );
 }

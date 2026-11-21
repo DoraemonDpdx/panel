@@ -296,7 +296,7 @@ function useAppLayoutModel(): AppLayoutModel {
 
 const noop = () => {};
 
-const brand: LayoutBrand = { name: 'Pterodactyl', logoUrl: null };
+const brand: LayoutBrand = { name: 'Astrelyse', logoUrl: null };
 const logo: LayoutBrand = { ...brand, logoUrl: '/favicons/android-chrome-192x192.png' };
 
 const appLayoutFixture = (

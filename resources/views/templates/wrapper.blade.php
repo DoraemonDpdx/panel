@@ -2,7 +2,7 @@
 {{-- The theme's scheme class, id and setting attributes (ThemeDocument::htmlAttributes); values are escaped here. --}}
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @foreach ($theme->htmlAttributes() as $attribute => $value){{ $attribute }}="{{ $value }}" @endforeach>
     <head>
-        <title>{{ config('app.name', 'Pterodactyl') }}</title>
+        <title>{{ config('app.name', 'Astrelyse') }}</title>
 
         @section('meta')
             <meta charset="utf-8">
@@ -29,7 +29,7 @@
                 <link rel="manifest" href="/favicons/manifest.json">
             @endunless
             @unless ($extensionHead->replaces('link', 'mask-icon'))
-                <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#3d7bfd">
+                <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#1846ff">
             @endunless
             @unless ($extensionHead->replaces('link', 'shortcut icon'))
                 <link rel="shortcut icon" href="{{ $siteConfiguration['logo'] ?? '/favicons/favicon.ico' }}">

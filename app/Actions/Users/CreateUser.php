@@ -51,6 +51,7 @@ final readonly class CreateUser implements CreatesUsers
             'name_last' => ['required', 'string', 'between:1,191'],
             'password' => ['sometimes', 'nullable', ...self::passwordRules()],
             'root_admin' => ['boolean'],
+            'role_id' => ['sometimes', 'nullable', 'integer', Rule::exists('roles', 'id')],
             'language' => ['string', new In(array_keys((new User)->getAvailableLanguages()))],
         ];
     }

@@ -89,31 +89,75 @@ const stats = (overrides: Partial<{ cpu: number; memory: number; disk: number; u
         )
     );
 
+const openPowerMenu = async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'More power actions' }));
+
+    return screen.findByRole('menu');
+};
+
 describe('server.power', () => {
-    it('sends the signal of each button the user may press', async () => {
+    it('makes Start the main action while offline and Restart while running', async () => {
         await renderServer(<View name='server.power' />);
         await status('offline');
 
+        expect(screen.queryByRole('button', { name: 'Restart' })).not.toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Start' }));
         expect(send).toHaveBeenCalledWith('set state', 'start');
-        expect(screen.getByRole('button', { name: 'Stop' })).toBeDisabled();
 
         await status('running');
-        expect(screen.getByRole('button', { name: 'Start' })).toBeDisabled();
+        expect(screen.queryByRole('button', { name: 'Start' })).not.toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Restart' }));
         expect(send).toHaveBeenLastCalledWith('set state', 'restart');
     });
 
-    it('asks before killing a stopping server', async () => {
+    it('stops from the menu and disables it while offline', async () => {
         await renderServer(<View name='server.power' />);
-        await status('stopping');
+        await status('offline');
 
-        fireEvent.click(screen.getByRole('button', { name: 'Kill' }));
+        await openPowerMenu();
+        expect(screen.getByRole('menuitem', { name: 'Stop' })).toHaveAttribute('aria-disabled', 'true');
+        fireEvent.keyDown(document.body, { key: 'Escape' });
+
+        await status('running');
+        await openPowerMenu();
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Stop' }));
+        expect(send).toHaveBeenLastCalledWith('set state', 'stop');
+    });
+
+    it('shows a spinner for a transition, not a pulsing dot', async () => {
+        await renderServer(<View name='server.power' />);
+        await status('starting');
+
+        expect(document.body.querySelector('[data-ui="status-dot"] [data-ui="spinner"]')).toBeInTheDocument();
+    });
+
+    it('asks before killing', async () => {
+        await renderServer(<View name='server.power' />);
+        await status('running');
+
+        await openPowerMenu();
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Kill' }));
         const dialog = await screen.findByRole('dialog');
 
         expect(send).not.toHaveBeenCalledWith('set state', 'kill');
         fireEvent.click(within(dialog).getByRole('button', { name: 'Continue' }));
         expect(send).toHaveBeenCalledWith('set state', 'kill');
+    });
+
+    it('warns the console, counts down and can be cancelled', async () => {
+        await renderServer(<View name='server.power' />);
+        await status('running');
+
+        await openPowerMenu();
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Restart in 10 seconds' }));
+
+        expect(send).toHaveBeenCalledWith('send command', 'say Server restarting in 10 seconds');
+        expect(screen.getByTestId('restart-countdown')).toHaveTextContent('Restarting in 10 seconds');
+
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+        expect(screen.queryByTestId('restart-countdown')).not.toBeInTheDocument();
+        expect(send).toHaveBeenLastCalledWith('send command', 'say Scheduled restart cancelled');
+        expect(send).not.toHaveBeenCalledWith('set state', 'restart');
     });
 
     it('shows nothing but its slots without a power permission', async () => {
@@ -246,10 +290,12 @@ describe('feature prompts', () => {
         await renderServer(<View name='page.server.console' active />, { eggFeatures: ['EULA'] });
         await status('offline');
 
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(screen.queryByText('Accept the Minecraft® EULA')).not.toBeInTheDocument();
         act(() => host!.emitWebsocket('console output', 'You need to agree to the EULA in order to run the server.'));
 
-        expect(await screen.findByRole('dialog')).toHaveTextContent('Minecraft® EULA');
+        // A card over the console, not a dialog that blocks it.
+        expect(await screen.findByText('Accept the Minecraft® EULA')).toBeVisible();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 });
 

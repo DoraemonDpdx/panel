@@ -32,7 +32,7 @@ export async function bootTheme(importModule: ModuleImporter = nativeImport): Pr
     registerClassicTheme();
 
     const theme = getBootstrapTheme();
-    const chain = theme.safeMode ? [] : theme.chain.flatMap(({ id, entry }) => (entry ? [{ id, entry }] : []));
+    const chain = theme.chain.flatMap(({ id, entry }) => (entry ? [{ id, entry }] : []));
 
     if (!chain.length) {
         return;

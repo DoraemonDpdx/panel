@@ -19,6 +19,8 @@ export interface StatProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'c
     /** The colour of the value's state, such as an alarm's (`danger` above 90% of a limit). */
     tone?: UiTone;
     variant?: StatVariant;
+    /** A small trend drawn under the value, such as a `Sparkline`. */
+    trend?: React.ReactNode;
     /** The value says why there is no reading, such as "Offline". */
     unavailable?: boolean;
 }
@@ -30,6 +32,7 @@ function CoreStat({
     limit,
     icon: Icon,
     meter,
+    trend,
     tone = 'neutral',
     variant = 'tile',
     unavailable = false,
@@ -51,6 +54,7 @@ function CoreStat({
                 <p {...ui('value')}>{value}</p>
                 {limit !== undefined && <span {...ui('limit')}>{limit}</span>}
                 {meter !== undefined && <ProgressBar value={meter} tone={tone} label={label} />}
+                {trend !== undefined && trend !== null && <div className='basis-full pt-1'>{trend}</div>}
             </div>
         </div>
     );

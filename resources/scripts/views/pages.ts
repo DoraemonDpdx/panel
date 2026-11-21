@@ -33,6 +33,8 @@ export const VIEW_PAGES = {
         slots: ['server.files.editor.before', 'server.files.editor.after'],
     },
     'page.server.databases': { context: 'server', slots: ['server.databases.before', 'server.databases.after'] },
+    'page.server.mods': { context: 'server' },
+    'page.server.software': { context: 'server' },
     'page.server.network': { context: 'server', slots: ['server.network.before', 'server.network.after'] },
     'page.server.startup': { context: 'server', slots: ['server.startup.before', 'server.startup.after'] },
     'page.server.activity': { context: 'server', slots: ['server.activity.before', 'server.activity.after'] },

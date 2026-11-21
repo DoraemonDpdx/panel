@@ -14,6 +14,7 @@ const egg = (config: Pick<AdminEgg['attributes']['config'], 'files' | 'startup' 
         docker_image: 'ghcr.io/pterodactyl/yolks:java_21',
         docker_images: { 'ghcr.io/pterodactyl/yolks:java_21': 'ghcr.io/pterodactyl/yolks:java_21' },
         force_outgoing_ip: false,
+        workload_profile: 'generic',
         config: { ...config, stop: 'stop', file_denylist: null, extends: 1 },
         startup: 'java -jar server.jar',
         script: { privileged: true, install: null, entry: 'bash', container: 'alpine', extends: null },

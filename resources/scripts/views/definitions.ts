@@ -19,9 +19,11 @@ const serverConsole = { load: () => import('./server/console') };
 const databases = { load: () => import('./server/databases') };
 const features = { load: () => import('./server/features') };
 const files = { load: () => import('./server/files') };
+const mods = { load: () => import('./server/mods') };
 const network = { load: () => import('./server/network') };
 const schedules = { load: () => import('./server/schedules') };
 const settings = { load: () => import('./server/settings') };
+const software = { load: () => import('./server/software') };
 const startup = { load: () => import('./server/startup') };
 const users = { load: () => import('./server/users') };
 
@@ -92,6 +94,7 @@ defineView('account.password', { context: 'account', ...overview });
 defineView('account.email', { context: 'account', ...overview });
 defineView('account.avatar', { context: 'account', ...overview });
 defineView('account.twoFactor', { context: 'account', ...overview });
+defineView('account.passkeys', { context: 'account', ...overview });
 defineView('page.account.api', { ...VIEW_PAGES['page.account.api'], ...keys });
 defineView('page.account.ssh', { ...VIEW_PAGES['page.account.ssh'], ...keys });
 defineView('account.apiKeys.list', { context: 'account', ...keys });
@@ -166,6 +169,12 @@ defineView('server.subuserForm', { context: 'server', slots: ['server.users.perm
 defineView('page.server.backups', { ...viewPage('page.server.backups'), ...backups });
 defineView('server.backups', { context: 'server', ...backups });
 
+defineView('page.server.mods', { ...viewPage('page.server.mods'), ...mods });
+defineView('server.mods', { context: 'server', ...mods });
+
+defineView('page.server.software', { ...viewPage('page.server.software'), ...software });
+defineView('server.software', { context: 'server', ...software });
+
 defineView('page.server.network', { ...viewPage('page.server.network'), ...network });
 defineView('server.allocations', { context: 'server', ...network });
 
@@ -182,4 +191,5 @@ defineView('page.server.settings', { ...viewPage('page.server.settings'), ...set
 defineView('server.sftp', { context: 'server', ...settings });
 defineView('server.debug', { context: 'server', ...settings });
 defineView('server.rename', { context: 'server', ...settings });
+defineView('server.ports', { context: 'server', ...settings });
 defineView('server.reinstall', { context: 'server', ...settings });

@@ -33,7 +33,11 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'language' => 'en',
             'root_admin' => false,
-            'use_totp' => false,
+            // Staff must use two-factor to reach the panel, so staff fixtures default to having it.
+            // Pass `use_totp => false` explicitly to exercise the enrolment requirement.
+            'use_totp' => fn (array $attributes): bool => (bool) ($attributes['root_admin'] ?? false)
+                || (bool) ($attributes['is_owner'] ?? false)
+                || ($attributes['role_id'] ?? null) !== null,
             'created_at' => Date::now(),
             'updated_at' => Date::now(),
         ];

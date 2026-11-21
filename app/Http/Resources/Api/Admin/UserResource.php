@@ -40,6 +40,8 @@ class UserResource extends AdminResource
             'last_name' => $user->name_last,
             'language' => $user->language,
             'root_admin' => (bool) $user->root_admin,
+            'role_id' => $user->role_id,
+            'is_owner' => (bool) $user->is_owner,
             '2fa' => (bool) $user->use_totp,
             'image' => $user->avatar_url ?? 'https://gravatar.com/avatar/'.md5(Str::lower($user->email)),
             'avatar' => $user->avatar_url,

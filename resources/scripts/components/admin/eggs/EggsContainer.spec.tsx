@@ -34,6 +34,7 @@ const egg: AdminEgg = {
         docker_image: 'java:21',
         docker_images: { Java: 'java:21' },
         force_outgoing_ip: false,
+        workload_profile: 'generic',
         config: { files: {}, startup: {}, stop: 'stop', logs: {}, file_denylist: [], extends: null },
         startup: 'java -jar server.jar',
         script: { privileged: false, install: '', entry: 'bash', container: 'alpine', extends: null },

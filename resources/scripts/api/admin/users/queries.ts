@@ -66,13 +66,17 @@ const adminUserInput = (id: number): Options<AdminGetUserData> => ({
 
 export const adminUserDetailKey = (id: number) => adminGetUserQueryKey({ path: { user_id: id } });
 
-const userValuesToBody = (values: UserValues): AdminCreateUserData['body'] => ({
+// role_id is not in the generated OpenAPI body type yet.
+type UserBody = AdminCreateUserData['body'] & { role_id: number | null };
+
+const userValuesToBody = (values: UserValues): UserBody => ({
     email: values.email,
     username: values.username,
     name_first: values.nameFirst,
     name_last: values.nameLast,
     password: values.password || undefined,
     root_admin: values.rootAdmin,
+    role_id: values.roleId === '' ? null : Number(values.roleId),
     preferences: { language: values.language },
     extensions: values.extensions,
 });

@@ -142,6 +142,13 @@ enum Permissions: string
 
     case SettingsRename = 'settings.rename';
     case SettingsReinstall = 'settings.reinstall';
+    case SettingsPorts = 'settings.ports';
+
+    case ModsRead = 'mods.read';
+    case ModsInstall = 'mods.install';
+
+    case SoftwareRead = 'software.read';
+    case SoftwareManage = 'software.manage';
 
     case ActivityRead = 'activity.read';
 }

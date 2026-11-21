@@ -2,6 +2,9 @@ import type { KeyboardEvent } from 'react';
 import { ChevronsDown, ChevronsRight } from 'lucide-react';
 import { Button, cn, SpinnerOverlay } from '@/sdk';
 import type { ServerConsoleCommand, ViewProps } from '@/sdk/theme';
+import ConsoleToolbar from './ConsoleToolbar';
+import LogViewer from './LogViewer';
+import SavedCommandsBar from './SavedCommandsBar';
 
 const terminalContainerClass =
     'relative min-h-[16rem] flex-1 overflow-hidden rounded-t-sm bg-terminal px-2 pt-2 pb-0 font-mono text-sm caret-transparent';
@@ -32,10 +35,11 @@ function onCommandKey(command: ServerConsoleCommand, event: KeyboardEvent<HTMLIn
 }
 
 export default function Terminal({ model, className }: ViewProps<'server.terminal'>) {
-    const { command } = model;
+    const { command, viewer } = model;
 
     return (
         <div className={cn('relative flex flex-col w-full', className)}>
+            <ConsoleToolbar toolbar={model.toolbar} />
             <SpinnerOverlay visible={model.loading} size='large' />
             {model.failed && (
                 <div
@@ -49,8 +53,12 @@ export default function Terminal({ model, className }: ViewProps<'server.termina
                 </div>
             )}
             <div className={cn(terminalContainerClass, !command.allowed && 'rounded-b-sm')}>
-                <model.Terminal />
-                {model.scrolledUp && (
+                {/* The canvas stays mounted so its history survives; the viewer covers it. */}
+                <div className={viewer ? 'hidden' : 'contents'}>
+                    <model.Terminal />
+                </div>
+                {viewer && <LogViewer viewer={viewer} className='absolute inset-0' />}
+                {!viewer && model.scrolledUp && (
                     <button
                         type='button'
                         onClick={model.scrollToBottom}
@@ -64,6 +72,7 @@ export default function Terminal({ model, className }: ViewProps<'server.termina
                     </button>
                 )}
             </div>
+            <SavedCommandsBar saved={model.saved} />
             {command.allowed && (
                 <div className='relative'>
                     <input

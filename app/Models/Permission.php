@@ -121,6 +121,23 @@ class Permission extends Model
             'keys' => [
                 'rename' => 'Allows a user to rename this server and change the description of it.',
                 'reinstall' => 'Allows a user to trigger a reinstall of this server.',
+                'ports' => 'Allows a user to change port roles, the generated environment file and extra variables for this server.',
+            ],
+        ],
+
+        'mods' => [
+            'description' => "Permissions that control a user's access to installing mods and plugins from Modrinth on this server.",
+            'keys' => [
+                'read' => 'Allows a user to search Modrinth and view the mods or plugins installed on this server.',
+                'install' => 'Allows a user to install, update and remove mods or plugins on this server.',
+            ],
+        ],
+
+        'software' => [
+            'description' => "Permissions that control a user's access to changing the Minecraft server software, modpacks and worlds on this server.",
+            'keys' => [
+                'read' => 'Allows a user to see the server software this server runs and the versions available.',
+                'manage' => 'Allows a user to switch, reinstall or clear the server software, and to install modpacks and worlds.',
             ],
         ],
 

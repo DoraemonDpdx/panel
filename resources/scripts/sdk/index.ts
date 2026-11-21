@@ -22,6 +22,7 @@ import type { SocketEvent } from '@/components/server/events';
 export {
     default as Button,
     ButtonStyle,
+    buttonClassName,
     LinkButton,
     RouterLinkButton,
     type ButtonColor,
@@ -43,7 +44,38 @@ export {
     type ProgressBarProps,
     type ProgressBarVariant,
 } from '@/components/elements/ProgressBar';
+export { useDelayedRestart, type DelayedRestart } from '@/components/server/power/useDelayedRestart';
 export { default as Code, type CodeProps } from '@/components/elements/Code';
+export {
+    default as Sparkline,
+    pushSample,
+    sampleDeltas,
+    useSparklineBuffer,
+    type SparklineProps,
+} from '@/components/elements/Sparkline';
+export { default as StatusDot, type StatusDotProps, type StatusDotStatus } from '@/components/elements/StatusDot';
+export { default as CommandPalette, type CommandPaletteProps } from '@/components/elements/CommandPalette';
+export { default as CommandPaletteHost } from '@/components/elements/commandPalette/CommandPaletteHost';
+export { openCommandPalette } from '@/components/elements/commandPalette/store';
+export { default as Drawer, type DrawerProps, type DrawerSide, type DrawerSize } from '@/components/elements/Drawer';
+export { default as Tabs, type TabsProps, type TabsOrientation } from '@/components/elements/Tabs';
+export {
+    default as Breadcrumb,
+    type BreadcrumbItem,
+    type BreadcrumbLinkProps,
+    type BreadcrumbProps,
+} from '@/components/elements/Breadcrumb';
+export { default as Stepper, type Step, type StepperProps, type StepStatus } from '@/components/elements/Stepper';
+export { default as Skeleton, type SkeletonProps, type SkeletonKind } from '@/components/elements/Skeleton';
+export { default as KeyboardShortcut, type KeyboardShortcutProps } from '@/components/elements/KeyboardShortcut';
+export { default as ShortcutsOverlay, type ShortcutsOverlayProps } from '@/components/elements/ShortcutsOverlay';
+export {
+    registerShortcut,
+    useRegisteredShortcut,
+    useShortcuts,
+    type ShortcutDefinition,
+} from '@/components/elements/shortcuts';
+export { default as SecretField, type SecretFieldProps } from '@/components/elements/SecretField';
 export { default as ContentBox } from '@/components/elements/ContentBox';
 export { default as PageContentBlock } from '@/components/elements/PageContentBlock';
 export { default as ServerContentBlock } from '@/components/elements/ServerContentBlock';
@@ -53,6 +85,17 @@ export { default as ScreenBlock, ServerError, NotFound, screenImages } from '@/c
 export { default as PaginationFooter } from '@/components/elements/table/PaginationFooter';
 export { default as Translate, type TranslationValue, type TranslationValues } from '@/components/elements/Translate';
 export { default as Label, type LabelProps } from '@/components/elements/Label';
+export {
+    AuthButton,
+    AuthCard,
+    AuthCheckpointPage,
+    AuthField,
+    AuthForgotPasswordPage,
+    AuthLoginPage,
+    AuthResetPasswordPage,
+    AuthFrame,
+} from '@/components/auth/AuthShell';
+export { default as OtpInput, type OtpInputProps } from '@/components/auth/OtpInput';
 export { default as PageHeading, type PageHeadingProps } from '@/components/elements/PageHeading';
 export {
     NewButton,

@@ -29,7 +29,7 @@ use UnexpectedValueException;
 #[ResponseField('container.environment', schema: ['type' => 'object', 'additionalProperties' => ['nullable' => true, 'oneOf' => [['type' => 'string'], ['type' => 'number']]], 'example' => ['SERVER_JARFILE' => 'server.jar']])]
 class ServerResource extends AdminResource
 {
-    protected array $eagerLoads = ['egg.variables', 'serverVariables', 'location'];
+    protected array $eagerLoads = ['egg.variables', 'serverVariables', 'location', 'allocation', 'allocations', 'portBindings.allocation', 'envSetting'];
 
     protected array $includeRelations = [
         'allocation' => ['relation' => 'allocation', 'resource' => AllocationResource::class],

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Pterodactyl\Contracts\Models\Identifiable;
+use Pterodactyl\Enum\WorkloadProfile;
 use Pterodactyl\Models\Traits\HasRealtimeIdentifier;
 use RuntimeException;
 
@@ -40,6 +41,8 @@ use RuntimeException;
     'script_entry',
     'script_container',
     'copy_script_from',
+    'workload_profile',
+    'port_spec',
 ])]
 class Egg extends Model implements Identifiable
 {
@@ -69,6 +72,7 @@ class Egg extends Model implements Identifiable
         'config_logs' => null,
         'config_files' => null,
         'update_url' => null,
+        'workload_profile' => 'generic',
     ];
 
     /**
@@ -87,6 +91,8 @@ class Egg extends Model implements Identifiable
             'features' => 'array',
             'docker_images' => 'array',
             'file_denylist' => 'array',
+            'port_spec' => 'array',
+            'workload_profile' => WorkloadProfile::class,
         ];
     }
 

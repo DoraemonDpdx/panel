@@ -4,6 +4,7 @@ import {
     clientSendPowerActionMutation,
     clientSendServerCommandMutation,
 } from '@/api/generated/@tanstack/react-query.gen';
+import { clientSendPowerAction } from '@/api/generated';
 import type {
     ClientSendPowerActionData,
     ClientSendPowerActionRequest,
@@ -36,3 +37,7 @@ export const useSendServerCommand = () =>
         ...clientSendServerCommandMutation(),
         onError: (error) => notifyHttpError(error, 'Unable to send command'),
     });
+
+/** Sends a power signal and rejects on failure without a toast, for callers that report each result themselves. */
+export const sendPowerActionQuiet = (uuid: string, signal: ServerPowerSignal) =>
+    clientSendPowerAction(sendPowerActionInput(uuid, signal));

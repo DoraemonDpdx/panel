@@ -52,6 +52,14 @@ class LoginCheckpointController extends AbstractLoginController
         ],
     ];
 
+    private const array LOGIN_PASSKEY_STEP_EXAMPLE = [
+        'data' => [
+            'complete' => false,
+            'confirmation_token' => 'b6e22f85d63c4d9db9739f9ab0a27a48f51f7ad38ef8c12fd157c4c6f4b2e51d',
+            'step' => 'passkey',
+        ],
+    ];
+
     private const array CHECKPOINT_FAILED_ERROR = [
         'errors' => [
             [
@@ -79,6 +87,7 @@ class LoginCheckpointController extends AbstractLoginController
     #[BodyParam('authentication_code', 'string', 'The six-digit TOTP code. Required when recovery_token is not provided.', required: false, example: '123456', nullable: true)]
     #[BodyParam('recovery_token', 'string', 'A recovery token. Required when authentication_code is not provided.', required: false, example: 'r1a2b3c4d5', nullable: true)]
     #[ScribeResponse(self::LOGIN_COMPLETE_EXAMPLE, description: 'Login completed and a browser session was created.')]
+    #[ScribeResponse(self::LOGIN_PASSKEY_STEP_EXAMPLE, description: 'The code was accepted but the account also requires a passkey; continue with the passkey step.')]
     #[ScribeResponse(self::CHECKPOINT_FAILED_ERROR, status: 400, description: 'The checkpoint token, TOTP code, or recovery token is invalid.')]
     public function __invoke(LoginCheckpointRequest $request, CompletesLogins $logins, Google2FA $google2FA): JsonResponse
     {
@@ -91,7 +100,7 @@ class LoginCheckpointController extends AbstractLoginController
             $this->sendFailedLoginResponse($request, null, self::TOKEN_EXPIRED_MESSAGE);
         }
 
-        if (! $checkpoint->matches($request->string('confirmation_token')->toString())) {
+        if (! $checkpoint->matches($request->string('confirmation_token')->toString()) || $checkpoint->step() !== 'totp') {
             $this->sendFailedLoginResponse($request);
         }
 
@@ -106,7 +115,7 @@ class LoginCheckpointController extends AbstractLoginController
             if ($this->isValidRecoveryToken($user, $request->string('recovery_token')->toString())) {
                 Event::dispatch(new ProvidedAuthenticationToken($user, true));
 
-                return $this->sendLoginResponse($logins->establish($user), $request);
+                return $this->sendLoginResponse($logins->factorPassed($user, 'totp'), $request);
             }
         } else {
             $totpSecret = $user->totp_secret;
@@ -132,7 +141,7 @@ class LoginCheckpointController extends AbstractLoginController
 
                 Event::dispatch(new ProvidedAuthenticationToken($user));
 
-                return $this->sendLoginResponse($logins->establish($user), $request);
+                return $this->sendLoginResponse($logins->factorPassed($user, 'totp'), $request);
             }
         }
 

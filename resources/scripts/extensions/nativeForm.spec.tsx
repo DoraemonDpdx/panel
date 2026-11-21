@@ -38,6 +38,8 @@ it('extension controls participate in native validation, submission, and shared 
             last_name: 'User',
             language: 'en',
             root_admin: false,
+            role_id: null,
+            is_owner: false,
             '2fa': false,
             image: '',
             avatar: null,

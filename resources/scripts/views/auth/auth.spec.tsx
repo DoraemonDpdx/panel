@@ -22,14 +22,28 @@ const mocks = vi.hoisted(() => ({
     checkpoint: vi.fn(),
     requestReset: vi.fn(),
     reset: vi.fn(),
+    passkeyOptions: vi.fn(),
+    passkeyVerify: vi.fn(),
+    assertPasskey: vi.fn(),
     execute: vi.fn<() => Promise<string | null>>(),
 }));
 
 vi.mock('@/api/auth/queries', () => ({
     useLogin: () => ({ mutateAsync: mocks.login, isPending: false }),
     useLoginCheckpoint: () => ({ mutateAsync: mocks.checkpoint, isPending: false }),
+    useGoogleLogin: () => ({ mutateAsync: vi.fn(), isPending: false }),
+    useDiscordRegister: () => ({ mutateAsync: vi.fn(), isPending: false }),
+    usePasskeyLoginOptions: () => ({ mutateAsync: mocks.passkeyOptions, isPending: false }),
+    usePasskeyLoginVerify: () => ({ mutateAsync: mocks.passkeyVerify, isPending: false }),
     useRequestPasswordResetEmail: () => ({ mutateAsync: mocks.requestReset, isPending: false }),
     usePerformPasswordReset: () => ({ mutateAsync: mocks.reset, isPending: false }),
+}));
+
+vi.mock('@/lib/webauthn', () => ({
+    assertPasskey: mocks.assertPasskey,
+    passkeyErrorMessage: (error: Error) => error.message,
+    PASSKEY_FAILED: 'That passkey did not work.',
+    passkeyBody: (response: { id: string }) => ({ ...response }),
 }));
 
 vi.mock('@/components/elements/InvisibleRecaptcha', () => ({
@@ -136,7 +150,7 @@ describe('page.auth.login', () => {
         fireEvent.change(screen.getByLabelText('Username or Email'), { target: { value: 'alex' } });
         fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'correct horse' } });
         await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: 'Login' }));
+            fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
         });
 
         await waitFor(() => expect(router!.state.location.pathname).toBe('/auth/login/checkpoint'));
@@ -154,7 +168,7 @@ describe('page.auth.login', () => {
         fireEvent.change(screen.getByLabelText('Username or Email'), { target: { value: '' } });
 
         expect(await screen.findByText('A username or email must be provided.')).toBeVisible();
-        expect(screen.getByRole('button', { name: 'Login' })).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Sign in' })).toBeDisabled();
         expect(mocks.login).not.toHaveBeenCalled();
     });
 
@@ -170,7 +184,7 @@ describe('page.auth.login', () => {
 
         mocks.execute.mockResolvedValueOnce(null);
         await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: 'Login' }));
+            fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
         });
 
         expect(error).toHaveBeenCalledWith('Captcha verification failed, please try again.');
@@ -178,7 +192,7 @@ describe('page.auth.login', () => {
 
         mocks.execute.mockResolvedValueOnce('captcha-token');
         await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: 'Login' }));
+            fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
         });
 
         expect(mocks.login).toHaveBeenCalledWith({
@@ -193,22 +207,59 @@ describe('page.auth.checkpoint', () => {
         await renderAuth('/auth/login');
         await act(() => router!.navigate({ to: '/auth/login/checkpoint', state: { token: 'confirm-token' } }));
 
-        const code = screen.getByTitle('Authentication Code');
+        const code = screen.getByLabelText('Authenticator code');
 
         expect(code).toHaveAttribute('autocomplete', 'one-time-code');
-        fireEvent.click(screen.getByRole('button', { name: "I've Lost My Device" }));
+        fireEvent.click(screen.getByRole('button', { name: 'Use a recovery code' }));
 
-        const recovery = screen.getByTitle('Recovery Code');
+        const recovery = screen.getByTitle('Recovery code');
 
         expect(recovery).toHaveAttribute('name', 'recoveryCode');
         fireEvent.change(recovery, { target: { value: 'abcd-efgh' } });
         await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            fireEvent.click(screen.getByRole('button', { name: 'Verify' }));
         });
 
         expect(mocks.checkpoint).toHaveBeenCalledWith({
             body: { confirmation_token: 'confirm-token', authentication_code: '', recovery_token: 'abcd-efgh' },
         });
+    });
+});
+
+describe('page.auth.checkpoint passkey step', () => {
+    it('shows the passkey prompt and signs in once the device confirms it', async () => {
+        mocks.passkeyOptions.mockResolvedValue({ data: { options: { challenge: 'abc' } } });
+        mocks.assertPasskey.mockResolvedValue({ id: 'cred' });
+        mocks.passkeyVerify.mockResolvedValue({ data: { complete: true, intended: '/' } });
+        await renderAuth('/auth/login');
+        await act(() =>
+            router!.navigate({ to: '/auth/login/checkpoint', state: { token: 'confirm-token', step: 'passkey' } })
+        );
+
+        expect(screen.queryByTitle('6-digit code')).not.toBeInTheDocument();
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: 'Use passkey' }));
+        });
+
+        expect(mocks.passkeyOptions).toHaveBeenCalledWith({ body: { confirmation_token: 'confirm-token' } });
+        expect(mocks.passkeyVerify).toHaveBeenCalledWith({
+            body: { confirmation_token: 'confirm-token', response: { id: 'cred' } },
+        });
+    });
+
+    it('reports a cancelled device prompt without calling the server again', async () => {
+        mocks.passkeyOptions.mockResolvedValue({ data: { options: { challenge: 'abc' } } });
+        mocks.assertPasskey.mockRejectedValue(new Error('The passkey prompt was cancelled or timed out. Try again.'));
+        await renderAuth('/auth/login');
+        await act(() =>
+            router!.navigate({ to: '/auth/login/checkpoint', state: { token: 'confirm-token', step: 'passkey' } })
+        );
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: 'Use passkey' }));
+        });
+
+        expect(await screen.findByText('The passkey prompt was cancelled or timed out. Try again.')).toBeVisible();
+        expect(mocks.passkeyVerify).not.toHaveBeenCalled();
     });
 });
 
@@ -222,7 +273,7 @@ describe('password reset forms', () => {
         expect(email).toHaveAttribute('autocomplete', 'email');
         fireEvent.change(email, { target: { value: 'alex@example.test' } });
         await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: 'Send Email' }));
+            fireEvent.click(screen.getByRole('button', { name: 'Send email' }));
         });
 
         expect(mocks.requestReset).toHaveBeenCalledWith({
@@ -236,15 +287,15 @@ describe('password reset forms', () => {
         await renderAuth('/auth/password/reset/reset-token?email=alex%40example.test');
 
         expect(screen.getByLabelText('Email')).toHaveValue('alex@example.test');
-        fireEvent.change(screen.getByLabelText('New Password'), { target: { value: 'correct horse' } });
-        fireEvent.change(screen.getByLabelText('Confirm New Password'), { target: { value: 'correct' } });
+        fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'correct horse' } });
+        fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'correct' } });
 
         expect(await screen.findByText('Your new password does not match.')).toBeVisible();
-        expect(screen.getByLabelText('New Password')).toHaveAttribute('autocomplete', 'new-password');
+        expect(screen.getByLabelText('New password')).toHaveAttribute('autocomplete', 'new-password');
 
-        fireEvent.change(screen.getByLabelText('Confirm New Password'), { target: { value: 'correct horse' } });
+        fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'correct horse' } });
         await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: 'Reset Password' }));
+            fireEvent.click(screen.getByRole('button', { name: 'Reset password' }));
         });
 
         expect(mocks.reset).toHaveBeenCalledWith({

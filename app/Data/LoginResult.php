@@ -17,6 +17,7 @@ final readonly class LoginResult
         public bool $complete,
         public string $intended,
         public ?string $confirmationToken,
+        public ?string $step = null,
     ) {}
 
     public static function established(User $user, string $intended): self
@@ -26,13 +27,13 @@ final readonly class LoginResult
 
     public static function checkpoint(User $user, LoginCheckpoint $checkpoint, string $intended): self
     {
-        return new self($user, false, $intended, $checkpoint->token);
+        return new self($user, false, $intended, $checkpoint->token, $checkpoint->step());
     }
 
     /**
      * The `data` payload the panel's login screens expect from a JSON login endpoint.
      *
-     * @return array{complete: false, confirmation_token: string|null}|array{complete: true, intended: string, user: array<mixed>}
+     * @return array{complete: false, confirmation_token: string|null, step: string|null}|array{complete: true, intended: string, user: array<mixed>}
      */
     public function toResponseData(): array
     {
@@ -40,6 +41,7 @@ final readonly class LoginResult
             return [
                 'complete' => false,
                 'confirmation_token' => $this->confirmationToken,
+                'step' => $this->step,
             ];
         }
 

@@ -15,6 +15,8 @@ const mocks = vi.hoisted(() => ({
     updatePassword: vi.fn(),
     twoFactorToken: vi.fn(),
     enableTwoFactor: vi.fn(),
+    passkeys: vi.fn(),
+    removePasskey: vi.fn(),
 }));
 
 const mutation = (mutateAsync: (...args: never[]) => unknown) => ({ mutateAsync, isPending: false });
@@ -39,6 +41,12 @@ vi.mock('@/api/account/two-factor/queries', () => ({
     useEnableAccountTwoFactor: () => mutation(mocks.enableTwoFactor),
     useDisableAccountTwoFactor: () => mutation(vi.fn()),
 }));
+vi.mock('@/api/account/passkeys/queries', () => ({
+    usePasskeys: () => ({ data: mocks.passkeys(), isLoading: false }),
+    useBeginPasskeyRegistration: () => mutation(vi.fn()),
+    useRegisterPasskey: () => mutation(vi.fn()),
+    useRemovePasskey: () => mutation(mocks.removePasskey),
+}));
 vi.mock('@/api/account/queries', async (importOriginal) => ({
     ...(await importOriginal<typeof AccountQueries>()),
     useUpdateAccountPassword: () => mutation(mocks.updatePassword),
@@ -50,6 +58,7 @@ beforeEach(() => {
     vi.clearAllMocks();
     mocks.apiKeys.mockReturnValue({ object: 'list', data: [] });
     mocks.sshKeys.mockReturnValue({ object: 'list', data: [] });
+    mocks.passkeys.mockReturnValue({ data: [] });
 });
 
 afterEach(() => {
@@ -95,6 +104,25 @@ describe('account views from fixtures', () => {
     });
 });
 
+describe('account.passkeys', () => {
+    it('lists passkeys and removes one with the account password', async () => {
+        mocks.passkeys.mockReturnValue({
+            data: [{ id: 7, name: 'YubiKey', created_at: '2026-11-10T10:00:00+00:00', last_used_at: null }],
+        });
+        mocks.removePasskey.mockResolvedValue({});
+        await renderLive(<View name='account.passkeys' />);
+
+        expect(screen.getByText('YubiKey')).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+        fireEvent.change(await screen.findByLabelText('Password'), { target: { value: 'hunter2' } });
+        await act(async () => {
+            fireEvent.click(screen.getAllByRole('button', { name: 'Remove' }).at(-1)!);
+        });
+
+        expect(mocks.removePasskey).toHaveBeenCalledWith({ path: { id: 7 }, body: { password: 'hunter2' } });
+    });
+});
+
 describe('account.password', () => {
     it('validates the confirmation and submits the API body', async () => {
         mocks.updatePassword.mockResolvedValue({});
@@ -121,28 +149,12 @@ describe('account.password', () => {
 });
 
 describe('account.twoFactor', () => {
-    it('enables two-step verification and shows the recovery codes once', async () => {
-        mocks.twoFactorToken.mockReturnValue({ data: { secret: 'JBSWY3DPEHPK3PXP', image_url_data: 'otpauth://x' } });
-        mocks.enableTwoFactor.mockResolvedValue({ attributes: { tokens: ['aaaa-1111', 'bbbb-2222'] } });
+    it('sends the user to the two-step setup page to enable it', async () => {
         await renderLive(<View name='account.twoFactor' />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Enable Two-Step' }));
 
-        const dialog = await screen.findByRole('dialog');
-
-        expect(within(dialog).getByText('JBSW Y3DP EHPK 3PXP')).toBeInTheDocument();
-        expect(within(dialog).getByRole('button', { name: 'Enable' })).toBeDisabled();
-        fireEvent.change(within(dialog).getByPlaceholderText('000000'), { target: { value: '123456' } });
-        fireEvent.change(within(dialog).getByLabelText('Account Password'), { target: { value: 'secret' } });
-        await act(async () => {
-            fireEvent.click(within(dialog).getByRole('button', { name: 'Enable' }));
-        });
-
-        expect(mocks.enableTwoFactor).toHaveBeenCalledWith({ body: { code: '123456', password: 'secret' } });
-        const recovery = (await screen.findByText('Two-Step Authentication Enabled')).closest('[role="dialog"]');
-
-        expect(recovery).toHaveTextContent('aaaa-1111');
-        expect(recovery).toHaveTextContent('bbbb-2222');
+        await waitFor(() => expect(host!.location().pathname).toBe('/account/two-factor'));
     });
 });
 

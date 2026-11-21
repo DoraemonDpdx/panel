@@ -30,6 +30,7 @@ use Pterodactyl\Models\ServerVariable;
 use Pterodactyl\Models\User;
 use Pterodactyl\Services\Extensions\ExtensionFields;
 use Pterodactyl\Services\Extensions\ValidatedExtensionValues;
+use Pterodactyl\Services\Servers\Ports\PortAssigner;
 use Pterodactyl\Services\Servers\VariableValidatorService;
 use Ramsey\Uuid\Uuid;
 use UnexpectedValueException;
@@ -40,6 +41,7 @@ final readonly class CreateServer implements CreatesServers
         private DeletesServers $deleteServer,
         private VariableValidatorService $validatorService,
         private ExtensionFields $extensions,
+        private PortAssigner $ports,
     ) {}
 
     /**
@@ -113,6 +115,7 @@ final readonly class CreateServer implements CreatesServers
             Allocation::query()->whereIn('id', [$allocation->id, ...$validated->array('allocation_additional')])->update(['server_id' => $server->id]);
             $this->storeEggVariables($server, $eggVariableData);
             $this->extensions->save($server, $extensions);
+            $this->ports->assignDefaults($server);
 
             return $server;
         }, 5);

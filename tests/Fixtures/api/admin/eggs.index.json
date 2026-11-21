@@ -17,6 +17,7 @@
                             "eula",
                             "java_version"
                         ],
+                        "workload_profile": "generic",
                         "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                         "docker_images": {
                             "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
@@ -63,6 +64,7 @@
                         "name": "Paper Child",
                         "description": null,
                         "features": null,
+                        "workload_profile": "generic",
                         "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                         "docker_images": {
                             "Java 21": "ghcr.io/pterodactyl/yolks:java_21"
@@ -101,6 +103,7 @@
                         "name": "Empty Egg",
                         "description": "",
                         "features": [],
+                        "workload_profile": "generic",
                         "docker_image": "",
                         "docker_images": [],
                         "force_outgoing_ip": false,
@@ -156,6 +159,7 @@
                             "eula",
                             "java_version"
                         ],
+                        "workload_profile": "generic",
                         "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                         "docker_images": {
                             "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
@@ -324,7 +328,11 @@
                                                     "STARTUP": "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}}",
                                                     "P_SERVER_LOCATION": "us-east",
                                                     "P_SERVER_UUID": "5e7f0001-0000-4000-8000-000000000001",
-                                                    "P_SERVER_ALLOCATION_LIMIT": 5
+                                                    "P_SERVER_ALLOCATION_LIMIT": 5,
+                                                    "PORT": "25565",
+                                                    "PORT_1": "25566",
+                                                    "ALLOCATION_LIST": "192.0.2.10:25565,192.0.2.10:25566",
+                                                    "PUBLIC_ADDRESS": "play.example.test:25565"
                                                 }
                                             },
                                             "relationships": [],
@@ -373,7 +381,10 @@
                                                     "STARTUP": "java -jar {{SERVER_JARFILE}}",
                                                     "P_SERVER_LOCATION": "eu-west",
                                                     "P_SERVER_UUID": "5e7f0003-0000-4000-8000-000000000003",
-                                                    "P_SERVER_ALLOCATION_LIMIT": 1
+                                                    "P_SERVER_ALLOCATION_LIMIT": 1,
+                                                    "PORT": "30001",
+                                                    "ALLOCATION_LIST": "198.51.100.20:30001",
+                                                    "PUBLIC_ADDRESS": "198.51.100.20:30001"
                                                 }
                                             },
                                             "relationships": [],
@@ -397,6 +408,7 @@
                         "name": "Paper Child",
                         "description": null,
                         "features": null,
+                        "workload_profile": "generic",
                         "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                         "docker_images": {
                             "Java 21": "ghcr.io/pterodactyl/yolks:java_21"
@@ -506,7 +518,10 @@
                                                     "STARTUP": "java -jar {{SERVER_JARFILE}}",
                                                     "P_SERVER_LOCATION": "us-east",
                                                     "P_SERVER_UUID": "5e7f0002-0000-4000-8000-000000000002",
-                                                    "P_SERVER_ALLOCATION_LIMIT": null
+                                                    "P_SERVER_ALLOCATION_LIMIT": null,
+                                                    "PORT": "25567",
+                                                    "ALLOCATION_LIST": "192.0.2.10:25567",
+                                                    "PUBLIC_ADDRESS": "192.0.2.10:25567"
                                                 }
                                             },
                                             "relationships": [],
@@ -530,6 +545,7 @@
                         "name": "Empty Egg",
                         "description": "",
                         "features": [],
+                        "workload_profile": "generic",
                         "docker_image": "",
                         "docker_images": [],
                         "force_outgoing_ip": false,
@@ -616,6 +632,7 @@
                             "eula",
                             "java_version"
                         ],
+                        "workload_profile": "generic",
                         "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                         "docker_images": {
                             "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
@@ -683,6 +700,7 @@
                         "name": "Paper Child",
                         "description": null,
                         "features": null,
+                        "workload_profile": "generic",
                         "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                         "docker_images": {
                             "Java 21": "ghcr.io/pterodactyl/yolks:java_21"
@@ -766,6 +784,7 @@
                             "eula",
                             "java_version"
                         ],
+                        "workload_profile": "generic",
                         "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                         "docker_images": {
                             "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
@@ -834,6 +853,7 @@
                             "eula",
                             "java_version"
                         ],
+                        "workload_profile": "generic",
                         "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                         "docker_images": {
                             "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
@@ -916,6 +936,7 @@
                         "name": "Paper Child",
                         "description": null,
                         "features": null,
+                        "workload_profile": "generic",
                         "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                         "docker_images": {
                             "Java 21": "ghcr.io/pterodactyl/yolks:java_21"

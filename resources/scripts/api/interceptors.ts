@@ -31,8 +31,11 @@ export const setupInterceptors = () => {
                     'code' in firstError &&
                     firstError.code === 'TwoFactorAuthRequiredException'
                 ) {
-                    if (!window.location.pathname.startsWith('/account')) {
-                        void router.navigate({ to: '/account', replace: true, state: { twoFactorRedirect: true } });
+                    if (!window.location.pathname.startsWith('/account/two-factor')) {
+                        void router.navigate({
+                            to: '/account/two-factor',
+                            replace: true,
+                        });
                     }
                 }
             }

@@ -9,6 +9,7 @@ export const userFormValues = (user: AdminUser): UserValues => ({
     nameLast: user.attributes.last_name ?? '',
     password: '',
     rootAdmin: user.attributes.root_admin,
+    roleId: String((user.attributes as { role_id?: number | null }).role_id ?? ''),
     language: user.attributes.language,
     extensions: initialExtensionValues(),
 });

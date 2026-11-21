@@ -119,6 +119,24 @@ function allocationColumns(model: ServerAllocationsModel): TableColumn<ServerAll
             cellClassName: 'w-24',
         },
         {
+            id: 'role',
+            label: 'Role',
+            cell: (allocation) =>
+                allocation.roles.length > 0 ? (
+                    <span className='flex flex-wrap gap-1'>
+                        {allocation.roles.map((role) => (
+                            <Code key={role} dark>
+                                {role}
+                            </Code>
+                        ))}
+                    </span>
+                ) : (
+                    <span className='text-muted-foreground'>—</span>
+                ),
+            headerClassName: 'w-40',
+            cellClassName: 'w-40',
+        },
+        {
             id: 'notes',
             label: 'Notes',
             cell: (allocation) => <NotesCell model={model} allocation={allocation} />,

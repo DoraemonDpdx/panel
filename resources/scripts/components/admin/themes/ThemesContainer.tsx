@@ -189,7 +189,8 @@ export default function ThemesContainer() {
         >
             {data?.meta?.safe_mode && (
                 <Alert type='warning' className='mb-4'>
-                    Safe mode is on for your session: you see the classic theme without any extension bundles.
+                    Safe mode is on for your session: you see the built-in Astrelyse theme without any other extension
+                    bundles.
                 </Alert>
             )}
             {data ? (
