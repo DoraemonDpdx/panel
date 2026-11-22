@@ -1,6 +1,7 @@
 import type { Server } from '@/api/server/types';
 import type { ServerCardModel } from './dashboard';
 import { statMetric } from './server/state';
+import type { WorkloadProfile } from './workload';
 
 export interface TestServerOptions {
     identifier?: string;
@@ -11,6 +12,7 @@ export interface TestServerOptions {
     status?: Server['attributes']['status'];
     eggFeatures?: string[];
     eggTags?: string[];
+    workloadProfile?: WorkloadProfile;
 }
 
 /** A server payload for fixtures and tests. */
@@ -38,6 +40,7 @@ export function createTestServer(options: TestServerOptions = {}): Server {
             docker_image: 'test/image',
             egg_features: options.eggFeatures ?? [],
             egg_tags: options.eggTags ?? [],
+            workload_profile: options.workloadProfile ?? 'generic',
             feature_limits: { databases: 1, allocations: 1, backups: 1 },
             status: options.status ?? null,
             is_suspended: options.status === 'suspended',
@@ -58,7 +61,12 @@ export function createTestServerCard(options: Partial<ServerCardModel> = {}): Se
         uuid: '11111111-1111-4111-8111-111111111111',
         name: 'Test server',
         description: null,
+        workload: 'generic',
         address: '127.0.0.1:25565',
+        node: 'Test node',
+        tags: [],
+        pinned: false,
+        sample: undefined,
         state: {
             kind: 'ready',
             power: 'running',
@@ -67,7 +75,7 @@ export function createTestServerCard(options: Partial<ServerCardModel> = {}): Se
             disk: statMetric(512 * 1024 * 1024, 2048 * 1024 * 1024),
         },
         permissions: { start: true, stop: true, restart: true, console: true },
-        actions: { start: noop, stop: noop, restart: noop },
+        actions: { start: noop, stop: noop, restart: noop, togglePin: noop },
         sending: false,
         ...options,
     };

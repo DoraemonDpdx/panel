@@ -57,6 +57,7 @@
     },
     "ignorePatterns": [
         "public/**",
+        "resources/scripts/components/auth/metallic/**",
         "resources/views/**",
         ".claude/**",
         "**/generated/*",

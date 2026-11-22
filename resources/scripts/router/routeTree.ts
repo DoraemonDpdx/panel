@@ -1,3 +1,4 @@
+import { adminRolePermissionsQueryOptions, adminRolesQueryOptions } from '@/api/admin/roles/queries';
 import type { QueryClient } from '@tanstack/react-query';
 import type { AnyRoute } from '@tanstack/react-router';
 import { createRootRouteWithContext, createRoute, lazyRouteComponent, redirect } from '@tanstack/react-router';
@@ -79,6 +80,7 @@ import { eggIdParam, idParam, scheduleIdParam } from '@/router/params';
 import { parseRedirectSearch } from '@/router/redirect';
 import { componentRoute, layoutRoute, pageRoute, requireServerPermission } from '@/router/viewRoutes';
 import { preloadView } from '@/views/View';
+import { parseSoftwareSearch } from '@/views/server/softwareSearch';
 import {
     parseActivitySearch,
     parseAdminListSearch,
@@ -101,7 +103,10 @@ type RouterContext = {
 
 const rootRoute = createRootRouteWithContext<RouterContext>()({
     loader: async ({ context }) => {
-        await context.queryClient.ensureQueryData({ ...siteSettingsQueryOptions(), revalidateIfStale: true });
+        await context.queryClient.ensureQueryData({
+            ...siteSettingsQueryOptions(),
+            revalidateIfStale: true,
+        });
     },
     component: RootLayout,
     notFoundComponent: RootNotFound,
@@ -128,7 +133,11 @@ const authChildren = [
         // The login screen hands over the confirmation token in history state.
         beforeLoad: ({ location, search }) => {
             if (!location.state.token) {
-                throw redirect({ to: '/auth/login', search: { redirect: search.redirect }, replace: true });
+                throw redirect({
+                    to: '/auth/login',
+                    search: { redirect: search.redirect },
+                    replace: true,
+                });
             }
         },
     }),
@@ -145,16 +154,37 @@ const authChildren = [
     }),
 ];
 
+// Full-screen, outside the panel layout: where accounts that must use 2FA land right after signing in.
+const twoFactorRequiredRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: 'account/two-factor',
+    beforeLoad: ({ location }) => {
+        if (!hasBootstrapSession()) {
+            throw redirect({
+                to: '/auth/login',
+                search: parseRedirectSearch({ redirect: location.href }),
+            });
+        }
+    },
+    component: componentRoute(() => import('@/components/auth/TwoFactorRequired')),
+});
+
 const authenticatedRoute = createRoute({
     getParentRoute: () => rootRoute,
     id: 'authenticated',
     beforeLoad: ({ location }) => {
         if (!hasBootstrapSession()) {
-            throw redirect({ to: '/auth/login', search: parseRedirectSearch({ redirect: location.href }) });
+            throw redirect({
+                to: '/auth/login',
+                search: parseRedirectSearch({ redirect: location.href }),
+            });
         }
     },
     loader: async ({ context }) => {
-        await context.queryClient.ensureQueryData({ ...currentUserQueryOptions(), revalidateIfStale: true });
+        await context.queryClient.ensureQueryData({
+            ...currentUserQueryOptions(),
+            revalidateIfStale: true,
+        });
     },
     // Layouts behind the session are lazy so the login screen does not ship the navigation
     // bar, admin sidebar, or server console in the entry chunk.
@@ -173,7 +203,10 @@ const dashboardRoute = createRoute({
         });
 
         await context.queryClient.ensureQueryData({
-            ...accountServersQueryOptions({ page: deps.page, type: user.rootAdmin ? deps.type : undefined }),
+            ...accountServersQueryOptions({
+                page: deps.page,
+                type: user.rootAdmin ? deps.type : undefined,
+            }),
             revalidateIfStale: true,
         });
     },
@@ -189,7 +222,9 @@ const accountChildren = [
     createRoute({
         getParentRoute: () => accountRoute,
         path: '/',
-        staticData: { nav: { label: 'Account', exact: true, icon: 'user-round' } },
+        staticData: {
+            nav: { label: 'Account', exact: true, icon: 'user-round' },
+        },
         component: pageRoute('page.account.overview'),
     }),
     createRoute({
@@ -197,7 +232,10 @@ const accountChildren = [
         path: 'api',
         staticData: { nav: { label: 'API Credentials', icon: 'key-round' } },
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...accountApiKeysQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...accountApiKeysQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: pageRoute('page.account.api'),
     }),
@@ -206,7 +244,10 @@ const accountChildren = [
         path: 'ssh',
         staticData: { nav: { label: 'SSH Keys', icon: 'terminal' } },
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...accountSshKeysQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...accountSshKeysQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: pageRoute('page.account.ssh'),
     }),
@@ -215,7 +256,11 @@ const accountChildren = [
         path: 'activity',
         staticData: { nav: { label: 'Activity', icon: 'history' } },
         validateSearch: parseActivitySearch,
-        loaderDeps: ({ search }) => ({ page: search.page ?? 1, event: search.event, user: search.user }),
+        loaderDeps: ({ search }) => ({
+            page: search.page ?? 1,
+            event: search.event,
+            user: search.user,
+        }),
         loader: async ({ context, deps }) => {
             await Promise.all([
                 context.queryClient.ensureQueryData({
@@ -245,7 +290,10 @@ const serverRoute = createRoute({
             revalidateIfStale: true,
         });
 
-        return { serverUuid: server.attributes.uuid, serverPermissions: selectServerPermissions(server) };
+        return {
+            serverUuid: server.attributes.uuid,
+            serverPermissions: selectServerPermissions(server),
+        };
     },
     component: lazyRouteComponent(
         async () =>
@@ -264,13 +312,33 @@ const serverChildren = [
     createRoute({
         getParentRoute: () => serverRoute,
         path: '/',
-        staticData: { nav: { label: 'Console', exact: true, icon: 'square-terminal' } },
+        staticData: {
+            nav: { label: 'Console', exact: true, icon: 'square-terminal' },
+        },
         component: () => null,
     }),
     createRoute({
         getParentRoute: () => serverRoute,
+        path: 'software',
+        staticData: {
+            // Shown only for Java Minecraft servers; see `useNavigation`.
+            nav: { label: 'Software', permission: 'software.read', icon: 'server-cog', profiles: ['game'] },
+        },
+        validateSearch: parseSoftwareSearch,
+        beforeLoad: requireServerPermission('software.read'),
+        component: pageRoute('page.server.software', 'software.read'),
+    }),
+    createRoute({
+        getParentRoute: () => serverRoute,
         path: 'files',
-        staticData: { nav: { label: 'Files', permission: 'file.*', hash: '/', icon: 'folder' } },
+        staticData: {
+            nav: {
+                label: 'Files',
+                permission: 'file.*',
+                hash: '/',
+                icon: 'folder',
+            },
+        },
         beforeLoad: requireServerPermission('file.*'),
         component: pageRoute('page.server.files', 'file.*'),
     }),
@@ -283,7 +351,13 @@ const serverChildren = [
     createRoute({
         getParentRoute: () => serverRoute,
         path: 'databases',
-        staticData: { nav: { label: 'Databases', permission: 'database.*', icon: 'database' } },
+        staticData: {
+            nav: {
+                label: 'Databases',
+                permission: 'database.*',
+                icon: 'database',
+            },
+        },
         beforeLoad: requireServerPermission('database.*'),
         loader: async ({ context }) => {
             await context.queryClient.ensureQueryData({
@@ -296,7 +370,13 @@ const serverChildren = [
     createRoute({
         getParentRoute: () => serverRoute,
         path: 'schedules',
-        staticData: { nav: { label: 'Schedules', permission: 'schedule.*', icon: 'calendar-clock' } },
+        staticData: {
+            nav: {
+                label: 'Schedules',
+                permission: 'schedule.*',
+                icon: 'calendar-clock',
+            },
+        },
         beforeLoad: requireServerPermission('schedule.*'),
         loader: async ({ context }) => {
             await context.queryClient.ensureQueryData({
@@ -324,18 +404,26 @@ const serverChildren = [
         path: 'users/new',
         beforeLoad: requireServerPermission('user.create'),
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...systemPermissionsQueryOptions, revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...systemPermissionsQueryOptions,
+                revalidateIfStale: true,
+            });
         },
         component: pageRoute('page.server.users.create', 'user.create'),
     }),
     createRoute({
         getParentRoute: () => serverRoute,
         path: 'users',
-        staticData: { nav: { label: 'Users', permission: 'user.*', icon: 'users' } },
+        staticData: {
+            nav: { label: 'Users', permission: 'user.*', icon: 'users' },
+        },
         beforeLoad: requireServerPermission('user.*'),
         loader: async ({ context }) => {
             await Promise.all([
-                context.queryClient.ensureQueryData({ ...systemPermissionsQueryOptions, revalidateIfStale: true }),
+                context.queryClient.ensureQueryData({
+                    ...systemPermissionsQueryOptions,
+                    revalidateIfStale: true,
+                }),
                 context.queryClient.ensureQueryData({
                     ...serverSubusersQueryOptions(context.serverUuid),
                     revalidateIfStale: true,
@@ -347,7 +435,9 @@ const serverChildren = [
     createRoute({
         getParentRoute: () => serverRoute,
         path: 'backups',
-        staticData: { nav: { label: 'Backups', permission: 'backup.*', icon: 'archive' } },
+        staticData: {
+            nav: { label: 'Backups', permission: 'backup.*', icon: 'archive' },
+        },
         validateSearch: parsePageSearch,
         beforeLoad: requireServerPermission('backup.*'),
         loaderDeps: ({ search }) => ({ page: search.page ?? 1 }),
@@ -362,7 +452,13 @@ const serverChildren = [
     createRoute({
         getParentRoute: () => serverRoute,
         path: 'network',
-        staticData: { nav: { label: 'Network', permission: 'allocation.*', icon: 'network' } },
+        staticData: {
+            nav: {
+                label: 'Network',
+                permission: 'allocation.*',
+                icon: 'network',
+            },
+        },
         beforeLoad: requireServerPermission('allocation.*'),
         loader: async ({ context }) => {
             await context.queryClient.ensureQueryData({
@@ -374,8 +470,20 @@ const serverChildren = [
     }),
     createRoute({
         getParentRoute: () => serverRoute,
+        path: 'mods',
+        staticData: {
+            // Shown only for servers that detect as modded; see `useNavigation`.
+            nav: { label: 'Mods', permission: 'mods.read', icon: 'puzzle', profiles: ['game'] },
+        },
+        beforeLoad: requireServerPermission('mods.read'),
+        component: pageRoute('page.server.mods', 'mods.read'),
+    }),
+    createRoute({
+        getParentRoute: () => serverRoute,
         path: 'startup',
-        staticData: { nav: { label: 'Startup', permission: 'startup.*', icon: 'rocket' } },
+        staticData: {
+            nav: { label: 'Startup', permission: 'startup.*', icon: 'rocket' },
+        },
         beforeLoad: requireServerPermission('startup.*'),
         loader: async ({ context }) => {
             await context.queryClient.ensureQueryData({
@@ -388,17 +496,33 @@ const serverChildren = [
     createRoute({
         getParentRoute: () => serverRoute,
         path: 'settings',
-        staticData: { nav: { label: 'Settings', permission: ['settings.*', 'file.sftp'], icon: 'settings' } },
+        staticData: {
+            nav: {
+                label: 'Settings',
+                permission: ['settings.*', 'file.sftp'],
+                icon: 'settings',
+            },
+        },
         beforeLoad: requireServerPermission(['settings.*', 'file.sftp']),
         component: pageRoute('page.server.settings', ['settings.*', 'file.sftp']),
     }),
     createRoute({
         getParentRoute: () => serverRoute,
         path: 'activity',
-        staticData: { nav: { label: 'Activity', permission: 'activity.*', icon: 'history' } },
+        staticData: {
+            nav: {
+                label: 'Activity',
+                permission: 'activity.*',
+                icon: 'history',
+            },
+        },
         validateSearch: parseActivitySearch,
         beforeLoad: requireServerPermission('activity.*'),
-        loaderDeps: ({ search }) => ({ page: search.page ?? 1, event: search.event, user: search.user }),
+        loaderDeps: ({ search }) => ({
+            page: search.page ?? 1,
+            event: search.event,
+            user: search.user,
+        }),
         loader: async ({ context, deps }) => {
             await Promise.all([
                 context.queryClient.ensureQueryData({
@@ -643,7 +767,10 @@ export const eggDetailRoute = createRoute({
     path: 'eggs/$eggId',
     params: eggIdParam,
     loader: async ({ context, params }) =>
-        context.queryClient.ensureQueryData({ ...adminEggQueryOptions(params.eggId), revalidateIfStale: true }),
+        context.queryClient.ensureQueryData({
+            ...adminEggQueryOptions(params.eggId),
+            revalidateIfStale: true,
+        }),
     component: componentRoute(
         () => import('@/components/admin/eggs/EggDetailContainer'),
         ['panel.eggs.detail.before', 'panel.eggs.detail.after']
@@ -654,7 +781,10 @@ const eggDetailChildren = [
         getParentRoute: () => eggDetailRoute,
         path: '/',
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...adminEggsQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...adminEggsQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: componentRoute(
             () => import('@/components/admin/eggs/EggConfigurationTab'),
@@ -687,7 +817,10 @@ const eggDetailChildren = [
         getParentRoute: () => eggDetailRoute,
         path: 'script',
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...adminEggsQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...adminEggsQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: componentRoute(
             () => import('@/components/admin/eggs/EggScriptTab'),
@@ -721,7 +854,9 @@ export const userDetailRoute = createRoute({
             revalidateIfStale: true,
         }),
     component: componentRoute(
-        async () => ({ default: (await import('@/components/admin/users/UserDetailContainer')).UserDetailLayout }),
+        async () => ({
+            default: (await import('@/components/admin/users/UserDetailContainer')).UserDetailLayout,
+        }),
         ['panel.users.detail.before', 'panel.users.detail.after']
     ),
 });
@@ -765,7 +900,10 @@ export const databaseHostDetailRoute = createRoute({
                 ...adminDatabaseHostDatabasesQueryOptions(params.id, deps.page),
                 revalidateIfStale: true,
             }),
-            context.queryClient.ensureQueryData({ ...allAdminNodesQueryOptions(), revalidateIfStale: true }),
+            context.queryClient.ensureQueryData({
+                ...allAdminNodesQueryOptions(),
+                revalidateIfStale: true,
+            }),
             context.queryClient.ensureQueryData({
                 ...allAdminLocationsQueryOptions(),
                 revalidateIfStale: true,
@@ -784,9 +922,14 @@ const panelChildren = [
     createRoute({
         getParentRoute: () => panelRoute,
         path: '/',
-        staticData: { nav: { label: 'Overview', exact: true, icon: 'layout-dashboard' } },
+        staticData: {
+            nav: { label: 'Overview', exact: true, icon: 'layout-dashboard' },
+        },
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...adminVersionQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...adminVersionQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: componentRoute(() => import('@/components/admin/overview/OverviewContainer')),
     }),
@@ -795,7 +938,11 @@ const panelChildren = [
         path: 'activity',
         staticData: { nav: { label: 'Activity', icon: 'history' } },
         validateSearch: parseActivitySearch,
-        loaderDeps: ({ search }) => ({ page: search.page ?? 1, event: search.event, user: search.user }),
+        loaderDeps: ({ search }) => ({
+            page: search.page ?? 1,
+            event: search.event,
+            user: search.user,
+        }),
         loader: async ({ context, deps }) => {
             await Promise.all([
                 context.queryClient.ensureQueryData({
@@ -806,7 +953,10 @@ const panelChildren = [
                     }),
                     revalidateIfStale: true,
                 }),
-                context.queryClient.ensureQueryData({ ...adminActivityFacetsQueryOptions(), revalidateIfStale: true }),
+                context.queryClient.ensureQueryData({
+                    ...adminActivityFacetsQueryOptions(),
+                    revalidateIfStale: true,
+                }),
             ]);
         },
         component: componentRoute(
@@ -819,7 +969,10 @@ const panelChildren = [
         path: 'settings',
         staticData: { nav: { label: 'Settings', icon: 'settings' } },
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...adminSettingsQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...adminSettingsQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: componentRoute(
             () => import('@/components/admin/settings/SettingsContainer'),
@@ -830,7 +983,10 @@ const panelChildren = [
         getParentRoute: () => panelRoute,
         path: 'settings/mail',
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...adminSettingsQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...adminSettingsQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: componentRoute(
             () => import('@/components/admin/settings/SettingsContainer'),
@@ -841,7 +997,10 @@ const panelChildren = [
         getParentRoute: () => panelRoute,
         path: 'settings/advanced',
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...adminSettingsQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...adminSettingsQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: componentRoute(
             () => import('@/components/admin/settings/SettingsContainer'),
@@ -853,7 +1012,11 @@ const panelChildren = [
         path: 'users',
         staticData: { nav: { label: 'Users', icon: 'users' } },
         validateSearch: parseUserListSearch,
-        loaderDeps: ({ search }) => ({ page: search.page ?? 1, filter: search.filter ?? '', sort: search.sort }),
+        loaderDeps: ({ search }) => ({
+            page: search.page ?? 1,
+            filter: search.filter ?? '',
+            sort: search.sort,
+        }),
         loader: async ({ context, deps }) => {
             await context.queryClient.ensureQueryData({
                 ...adminUsersQueryOptions(adminUserListQueryParams(deps.page, deps.filter, deps.sort)),
@@ -878,7 +1041,11 @@ const panelChildren = [
         path: 'locations',
         staticData: { nav: { label: 'Locations', icon: 'map-pin' } },
         validateSearch: parseLocationListSearch,
-        loaderDeps: ({ search }) => ({ page: search.page ?? 1, filter: search.filter ?? '', sort: search.sort }),
+        loaderDeps: ({ search }) => ({
+            page: search.page ?? 1,
+            filter: search.filter ?? '',
+            sort: search.sort,
+        }),
         loader: async ({ context, deps }) => {
             await context.queryClient.ensureQueryData({
                 ...adminLocationsQueryOptions(adminLocationListQueryParams(deps.page, deps.filter, deps.sort)),
@@ -896,7 +1063,11 @@ const panelChildren = [
         path: 'nodes',
         staticData: { nav: { label: 'Nodes', icon: 'network' } },
         validateSearch: parseNodeListSearch,
-        loaderDeps: ({ search }) => ({ page: search.page ?? 1, filter: search.filter ?? '', sort: search.sort }),
+        loaderDeps: ({ search }) => ({
+            page: search.page ?? 1,
+            filter: search.filter ?? '',
+            sort: search.sort,
+        }),
         loader: async ({ context, deps }) => {
             await context.queryClient.ensureQueryData({
                 ...adminNodesQueryOptions(adminNodeListQueryParams(deps.page, deps.filter, deps.sort)),
@@ -921,7 +1092,11 @@ const panelChildren = [
         path: 'servers',
         staticData: { nav: { label: 'Servers', icon: 'server' } },
         validateSearch: parseServerListSearch,
-        loaderDeps: ({ search }) => ({ page: search.page ?? 1, filter: search.filter ?? '', sort: search.sort }),
+        loaderDeps: ({ search }) => ({
+            page: search.page ?? 1,
+            filter: search.filter ?? '',
+            sort: search.sort,
+        }),
         loader: async ({ context, deps }) => {
             await context.queryClient.ensureQueryData({
                 ...adminServersQueryOptions(adminServerListQueryParams(deps.page, deps.filter, deps.sort)),
@@ -950,7 +1125,10 @@ const panelChildren = [
                     ...allAdminLocationsQueryOptions(),
                     revalidateIfStale: true,
                 }),
-                context.queryClient.ensureQueryData({ ...adminEggsQueryOptions(), revalidateIfStale: true }),
+                context.queryClient.ensureQueryData({
+                    ...adminEggsQueryOptions(),
+                    revalidateIfStale: true,
+                }),
             ]);
         },
         component: componentRoute(
@@ -963,7 +1141,11 @@ const panelChildren = [
         path: 'databases',
         staticData: { nav: { label: 'Database Hosts', icon: 'database' } },
         validateSearch: parseDatabaseHostListSearch,
-        loaderDeps: ({ search }) => ({ page: search.page ?? 1, filter: search.filter ?? '', sort: search.sort }),
+        loaderDeps: ({ search }) => ({
+            page: search.page ?? 1,
+            filter: search.filter ?? '',
+            sort: search.sort,
+        }),
         loader: async ({ context, deps }) => {
             await context.queryClient.ensureQueryData({
                 ...adminDatabaseHostsQueryOptions(adminDatabaseHostListQueryParams(deps.page, deps.filter, deps.sort)),
@@ -989,7 +1171,11 @@ const panelChildren = [
         path: 'mounts',
         staticData: { nav: { label: 'Mounts', icon: 'folder-tree' } },
         validateSearch: parseMountListSearch,
-        loaderDeps: ({ search }) => ({ page: search.page ?? 1, filter: search.filter ?? '', sort: search.sort }),
+        loaderDeps: ({ search }) => ({
+            page: search.page ?? 1,
+            filter: search.filter ?? '',
+            sort: search.sort,
+        }),
         loader: async ({ context, deps }) => {
             await context.queryClient.ensureQueryData({
                 ...adminMountsQueryOptions(adminMountListQueryParams(deps.page, deps.filter, deps.sort)),
@@ -1015,7 +1201,10 @@ const panelChildren = [
         path: 'eggs',
         staticData: { nav: { label: 'Eggs', icon: 'egg' } },
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...adminEggsQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...adminEggsQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: componentRoute(
             () => import('@/components/admin/eggs/EggsContainer'),
@@ -1026,7 +1215,10 @@ const panelChildren = [
         getParentRoute: () => panelRoute,
         path: 'eggs/new',
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...adminEggsQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...adminEggsQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: componentRoute(
             () => import('@/components/admin/eggs/CreateEggForm'),
@@ -1043,7 +1235,11 @@ const panelChildren = [
         path: 'tags',
         staticData: { nav: { label: 'Tags', icon: 'tag' } },
         validateSearch: parseTagListSearch,
-        loaderDeps: ({ search }) => ({ page: search.page ?? 1, filter: search.filter ?? '', sort: search.sort }),
+        loaderDeps: ({ search }) => ({
+            page: search.page ?? 1,
+            filter: search.filter ?? '',
+            sort: search.sort,
+        }),
         loader: async ({ context, deps }) => {
             await context.queryClient.ensureQueryData({
                 ...adminTagsQueryOptions(adminTagListQueryParams(deps.page, deps.filter, deps.sort)),
@@ -1057,10 +1253,29 @@ const panelChildren = [
     }),
     createRoute({
         getParentRoute: () => panelRoute,
+        path: 'roles',
+        staticData: { nav: { label: 'Roles', icon: 'key-round' } },
+        loader: async ({ context }) => {
+            // Prefetch; a role holder's 403 is handled by the page itself.
+            await Promise.allSettled([
+                context.queryClient.ensureQueryData({ ...adminRolesQueryOptions(), revalidateIfStale: true }),
+                context.queryClient.ensureQueryData({
+                    ...adminRolePermissionsQueryOptions(),
+                    revalidateIfStale: true,
+                }),
+            ]);
+        },
+        component: componentRoute(() => import('@/components/admin/roles/RolesContainer')),
+    }),
+    createRoute({
+        getParentRoute: () => panelRoute,
         path: 'extensions',
         staticData: { nav: { label: 'Extensions', icon: 'blocks' } },
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...adminExtensionsQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...adminExtensionsQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: componentRoute(
             () => import('@/components/admin/extensions/ExtensionsContainer'),
@@ -1072,7 +1287,10 @@ const panelChildren = [
         path: 'themes',
         staticData: { nav: { label: 'Themes', icon: 'palette' } },
         loader: async ({ context }) => {
-            await context.queryClient.ensureQueryData({ ...adminThemesQueryOptions(), revalidateIfStale: true });
+            await context.queryClient.ensureQueryData({
+                ...adminThemesQueryOptions(),
+                revalidateIfStale: true,
+            });
         },
         component: componentRoute(
             () => import('@/components/admin/themes/ThemesContainer'),
@@ -1084,7 +1302,11 @@ const panelChildren = [
         path: 'api',
         staticData: { nav: { label: 'API Keys', icon: 'key-round' } },
         validateSearch: parseApiKeyListSearch,
-        loaderDeps: ({ search }) => ({ page: search.page ?? 1, filter: search.filter ?? '', sort: search.sort }),
+        loaderDeps: ({ search }) => ({
+            page: search.page ?? 1,
+            filter: search.filter ?? '',
+            sort: search.sort,
+        }),
         loader: async ({ context, deps }) => {
             await context.queryClient.ensureQueryData({
                 ...adminApiKeysQueryOptions(adminApiKeyListQueryParams(deps.page, deps.filter, deps.sort)),
@@ -1107,7 +1329,15 @@ const extensionRoutes = (parent: AnyRoute, area: ScreenArea, resourceParent?: Sc
         createRoute({
             getParentRoute: () => parent,
             path: screen.path,
-            staticData: screen.nav ? { nav: { ...screen.nav, permission: screen.permission, screen } } : {},
+            staticData: screen.nav
+                ? {
+                      nav: {
+                          ...screen.nav,
+                          permission: screen.permission,
+                          screen,
+                      },
+                  }
+                : {},
             component: extensionScreenComponent(screen, area),
         })
     );
@@ -1132,7 +1362,14 @@ const navEntries = (routes: readonly AnyRoute[]): AreaNavEntry[] =>
         const nav = route.options.staticData?.nav;
         const path = declaredPath(route);
 
-        return nav ? [{ ...nav, segment: path === '/' ? '' : resolveScreenPath(path, nav.params) }] : [];
+        return nav
+            ? [
+                  {
+                      ...nav,
+                      segment: path === '/' ? '' : resolveScreenPath(path, nav.params),
+                  },
+              ]
+            : [];
     });
 
 /** Also publishes the area navigation. */
@@ -1179,6 +1416,7 @@ export function buildRouteTree(extensions: readonly SiteExtensionEntry[] = getBo
 
     return rootRoute.addChildren([
         authRoute.addChildren(authChildren),
+        twoFactorRequiredRoute,
         authenticatedRoute.addChildren([
             dashboardRoute,
             accountRoute.addChildren(accountRouteChildren),

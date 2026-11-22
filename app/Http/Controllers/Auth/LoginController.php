@@ -48,6 +48,7 @@ class LoginController extends AbstractLoginController
         'data' => [
             'complete' => false,
             'confirmation_token' => 'b6e22f85d63c4d9db9739f9ab0a27a48f51f7ad38ef8c12fd157c4c6f4b2e51d',
+            'step' => 'totp',
         ],
     ];
 

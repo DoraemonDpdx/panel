@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Pterodactyl\Http\Controllers\Auth\DiscordLoginController;
 use Pterodactyl\Http\Controllers\Auth\ForgotPasswordController;
+use Pterodactyl\Http\Controllers\Auth\GoogleLoginController;
 use Pterodactyl\Http\Controllers\Auth\LoginCheckpointController;
 use Pterodactyl\Http\Controllers\Auth\LoginController;
+use Pterodactyl\Http\Controllers\Auth\LoginPasskeyController;
 use Pterodactyl\Http\Controllers\Auth\ResetPasswordController;
 
 /*
@@ -31,6 +34,12 @@ Route::middleware(['throttle:authentication'])->group(function (): void {
     // Login endpoints.
     Route::post('/login', [LoginController::class, 'login'])->middleware('recaptcha');
     Route::post('/login/checkpoint', LoginCheckpointController::class)->name('auth.login-checkpoint');
+    Route::post('/login/passkey/options', [LoginPasskeyController::class, 'options'])->name('auth.login-passkey-options');
+    Route::post('/login/passkey', [LoginPasskeyController::class, 'verify'])->name('auth.login-passkey');
+    Route::post('/login/google', GoogleLoginController::class)->name('auth.login-google');
+    Route::post('/login/discord/register', [DiscordLoginController::class, 'register'])->name('auth.login-discord-register');
+    Route::get('/login/discord', [DiscordLoginController::class, 'redirect'])->name('auth.login-discord');
+    Route::get('/login/discord/callback', [DiscordLoginController::class, 'callback'])->name('auth.login-discord-callback');
 
     // Forgot password route. A post to this endpoint will trigger an
     // email to be sent containing a reset token.

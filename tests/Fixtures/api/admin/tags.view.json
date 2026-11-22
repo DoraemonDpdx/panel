@@ -50,6 +50,7 @@
                                         "eula",
                                         "java_version"
                                     ],
+                                    "workload_profile": "generic",
                                     "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                                     "docker_images": {
                                         "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
@@ -96,6 +97,7 @@
                                     "name": "Paper Child",
                                     "description": null,
                                     "features": null,
+                                    "workload_profile": "generic",
                                     "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                                     "docker_images": {
                                         "Java 21": "ghcr.io/pterodactyl/yolks:java_21"
@@ -219,6 +221,7 @@
                                         "eula",
                                         "java_version"
                                     ],
+                                    "workload_profile": "generic",
                                     "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                                     "docker_images": {
                                         "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
@@ -265,6 +268,7 @@
                                     "name": "Paper Child",
                                     "description": null,
                                     "features": null,
+                                    "workload_profile": "generic",
                                     "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                                     "docker_images": {
                                         "Java 21": "ghcr.io/pterodactyl/yolks:java_21"
@@ -367,6 +371,7 @@
                                         "eula",
                                         "java_version"
                                     ],
+                                    "workload_profile": "generic",
                                     "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                                     "docker_images": {
                                         "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
@@ -470,6 +475,7 @@
                                     "name": "Paper Child",
                                     "description": null,
                                     "features": null,
+                                    "workload_profile": "generic",
                                     "docker_image": "ghcr.io/pterodactyl/yolks:java_21",
                                     "docker_images": {
                                         "Java 21": "ghcr.io/pterodactyl/yolks:java_21"

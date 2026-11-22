@@ -58,6 +58,24 @@ export {
     type NavItem,
     type NavItemState,
 } from '@/views/navigation';
+export {
+    WORKLOAD_LABELS,
+    WORKLOAD_PROFILES,
+    appliesToWorkload,
+    type WorkloadProfile,
+    type WorkloadScope,
+} from '@/views/workload';
+export {
+    DASHBOARD_GROUPS,
+    DASHBOARD_STATUS_FILTERS,
+    GROUP_LABELS,
+    STATUS_FILTER_LABELS,
+    type BulkResult,
+    type BulkSignal,
+    type DashboardGroup,
+    type DashboardStatusFilter,
+    type ListGroup,
+} from '@/views/dashboardList';
 export { default as Slot } from '@/extensions/Slot';
 export type {
     DefaultViewProps,
@@ -74,6 +92,7 @@ export type {
     ViewProps,
 } from '@/views/registry';
 export type * from '@/views/models';
+export { displayText, formatClock, splitHighlights } from '@/components/server/console/logParser';
 
 /**
  * Calls `listener`, at most once a frame, after a stylesheet or an `<html>` attribute changes.

@@ -123,6 +123,7 @@ describe('session queries', () => {
                     nameLast: 'Doe',
                     password: '',
                     rootAdmin: true,
+                    roleId: '',
                     language: 'fr',
                     extensions: {},
                 })
@@ -160,6 +161,7 @@ describe('session queries', () => {
                     recaptchaEnabled: true,
                     recaptchaSecretKey: 'secret',
                     recaptchaWebsiteKey: 'site-key',
+                    curseforgeApiKey: '',
                     guzzleTimeout: 15,
                     guzzleConnectTimeout: 5,
                     allocationsEnabled: false,

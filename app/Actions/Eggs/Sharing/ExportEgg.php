@@ -39,6 +39,7 @@ final class ExportEgg implements ExportsEggs
             'author' => $egg->author,
             'description' => $egg->description,
             'features' => $egg->features,
+            'workload_profile' => $egg->workload_profile->value,
             'tags' => $egg->tags->pluck('slug')->sort()->values(),
             'docker_images' => $egg->docker_images,
             'file_denylist' => Collection::make($egg->inherit_file_denylist)->filter(fn (string $value): bool => $value !== ''),

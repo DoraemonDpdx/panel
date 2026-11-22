@@ -174,6 +174,7 @@ export type AdminEggAttributes = {
     name: string;
     description: string | null;
     features: Array<string> | null;
+    workload_profile: 'game' | 'bot' | 'web' | 'database' | 'lavalink' | 'generic';
     docker_image: string;
     docker_images: {
         [key: string]: string;
@@ -470,6 +471,29 @@ export type AdminNodeUtilizationResponse = {
         css: string;
     };
 };
+export type AdminRoleAttributes = {
+    id: number;
+    name: string;
+    description: string;
+    permissions: Array<string>;
+    users_count: number;
+    created_at: string;
+    updated_at: string;
+};
+export type AdminRolePaginatedResponse = {
+    object: string;
+    data: Array<AdminRoleResource>;
+    meta: {
+        pagination: PaginationMeta;
+    };
+};
+export type AdminRoleResource = {
+    object: string;
+    attributes: AdminRoleAttributes;
+    meta?: {
+        resource: string;
+    };
+};
 export type AdminServerAttributes = {
     id: number;
     external_id: string | null;
@@ -742,6 +766,8 @@ export type AdminUserAttributes = {
     last_name: string;
     language: string;
     root_admin: boolean;
+    role_id: string | null;
+    is_owner: boolean;
     '2fa': boolean;
     image: string;
     avatar: string | null;
@@ -1152,6 +1178,16 @@ export type ClientBackupResource = {
     object: string;
     attributes: ClientBackupAttributes;
 };
+export type ClientDashboardPreferencesAttributes = {
+    pinned: Array<string>;
+    view: string;
+    group: string;
+    status: string;
+};
+export type ClientDashboardPreferencesResource = {
+    object: string;
+    attributes: ClientDashboardPreferencesAttributes;
+};
 export type ClientEggVariableAttributes = {
     name: string;
     description: string;
@@ -1198,6 +1234,39 @@ export type ClientFileObjectListResponse = {
 export type ClientFileObjectResource = {
     object: string;
     attributes: ClientFileObjectAttributes;
+};
+export type ClientModInstallAttributes = {
+    id: number;
+    project_id: string;
+    version_id: string;
+    slug: string;
+    project_type: string;
+    page_url: string;
+    title: string;
+    icon_url: string | null;
+    filename: string;
+    version_number: string;
+    enabled: boolean;
+    tracked: boolean;
+    present: boolean;
+    update: string | null;
+};
+export type ClientModInstallResource = {
+    object: string;
+    attributes: ClientModInstallAttributes;
+};
+export type ClientModPlatformAttributes = {
+    eligible: boolean;
+    platform: string;
+    game_version: string;
+    project_type: string;
+    install_dir: string;
+    source: string;
+    resolved_game_version: string;
+};
+export type ClientModPlatformResource = {
+    object: string;
+    attributes: ClientModPlatformAttributes;
 };
 export type ClientRecoveryTokensAttributes = {
     tokens: Array<string>;
@@ -1254,6 +1323,7 @@ export type ClientServerAttributes = {
     docker_image: string;
     egg_features: Array<string> | null;
     egg_tags: Array<string>;
+    workload_profile: 'game' | 'bot' | 'web' | 'database' | 'lavalink' | 'generic';
     feature_limits: {
         databases: number | null;
         allocations: number | null;
@@ -1310,6 +1380,66 @@ export type ClientServerPaginatedResponse = {
         pagination: PaginationMeta;
     };
 };
+export type ClientServerPortsAttributes = {
+    roles: Array<{
+        role: string;
+        required: boolean;
+        allocation: {
+            id: number;
+            ip: string;
+            ip_alias: string | null;
+            port: number;
+        };
+        auto: boolean;
+        status: string;
+        reason: string | null;
+    }>;
+    free_allocations: Array<string>;
+    settings: {
+        file_name: string;
+        format: string;
+        mode: string;
+        conflict_policy: string;
+        extra: Array<{
+            key: string;
+            value: string;
+            secret: boolean;
+        }>;
+    };
+    restart_required: boolean;
+    allocation_limit: number;
+    allocation_count: number;
+    can_add_role: boolean;
+    variables: {
+        PORT: string;
+        PUBLIC_ADDRESS: string;
+    };
+};
+export type ClientServerPortsPreviewAttributes = {
+    path: string;
+    mode: string;
+    format: string;
+    content: string;
+    conflicts: Array<string>;
+    writes_file: boolean;
+};
+export type ClientServerPortsPreviewResource = {
+    object: string;
+    attributes: ClientServerPortsPreviewAttributes;
+};
+export type ClientServerPortsResource = {
+    object: string;
+    attributes: ClientServerPortsAttributes;
+};
+export type ClientServerPortsWriteAttributes = {
+    written: boolean;
+    error: string | null;
+    conflicts: Array<string>;
+};
+export type ClientServerPortsWriteResource = {
+    object: string;
+    attributes: ClientServerPortsWriteAttributes;
+};
 export type ClientServerResource = {
     object: string;
     attributes: ClientServerAttributes;
@@ -1317,6 +1447,21 @@ export type ClientServerResource = {
         is_server_owner: boolean;
         user_permissions: Array<string>;
     };
+};
+export type ClientServerSavedCommandAttributes = {
+    id: number;
+    label: string;
+    command: string;
+    confirm: boolean;
+    position: number;
+};
+export type ClientServerSavedCommandListResponse = {
+    object: string;
+    data: Array<ClientServerSavedCommandResource>;
+};
+export type ClientServerSavedCommandResource = {
+    object: string;
+    attributes: ClientServerSavedCommandAttributes;
 };
 export type ClientServerScheduleAttributes = {
     id: number;
@@ -1356,7 +1501,7 @@ export type ClientServerSubuserAttributes = {
     avatar: string | null;
     '2fa_enabled': boolean;
     created_at: string;
-    permissions: Array<'websocket.connect' | 'control.console' | 'control.start' | 'control.stop' | 'control.restart' | 'user.create' | 'user.read' | 'user.update' | 'user.delete' | 'file.create' | 'file.read' | 'file.read-content' | 'file.update' | 'file.delete' | 'file.archive' | 'file.sftp' | 'backup.create' | 'backup.read' | 'backup.delete' | 'backup.download' | 'backup.restore' | 'allocation.read' | 'allocation.create' | 'allocation.update' | 'allocation.delete' | 'startup.read' | 'startup.update' | 'startup.docker-image' | 'database.create' | 'database.read' | 'database.update' | 'database.delete' | 'database.view_password' | 'schedule.create' | 'schedule.read' | 'schedule.update' | 'schedule.delete' | 'settings.rename' | 'settings.reinstall' | 'activity.read' | string>;
+    permissions: Array<'websocket.connect' | 'control.console' | 'control.start' | 'control.stop' | 'control.restart' | 'user.create' | 'user.read' | 'user.update' | 'user.delete' | 'file.create' | 'file.read' | 'file.read-content' | 'file.update' | 'file.delete' | 'file.archive' | 'file.sftp' | 'backup.create' | 'backup.read' | 'backup.delete' | 'backup.download' | 'backup.restore' | 'allocation.read' | 'allocation.create' | 'allocation.update' | 'allocation.delete' | 'startup.read' | 'startup.update' | 'startup.docker-image' | 'database.create' | 'database.read' | 'database.update' | 'database.delete' | 'database.view_password' | 'schedule.create' | 'schedule.read' | 'schedule.update' | 'schedule.delete' | 'settings.rename' | 'settings.reinstall' | 'settings.ports' | 'mods.read' | 'mods.install' | 'activity.read' | string>;
 };
 export type ClientServerSubuserListResponse = {
     object: string;
@@ -1540,6 +1685,10 @@ export type AdminCreateUserRequest = {
      */
     root_admin?: boolean;
     /**
+     * The role id. Must match an existing stored value.
+     */
+    role_id?: number | null;
+    /**
      * The name first. Must be between 1 and 191 characters.
      */
     name_first: string;
@@ -1576,6 +1725,10 @@ export type AdminUpdateUserRequest = {
      * Whether the user has administrator privileges.
      */
     root_admin?: boolean;
+    /**
+     * The role id. Must match an existing stored value.
+     */
+    role_id?: number | null;
     /**
      * The name first. Must be between 1 and 191 characters.
      */
@@ -2221,6 +2374,10 @@ export type AdminCreateEggRequest = {
      */
     force_outgoing_ip?: boolean;
     /**
+     * What the egg runs (game, bot, web, database, lavalink or generic); the client UI shows only the tabs relevant to it.
+     */
+    workload_profile?: 'game' | 'bot' | 'web' | 'database' | 'lavalink' | 'generic';
+    /**
      * File patterns denied by the file manager.
      */
     file_denylist?: Array<string>;
@@ -2271,6 +2428,10 @@ export type AdminUpdateEggRequest = {
      * Whether servers should use their allocation IP for outgoing traffic.
      */
     force_outgoing_ip?: boolean;
+    /**
+     * What the egg runs (game, bot, web, database, lavalink or generic); the client UI shows only the tabs relevant to it.
+     */
+    workload_profile?: 'game' | 'bot' | 'web' | 'database' | 'lavalink' | 'generic';
     /**
      * File patterns denied by the file manager.
      */
@@ -2332,6 +2493,34 @@ export type AdminUpdateTagRequest = {
      * The color.
      */
     color?: string | null;
+};
+export type AdminCreateRoleRequest = {
+    /**
+     * The role name.
+     */
+    name: string;
+    /**
+     * What the role is for.
+     */
+    description?: string;
+    /**
+     * Permissions granted to the user.
+     */
+    permissions: Array<'websocket.connect' | 'control.console' | 'control.start' | 'control.stop' | 'control.restart' | 'user.create' | 'user.read' | 'user.update' | 'user.delete' | 'file.create' | 'file.read' | 'file.read-content' | 'file.update' | 'file.delete' | 'file.archive' | 'file.sftp' | 'backup.create' | 'backup.read' | 'backup.delete' | 'backup.download' | 'backup.restore' | 'allocation.read' | 'allocation.create' | 'allocation.update' | 'allocation.delete' | 'startup.read' | 'startup.update' | 'startup.docker-image' | 'database.create' | 'database.read' | 'database.update' | 'database.delete' | 'database.view_password' | 'schedule.create' | 'schedule.read' | 'schedule.update' | 'schedule.delete' | 'settings.rename' | 'settings.reinstall' | 'settings.ports' | 'mods.read' | 'mods.install' | 'activity.read' | string>;
+};
+export type AdminUpdateRoleRequest = {
+    /**
+     * The role name.
+     */
+    name: string;
+    /**
+     * What the role is for.
+     */
+    description?: string;
+    /**
+     * Permissions granted to the user.
+     */
+    permissions: Array<'websocket.connect' | 'control.console' | 'control.start' | 'control.stop' | 'control.restart' | 'user.create' | 'user.read' | 'user.update' | 'user.delete' | 'file.create' | 'file.read' | 'file.read-content' | 'file.update' | 'file.delete' | 'file.archive' | 'file.sftp' | 'backup.create' | 'backup.read' | 'backup.delete' | 'backup.download' | 'backup.restore' | 'allocation.read' | 'allocation.create' | 'allocation.update' | 'allocation.delete' | 'startup.read' | 'startup.update' | 'startup.docker-image' | 'database.create' | 'database.read' | 'database.update' | 'database.delete' | 'database.view_password' | 'schedule.create' | 'schedule.read' | 'schedule.update' | 'schedule.delete' | 'settings.rename' | 'settings.reinstall' | 'settings.ports' | 'mods.read' | 'mods.install' | 'activity.read' | string>;
 };
 export type AdminUploadLogoRequest = {
     /**
@@ -3085,6 +3274,36 @@ export type AuthCompleteLoginCheckpointRequest = {
      */
     recovery_token?: string | null;
 };
+export type AuthBeginPasskeyLoginStepRequest = {
+    /**
+     * The confirmation token returned by the previous login step.
+     */
+    confirmation_token: string;
+};
+export type AuthCompletePasskeyLoginStepRequest = {
+    /**
+     * The WebAuthn assertion produced by the browser.
+     */
+    response: {
+        [key: string]: unknown;
+    };
+    /**
+     * The confirmation token returned by the previous login step.
+     */
+    confirmation_token: string;
+};
+export type AuthLoginWithGoogleRequest = {
+    /**
+     * The Google ID token (JWT).
+     */
+    credential: string;
+};
+export type AuthContinueADiscordSignInRequest = {
+    /**
+     * Whether the person accepted the one-time offer to join the Discord server.
+     */
+    join?: boolean;
+};
 export type AuthRequestPasswordResetEmailRequest = {
     /**
      * The account email address.
@@ -3127,7 +3346,31 @@ export type ClientEnableTwoFactorAuthenticationRequest = {
      */
     password: string;
 };
+export type ClientVerifyPasswordForTwoFactorSetupRequest = {
+    /**
+     * The current account password.
+     */
+    password: string;
+};
 export type ClientDisableTwoFactorAuthenticationRequest = {
+    /**
+     * The current account password.
+     */
+    password: string;
+};
+export type ClientRegisterAPasskeyRequest = {
+    /**
+     * The WebAuthn attestation produced by the browser.
+     */
+    response: {
+        [key: string]: unknown;
+    };
+    /**
+     * A name to recognise the passkey by.
+     */
+    name: string;
+};
+export type ClientRemoveAPasskeyRequest = {
     /**
      * The current account password.
      */
@@ -3162,6 +3405,24 @@ export type ClientUpdateAccountAvatarRequest = {
      * PNG, JPEG, SVG, WebP, AVIF or ICO image of at most 10 MiB.
      */
     avatar: Blob | File;
+};
+export type ClientUpdateDashboardPreferencesRequest = {
+    /**
+     * UUIDs of the pinned servers.
+     */
+    pinned?: Array<string>;
+    /**
+     * Either grid or list.
+     */
+    view?: string;
+    /**
+     * One of none, node, game or tag.
+     */
+    group?: string;
+    /**
+     * One of all, running, offline or suspended.
+     */
+    status?: string;
 };
 export type ClientCreateAccountApiKeyRequest = {
     /**
@@ -3315,6 +3576,40 @@ export type ClientPullRemoteFileRequest = {
      */
     foreground?: boolean;
 };
+export type ClientCreateASavedCommandRequest = {
+    /**
+     * The button text.
+     */
+    label: string;
+    /**
+     * The command sent to the console.
+     */
+    command: string;
+    /**
+     * Ask before sending the command.
+     */
+    confirm?: boolean;
+};
+export type ClientReorderSavedCommandsRequest = {
+    /**
+     * Command ids in the order to show them.
+     */
+    ids: Array<number>;
+};
+export type ClientUpdateASavedCommandRequest = {
+    /**
+     * The button text.
+     */
+    label: string;
+    /**
+     * The command sent to the console.
+     */
+    command: string;
+    /**
+     * Ask before sending the command.
+     */
+    confirm?: boolean;
+};
 export type ClientCreateServerScheduleRequest = {
     /**
      * The display name. Must not be greater than 191 characters.
@@ -3441,13 +3736,13 @@ export type ClientCreateServerSubuserRequest = {
     /**
      * Permissions granted to the user.
      */
-    permissions?: Array<'websocket.connect' | 'control.console' | 'control.start' | 'control.stop' | 'control.restart' | 'user.create' | 'user.read' | 'user.update' | 'user.delete' | 'file.create' | 'file.read' | 'file.read-content' | 'file.update' | 'file.delete' | 'file.archive' | 'file.sftp' | 'backup.create' | 'backup.read' | 'backup.delete' | 'backup.download' | 'backup.restore' | 'allocation.read' | 'allocation.create' | 'allocation.update' | 'allocation.delete' | 'startup.read' | 'startup.update' | 'startup.docker-image' | 'database.create' | 'database.read' | 'database.update' | 'database.delete' | 'database.view_password' | 'schedule.create' | 'schedule.read' | 'schedule.update' | 'schedule.delete' | 'settings.rename' | 'settings.reinstall' | 'activity.read' | string>;
+    permissions?: Array<'websocket.connect' | 'control.console' | 'control.start' | 'control.stop' | 'control.restart' | 'user.create' | 'user.read' | 'user.update' | 'user.delete' | 'file.create' | 'file.read' | 'file.read-content' | 'file.update' | 'file.delete' | 'file.archive' | 'file.sftp' | 'backup.create' | 'backup.read' | 'backup.delete' | 'backup.download' | 'backup.restore' | 'allocation.read' | 'allocation.create' | 'allocation.update' | 'allocation.delete' | 'startup.read' | 'startup.update' | 'startup.docker-image' | 'database.create' | 'database.read' | 'database.update' | 'database.delete' | 'database.view_password' | 'schedule.create' | 'schedule.read' | 'schedule.update' | 'schedule.delete' | 'settings.rename' | 'settings.reinstall' | 'settings.ports' | 'mods.read' | 'mods.install' | 'activity.read' | string>;
 };
 export type ClientUpdateServerSubuserRequest = {
     /**
      * Permissions granted to the user.
      */
-    permissions?: Array<'websocket.connect' | 'control.console' | 'control.start' | 'control.stop' | 'control.restart' | 'user.create' | 'user.read' | 'user.update' | 'user.delete' | 'file.create' | 'file.read' | 'file.read-content' | 'file.update' | 'file.delete' | 'file.archive' | 'file.sftp' | 'backup.create' | 'backup.read' | 'backup.delete' | 'backup.download' | 'backup.restore' | 'allocation.read' | 'allocation.create' | 'allocation.update' | 'allocation.delete' | 'startup.read' | 'startup.update' | 'startup.docker-image' | 'database.create' | 'database.read' | 'database.update' | 'database.delete' | 'database.view_password' | 'schedule.create' | 'schedule.read' | 'schedule.update' | 'schedule.delete' | 'settings.rename' | 'settings.reinstall' | 'activity.read' | string>;
+    permissions?: Array<'websocket.connect' | 'control.console' | 'control.start' | 'control.stop' | 'control.restart' | 'user.create' | 'user.read' | 'user.update' | 'user.delete' | 'file.create' | 'file.read' | 'file.read-content' | 'file.update' | 'file.delete' | 'file.archive' | 'file.sftp' | 'backup.create' | 'backup.read' | 'backup.delete' | 'backup.download' | 'backup.restore' | 'allocation.read' | 'allocation.create' | 'allocation.update' | 'allocation.delete' | 'startup.read' | 'startup.update' | 'startup.docker-image' | 'database.create' | 'database.read' | 'database.update' | 'database.delete' | 'database.view_password' | 'schedule.create' | 'schedule.read' | 'schedule.update' | 'schedule.delete' | 'settings.rename' | 'settings.reinstall' | 'settings.ports' | 'mods.read' | 'mods.install' | 'activity.read' | string>;
 };
 export type ClientCreateServerBackupRequest = {
     /**
@@ -3494,6 +3789,125 @@ export type ClientSetServerDockerImageRequest = {
      * The Docker image to use.
      */
     docker_image: string;
+};
+export type ClientUpdatePortsAndEnvironmentRequest = {
+    /**
+     * Port roles to set; each has role, auto and, when not automatic, allocation_id.
+     */
+    roles?: Array<{
+        /**
+         * Must match the regex /^[A-Z][A-Z0-9_]{0,62}$/.
+         */
+        role: string;
+        auto: boolean;
+        /**
+         * This field is required when <code>roles.*.auto</code> is <code>false</code>.
+         */
+        allocation_id?: number | null;
+    }>;
+    /**
+     * Port roles to remove.
+     */
+    remove_roles?: Array<string>;
+    /**
+     * Environment file settings: file_name, format, mode, conflict_policy and extra variables.
+     */
+    settings?: {
+        /**
+         * The settings file name. Must be at least 1 character. Must not be greater than 191 characters.
+         */
+        file_name?: string;
+        /**
+         * The settings format.
+         */
+        format?: 'dotenv' | 'json' | 'yaml';
+        /**
+         * The settings mode.
+         */
+        mode?: 'managed' | 'separate' | 'off';
+        /**
+         * The settings conflict policy.
+         */
+        conflict_policy?: 'panel' | 'user' | 'warn';
+        /**
+         * The settings extra. Must not have more than 64 items.
+         */
+        extra?: Array<{
+            /**
+             * Must match the regex /^[A-Za-z_][A-Za-z0-9_]*$/. Must not be greater than 128 characters.
+             */
+            key: string;
+            /**
+             * Must not be greater than 4096 characters.
+             */
+            value?: string | null;
+            secret?: boolean;
+        }>;
+    };
+};
+export type ClientPreviewTheEnvironmentFileRequest = {
+    /**
+     * The file name. Must be at least 1 character. Must not be greater than 191 characters.
+     */
+    file_name?: string;
+    /**
+     * The format.
+     */
+    format?: 'dotenv' | 'json' | 'yaml';
+    /**
+     * The mode.
+     */
+    mode?: 'managed' | 'separate' | 'off';
+    /**
+     * The conflict policy.
+     */
+    conflict_policy?: 'panel' | 'user' | 'warn';
+    /**
+     * The extra. Must not have more than 64 items.
+     */
+    extra?: Array<{
+        /**
+         * Must match the regex /^[A-Za-z_][A-Za-z0-9_]*$/. Must not be greater than 128 characters.
+         */
+        key: string;
+        /**
+         * Must not be greater than 4096 characters.
+         */
+        value?: string | null;
+        secret?: boolean;
+    }>;
+};
+export type ClientInstallAModVersionRequest = {
+    /**
+     * The Modrinth project ID.
+     */
+    project_id: string;
+    /**
+     * The Modrinth version ID.
+     */
+    version_id: string;
+};
+export type ClientEnableOrDisableAModRequest = {
+    /**
+     * The file name on disk, ending in .jar or .jar.disabled.
+     */
+    filename: string;
+    /**
+     * Whether the mod should be enabled.
+     */
+    enabled: boolean;
+};
+export type ClientDeleteAModByFileNameRequest = {
+    /**
+     * The file name on disk, ending in .jar or .jar.disabled.
+     */
+    filename: string;
+};
+export type ClientChangeAnInstalledVersionRequest = {
+    /**
+     * The Modrinth version ID.
+     */
+    version_id: string;
 };
 export type AdminListActivityFilterOptionsResponseBody = {
     data?: {
@@ -3691,6 +4105,12 @@ export type AdminListEggCatalogResponseBody = {
  * Raw egg export JSON document returned as a text download.
  */
 export type AdminExportEggResponseBody = string;
+export type AdminListGrantablePermissionsResponseBody = {
+    data?: Array<string>;
+    meta?: {
+        can_manage?: boolean;
+    };
+};
 export type AdminUploadLogoResponseBody = {
     logo?: string;
 };
@@ -3717,6 +4137,54 @@ export type ApplicationGetNodeConfigurationResponseBody = {
     };
     allowed_mounts?: Array<string>;
     remote?: string;
+};
+export type AuthBeginPasskeyLoginStepResponseBody = {
+    data?: {
+        options?: {
+            challenge?: string;
+            rpId?: string;
+            allowCredentials?: Array<{
+                type?: string;
+                id?: string;
+            }>;
+            userVerification?: string;
+            timeout?: number;
+        };
+    };
+};
+export type AuthCompletePasskeyLoginStepResponseBody = {
+    data?: {
+        complete?: boolean;
+        intended?: string;
+        user?: {
+            uuid?: string;
+            username?: string;
+            email?: string;
+            name_first?: string;
+            name_last?: string;
+            language?: string;
+            root_admin?: boolean;
+            use_totp?: boolean;
+            created_at?: string;
+            updated_at?: string;
+            identifier?: string;
+        };
+    };
+};
+export type AuthLoginWithGoogleResponseBody = {
+    data?: {
+        complete?: boolean;
+        confirmation_token?: string;
+        step?: string;
+    };
+};
+export type AuthContinueADiscordSignInResponseBody = {
+    data?: {
+        complete?: boolean;
+        confirmation_token?: string;
+        step?: string;
+        join_url?: string | null;
+    };
 };
 export type ClientGetExtensionJobProgressResponseBody = {
     /**
@@ -3751,6 +4219,44 @@ export type ClientGetExtensionJobProgressResponseBody = {
          * Update timestamp in ISO 8601 format.
          */
         updated_at: string;
+    };
+};
+export type ClientListPasskeysResponseBody = {
+    data?: Array<{
+        id?: number;
+        name?: string;
+        created_at?: string;
+        last_used_at?: string | null;
+    }>;
+};
+export type ClientRegisterAPasskeyResponseBody = {
+    data?: {
+        id?: number;
+        name?: string;
+        created_at?: string;
+        last_used_at?: string | null;
+    };
+};
+export type ClientBeginPasskeyRegistrationResponseBody = {
+    data?: {
+        options?: {
+            rp?: {
+                name?: string;
+                id?: string;
+            };
+            user?: {
+                name?: string;
+                id?: string;
+                displayName?: string;
+            };
+            challenge?: string;
+            pubKeyCredParams?: Array<{
+                type?: string;
+                alg?: number;
+            }>;
+            timeout?: number;
+            attestation?: string;
+        };
     };
 };
 export type ClientListAccountActivityFilterOptionsResponseBody = {
@@ -3815,6 +4321,65 @@ export type ClientListServerActivityFilterOptionsResponseBody = {
     };
 };
 export type ClientGetFileContentsResponseBody = string;
+export type ClientSearchModrinthResponseBody = {
+    object?: string;
+    data?: Array<{
+        project_id?: string;
+        slug?: string;
+        title?: string;
+        description?: string;
+        icon_url?: string | null;
+        downloads?: number;
+        author?: string;
+        categories?: Array<string>;
+        installed?: boolean;
+    }>;
+    meta?: {
+        total?: number;
+        offset?: number;
+        limit?: number;
+        loader?: string;
+        game_version?: string;
+    };
+};
+export type ClientListProjectVersionsResponseBody = {
+    object?: string;
+    data?: Array<{
+        id?: string;
+        name?: string;
+        version_number?: string;
+        version_type?: string;
+        date_published?: string;
+        game_versions?: Array<string>;
+        loaders?: Array<string>;
+        file?: {
+            filename?: string;
+            url?: string;
+            size?: number;
+            sha512?: string;
+        };
+        dependencies?: Array<unknown>;
+    }>;
+};
+export type ClientListInstalledModsResponseBody = {
+    object?: string;
+    data?: Array<{
+        id?: number;
+        project_id?: string;
+        version_id?: string;
+        slug?: string;
+        project_type?: string;
+        page_url?: string;
+        title?: string;
+        icon_url?: string | null;
+        filename?: string;
+        version_number?: string;
+        enabled?: boolean;
+        tracked?: boolean;
+        present?: boolean;
+        update?: string | null;
+    }>;
+};
 /**
  * Filter activity by event name.
  */
@@ -4231,6 +4796,23 @@ export type AdminListTagsIncludeQueryParameter = 'eggs' | 'nodes' | 'eggs,nodes'
 export type AdminGetTagIncludeQueryParameter = 'eggs' | 'nodes' | 'eggs,nodes';
 export type AdminGetTagTagIdPathParameter = number;
 /**
+ * Filter roles by name.
+ */
+export type AdminListRolesFilterNameQueryParameter = string;
+/**
+ * Sort roles by id, name or created_at. Prefix with a hyphen for descending order.
+ */
+export type AdminListRolesSortQueryParameter = string;
+/**
+ * Page number to return.
+ */
+export type AdminListRolesPageQueryParameter = number;
+/**
+ * Results to return per page.
+ */
+export type AdminListRolesPerPageQueryParameter = number;
+export type AdminGetRoleRoleIdPathParameter = number;
+/**
  * Page number to retrieve.
  */
 export type AdminListDatabaseHostsPageQueryParameter = number;
@@ -4592,6 +5174,7 @@ export type ClientListClientServersFilterExternalIdQueryParameter = string;
 export type ClientListClientServersFilterWildcardQueryParameter = string;
 export type ClientGetExtensionJobProgressExtensionPathParameter = string;
 export type ClientGetExtensionJobProgressJobPathParameter = string;
+export type ClientRemoveAPasskeyIdPathParameter = number;
 /**
  * Page number to retrieve.
  */
@@ -4718,6 +5301,10 @@ export type ClientCreateFolderServerUuidPathParameter = string;
 export type ClientChangeFilePermissionsServerUuidPathParameter = string;
 export type ClientPullRemoteFileServerUuidPathParameter = string;
 export type ClientGetFileUploadUrlServerUuidPathParameter = string;
+export type ClientListSavedCommandsServerUuidPathParameter = string;
+export type ClientReorderSavedCommandsServerUuidPathParameter = string;
+export type ClientUpdateASavedCommandServerUuidPathParameter = string;
+export type ClientUpdateASavedCommandSavedCommandPathParameter = number;
 /**
  * Comma-separated relationships to include. Supports tasks.
  */
@@ -4766,6 +5353,54 @@ export type ClientUpdateStartupVariableServerUuidPathParameter = string;
 export type ClientRenameServerServerUuidPathParameter = string;
 export type ClientReinstallServerServerUuidPathParameter = string;
 export type ClientSetServerDockerImageServerUuidPathParameter = string;
+export type ClientGetPortsAndEnvironmentServerUuidPathParameter = string;
+export type ClientPreviewTheEnvironmentFileServerUuidPathParameter = string;
+export type ClientRegenerateTheEnvironmentFileServerUuidPathParameter = string;
+export type ClientReassignAutomaticPortsServerUuidPathParameter = string;
+export type ClientGetTheModPlatformServerUuidPathParameter = string;
+/**
+ * Text to search for.
+ */
+export type ClientSearchModrinthQueryQueryParameter = string;
+/**
+ * Loader slug, defaulting to the detected one.
+ */
+export type ClientSearchModrinthLoaderQueryParameter = string;
+/**
+ * Minecraft version, defaulting to the detected one.
+ */
+export type ClientSearchModrinthGameVersionQueryParameter = string;
+/**
+ * Results to skip.
+ */
+export type ClientSearchModrinthOffsetQueryParameter = number;
+/**
+ * Results to return, at most 50.
+ */
+export type ClientSearchModrinthLimitQueryParameter = number;
+/**
+ * One of relevance, downloads, updated or newest.
+ */
+export type ClientSearchModrinthSortQueryParameter = string;
+export type ClientSearchModrinthServerUuidPathParameter = string;
+/**
+ * Loader slug, defaulting to the detected one.
+ */
+export type ClientListProjectVersionsLoaderQueryParameter = string;
+/**
+ * Minecraft version, defaulting to the detected one.
+ */
+export type ClientListProjectVersionsGameVersionQueryParameter = string;
+export type ClientListProjectVersionsServerUuidPathParameter = string;
+export type ClientListProjectVersionsProjectIdPathParameter = string;
+export type ClientListInstalledModsServerUuidPathParameter = string;
+export type ClientInstallAModVersionServerUuidPathParameter = string;
+export type ClientEnableOrDisableAModServerUuidPathParameter = string;
+export type ClientDeleteAModByFileNameServerUuidPathParameter = string;
+export type ClientChangeAnInstalledVersionServerUuidPathParameter = string;
+export type ClientChangeAnInstalledVersionInstallPathParameter = number;
+export type ClientRemoveAnInstalledModServerUuidPathParameter = string;
+export type ClientRemoveAnInstalledModInstallPathParameter = number;
 export type AdminListLanguagesData = {
     body?: never;
     path?: never;
@@ -8956,6 +9591,202 @@ export type AdminUpdateTagResponses = {
     200: AdminTagResource;
 };
 export type AdminUpdateTagResponse = AdminUpdateTagResponses[keyof AdminUpdateTagResponses];
+export type AdminListRolesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Filter roles by name.
+         */
+        'filter[name]'?: AdminListRolesFilterNameQueryParameter;
+        /**
+         * Sort roles by id, name or created_at. Prefix with a hyphen for descending order.
+         */
+        sort?: AdminListRolesSortQueryParameter;
+        /**
+         * Page number to return.
+         */
+        page?: AdminListRolesPageQueryParameter;
+        /**
+         * Results to return per page.
+         */
+        per_page?: AdminListRolesPerPageQueryParameter;
+    };
+    url: '/api/admin/roles';
+};
+export type AdminListRolesErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+};
+export type AdminListRolesError = AdminListRolesErrors[keyof AdminListRolesErrors];
+export type AdminListRolesResponses = {
+    /**
+     * Roles returned.
+     */
+    200: AdminRolePaginatedResponse;
+};
+export type AdminListRolesResponse = AdminListRolesResponses[keyof AdminListRolesResponses];
+export type AdminCreateRoleData = {
+    body: AdminCreateRoleRequest;
+    path?: never;
+    query?: never;
+    url: '/api/admin/roles';
+};
+export type AdminCreateRoleErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type AdminCreateRoleError = AdminCreateRoleErrors[keyof AdminCreateRoleErrors];
+export type AdminCreateRoleResponses = {
+    /**
+     * Role created.
+     */
+    201: AdminRoleResource;
+};
+export type AdminCreateRoleResponse = AdminCreateRoleResponses[keyof AdminCreateRoleResponses];
+export type AdminListGrantablePermissionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/admin/roles/permissions';
+};
+export type AdminListGrantablePermissionsErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+};
+export type AdminListGrantablePermissionsError = AdminListGrantablePermissionsErrors[keyof AdminListGrantablePermissionsErrors];
+export type AdminListGrantablePermissionsResponses = {
+    /**
+     * Permissions returned.
+     */
+    200: AdminListGrantablePermissionsResponseBody;
+};
+export type AdminListGrantablePermissionsResponse = AdminListGrantablePermissionsResponses[keyof AdminListGrantablePermissionsResponses];
+export type AdminDeleteRoleData = {
+    body?: never;
+    path: {
+        /**
+         * The ID of the role.
+         */
+        role_id: AdminGetRoleRoleIdPathParameter;
+    };
+    query?: never;
+    url: '/api/admin/roles/{role_id}';
+};
+export type AdminDeleteRoleErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+};
+export type AdminDeleteRoleError = AdminDeleteRoleErrors[keyof AdminDeleteRoleErrors];
+export type AdminDeleteRoleResponses = {
+    /**
+     * Role deleted.
+     */
+    204: void;
+};
+export type AdminDeleteRoleResponse = AdminDeleteRoleResponses[keyof AdminDeleteRoleResponses];
+export type AdminGetRoleData = {
+    body?: never;
+    path: {
+        /**
+         * The ID of the role.
+         */
+        role_id: AdminGetRoleRoleIdPathParameter;
+    };
+    query?: never;
+    url: '/api/admin/roles/{role_id}';
+};
+export type AdminGetRoleErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+};
+export type AdminGetRoleError = AdminGetRoleErrors[keyof AdminGetRoleErrors];
+export type AdminGetRoleResponses = {
+    /**
+     * Role returned.
+     */
+    200: AdminRoleResource;
+};
+export type AdminGetRoleResponse = AdminGetRoleResponses[keyof AdminGetRoleResponses];
+export type AdminUpdateRoleData = {
+    body: AdminUpdateRoleRequest;
+    path: {
+        /**
+         * The ID of the role.
+         */
+        role_id: AdminGetRoleRoleIdPathParameter;
+    };
+    query?: never;
+    url: '/api/admin/roles/{role_id}';
+};
+export type AdminUpdateRoleErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type AdminUpdateRoleError = AdminUpdateRoleErrors[keyof AdminUpdateRoleErrors];
+export type AdminUpdateRoleResponses = {
+    /**
+     * Role updated.
+     */
+    200: AdminRoleResource;
+};
+export type AdminUpdateRoleResponse = AdminUpdateRoleResponses[keyof AdminUpdateRoleResponses];
 export type AdminGetSettingsData = {
     body?: never;
     path?: never;
@@ -11244,12 +12075,105 @@ export type AuthCompleteLoginCheckpointErrors = {
 };
 export type AuthCompleteLoginCheckpointError = AuthCompleteLoginCheckpointErrors[keyof AuthCompleteLoginCheckpointErrors];
 export type AuthCompleteLoginCheckpointResponses = {
-    /**
-     * Login completed and a browser session was created.
-     */
     200: AuthLoginCompleteResponse;
 };
 export type AuthCompleteLoginCheckpointResponse = AuthCompleteLoginCheckpointResponses[keyof AuthCompleteLoginCheckpointResponses];
+export type AuthBeginPasskeyLoginStepData = {
+    body: AuthBeginPasskeyLoginStepRequest;
+    path?: never;
+    query?: never;
+    url: '/auth/login/passkey/options';
+};
+export type AuthBeginPasskeyLoginStepErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type AuthBeginPasskeyLoginStepError = AuthBeginPasskeyLoginStepErrors[keyof AuthBeginPasskeyLoginStepErrors];
+export type AuthBeginPasskeyLoginStepResponses = {
+    /**
+     * WebAuthn request options to pass to the browser.
+     */
+    200: AuthBeginPasskeyLoginStepResponseBody;
+};
+export type AuthBeginPasskeyLoginStepResponse = AuthBeginPasskeyLoginStepResponses[keyof AuthBeginPasskeyLoginStepResponses];
+export type AuthCompletePasskeyLoginStepData = {
+    body: AuthCompletePasskeyLoginStepRequest;
+    path?: never;
+    query?: never;
+    url: '/auth/login/passkey';
+};
+export type AuthCompletePasskeyLoginStepErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type AuthCompletePasskeyLoginStepError = AuthCompletePasskeyLoginStepErrors[keyof AuthCompletePasskeyLoginStepErrors];
+export type AuthCompletePasskeyLoginStepResponses = {
+    /**
+     * Login completed and a browser session was created.
+     */
+    200: AuthCompletePasskeyLoginStepResponseBody;
+};
+export type AuthCompletePasskeyLoginStepResponse = AuthCompletePasskeyLoginStepResponses[keyof AuthCompletePasskeyLoginStepResponses];
+export type AuthLoginWithGoogleData = {
+    body: AuthLoginWithGoogleRequest;
+    path?: never;
+    query?: never;
+    url: '/auth/login/google';
+};
+export type AuthLoginWithGoogleErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type AuthLoginWithGoogleError = AuthLoginWithGoogleErrors[keyof AuthLoginWithGoogleErrors];
+export type AuthLoginWithGoogleResponses = {
+    /**
+     * A second factor (authenticator code or passkey) is required before login can complete.
+     */
+    200: AuthLoginWithGoogleResponseBody;
+};
+export type AuthLoginWithGoogleResponse = AuthLoginWithGoogleResponses[keyof AuthLoginWithGoogleResponses];
+export type AuthContinueADiscordSignInData = {
+    body?: AuthContinueADiscordSignInRequest;
+    path?: never;
+    query?: never;
+    url: '/auth/login/discord/register';
+};
+export type AuthContinueADiscordSignInErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type AuthContinueADiscordSignInError = AuthContinueADiscordSignInErrors[keyof AuthContinueADiscordSignInErrors];
+export type AuthContinueADiscordSignInResponses = {
+    /**
+     * The account was created and the session established, or a checkpoint is required, or `join_url` points at the Discord consent screen.
+     */
+    200: AuthContinueADiscordSignInResponseBody;
+};
+export type AuthContinueADiscordSignInResponse = AuthContinueADiscordSignInResponses[keyof AuthContinueADiscordSignInResponses];
 export type AuthRequestPasswordResetEmailData = {
     body: AuthRequestPasswordResetEmailRequest;
     path?: never;
@@ -11511,6 +12435,34 @@ export type ClientEnableTwoFactorAuthenticationResponses = {
     200: ClientRecoveryTokensResource;
 };
 export type ClientEnableTwoFactorAuthenticationResponse = ClientEnableTwoFactorAuthenticationResponses[keyof ClientEnableTwoFactorAuthenticationResponses];
+export type ClientVerifyPasswordForTwoFactorSetupData = {
+    body: ClientVerifyPasswordForTwoFactorSetupRequest;
+    path?: never;
+    query?: never;
+    url: '/api/client/account/two-factor/password';
+};
+export type ClientVerifyPasswordForTwoFactorSetupErrors = {
+    /**
+     * The password is invalid.
+     */
+    400: ErrorEnvelope;
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientVerifyPasswordForTwoFactorSetupError = ClientVerifyPasswordForTwoFactorSetupErrors[keyof ClientVerifyPasswordForTwoFactorSetupErrors];
+export type ClientVerifyPasswordForTwoFactorSetupResponses = {
+    /**
+     * The password is correct.
+     */
+    204: void;
+};
+export type ClientVerifyPasswordForTwoFactorSetupResponse = ClientVerifyPasswordForTwoFactorSetupResponses[keyof ClientVerifyPasswordForTwoFactorSetupResponses];
 export type ClientDisableTwoFactorAuthenticationData = {
     body: ClientDisableTwoFactorAuthenticationRequest;
     path?: never;
@@ -11543,6 +12495,103 @@ export type ClientDisableTwoFactorAuthenticationResponses = {
     204: void;
 };
 export type ClientDisableTwoFactorAuthenticationResponse = ClientDisableTwoFactorAuthenticationResponses[keyof ClientDisableTwoFactorAuthenticationResponses];
+export type ClientListPasskeysData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/client/account/passkeys';
+};
+export type ClientListPasskeysErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+};
+export type ClientListPasskeysError = ClientListPasskeysErrors[keyof ClientListPasskeysErrors];
+export type ClientListPasskeysResponses = {
+    /**
+     * The passkeys registered on the account.
+     */
+    200: ClientListPasskeysResponseBody;
+};
+export type ClientListPasskeysResponse = ClientListPasskeysResponses[keyof ClientListPasskeysResponses];
+export type ClientRegisterAPasskeyData = {
+    body: ClientRegisterAPasskeyRequest;
+    path?: never;
+    query?: never;
+    url: '/api/client/account/passkeys';
+};
+export type ClientRegisterAPasskeyErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientRegisterAPasskeyError = ClientRegisterAPasskeyErrors[keyof ClientRegisterAPasskeyErrors];
+export type ClientRegisterAPasskeyResponses = {
+    /**
+     * The passkey was registered.
+     */
+    201: ClientRegisterAPasskeyResponseBody;
+};
+export type ClientRegisterAPasskeyResponse = ClientRegisterAPasskeyResponses[keyof ClientRegisterAPasskeyResponses];
+export type ClientBeginPasskeyRegistrationData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/client/account/passkeys/options';
+};
+export type ClientBeginPasskeyRegistrationErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+};
+export type ClientBeginPasskeyRegistrationError = ClientBeginPasskeyRegistrationErrors[keyof ClientBeginPasskeyRegistrationErrors];
+export type ClientBeginPasskeyRegistrationResponses = {
+    /**
+     * WebAuthn creation options to pass to the browser.
+     */
+    200: ClientBeginPasskeyRegistrationResponseBody;
+};
+export type ClientBeginPasskeyRegistrationResponse = ClientBeginPasskeyRegistrationResponses[keyof ClientBeginPasskeyRegistrationResponses];
+export type ClientRemoveAPasskeyData = {
+    body: ClientRemoveAPasskeyRequest;
+    path: {
+        /**
+         * The resource ID.
+         */
+        id: ClientRemoveAPasskeyIdPathParameter;
+    };
+    query?: never;
+    url: '/api/client/account/passkeys/{id}/remove';
+};
+export type ClientRemoveAPasskeyErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientRemoveAPasskeyError = ClientRemoveAPasskeyErrors[keyof ClientRemoveAPasskeyErrors];
+export type ClientRemoveAPasskeyResponses = {
+    /**
+     * The passkey was removed.
+     */
+    204: void;
+};
+export type ClientRemoveAPasskeyResponse = ClientRemoveAPasskeyResponses[keyof ClientRemoveAPasskeyResponses];
 export type ClientUpdateAccountEmailData = {
     body: ClientUpdateAccountEmailRequest;
     path?: never;
@@ -11663,6 +12712,54 @@ export type ClientUpdateAccountAvatarResponses = {
     200: ClientUserResource;
 };
 export type ClientUpdateAccountAvatarResponse = ClientUpdateAccountAvatarResponses[keyof ClientUpdateAccountAvatarResponses];
+export type ClientGetDashboardPreferencesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/client/account/dashboard-preferences';
+};
+export type ClientGetDashboardPreferencesErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+};
+export type ClientGetDashboardPreferencesError = ClientGetDashboardPreferencesErrors[keyof ClientGetDashboardPreferencesErrors];
+export type ClientGetDashboardPreferencesResponses = {
+    /**
+     * Dashboard preferences returned.
+     */
+    200: ClientDashboardPreferencesResource;
+};
+export type ClientGetDashboardPreferencesResponse = ClientGetDashboardPreferencesResponses[keyof ClientGetDashboardPreferencesResponses];
+export type ClientUpdateDashboardPreferencesData = {
+    body?: ClientUpdateDashboardPreferencesRequest;
+    path?: never;
+    query?: never;
+    url: '/api/client/account/dashboard-preferences';
+};
+export type ClientUpdateDashboardPreferencesErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientUpdateDashboardPreferencesError = ClientUpdateDashboardPreferencesErrors[keyof ClientUpdateDashboardPreferencesErrors];
+export type ClientUpdateDashboardPreferencesResponses = {
+    /**
+     * Dashboard preferences updated.
+     */
+    200: ClientDashboardPreferencesResource;
+};
+export type ClientUpdateDashboardPreferencesResponse = ClientUpdateDashboardPreferencesResponses[keyof ClientUpdateDashboardPreferencesResponses];
 export type ClientListAccountActivityData = {
     body?: never;
     path?: never;
@@ -12993,6 +14090,191 @@ export type ClientGetFileUploadUrlResponses = {
     200: ClientSignedUrlResource;
 };
 export type ClientGetFileUploadUrlResponse = ClientGetFileUploadUrlResponses[keyof ClientGetFileUploadUrlResponses];
+export type ClientListSavedCommandsData = {
+    body?: never;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientListSavedCommandsServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/console/commands';
+};
+export type ClientListSavedCommandsErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+};
+export type ClientListSavedCommandsError = ClientListSavedCommandsErrors[keyof ClientListSavedCommandsErrors];
+export type ClientListSavedCommandsResponses = {
+    /**
+     * Saved commands returned.
+     */
+    200: ClientServerSavedCommandListResponse;
+};
+export type ClientListSavedCommandsResponse = ClientListSavedCommandsResponses[keyof ClientListSavedCommandsResponses];
+export type ClientCreateASavedCommandData = {
+    body: ClientCreateASavedCommandRequest;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientListSavedCommandsServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/console/commands';
+};
+export type ClientCreateASavedCommandErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientCreateASavedCommandError = ClientCreateASavedCommandErrors[keyof ClientCreateASavedCommandErrors];
+export type ClientCreateASavedCommandResponses = {
+    /**
+     * Saved command created.
+     */
+    201: ClientServerSavedCommandResource;
+};
+export type ClientCreateASavedCommandResponse = ClientCreateASavedCommandResponses[keyof ClientCreateASavedCommandResponses];
+export type ClientReorderSavedCommandsData = {
+    body: ClientReorderSavedCommandsRequest;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientReorderSavedCommandsServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/console/commands/order';
+};
+export type ClientReorderSavedCommandsErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientReorderSavedCommandsError = ClientReorderSavedCommandsErrors[keyof ClientReorderSavedCommandsErrors];
+export type ClientReorderSavedCommandsResponses = {
+    /**
+     * Saved commands reordered.
+     */
+    200: ClientServerSavedCommandListResponse;
+};
+export type ClientReorderSavedCommandsResponse = ClientReorderSavedCommandsResponses[keyof ClientReorderSavedCommandsResponses];
+export type ClientDeleteASavedCommandData = {
+    body?: never;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientUpdateASavedCommandServerUuidPathParameter;
+        /**
+         * The saved command ID.
+         */
+        savedCommand: ClientUpdateASavedCommandSavedCommandPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/console/commands/{savedCommand}';
+};
+export type ClientDeleteASavedCommandErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+};
+export type ClientDeleteASavedCommandError = ClientDeleteASavedCommandErrors[keyof ClientDeleteASavedCommandErrors];
+export type ClientDeleteASavedCommandResponses = {
+    /**
+     * Saved command deleted.
+     */
+    204: void;
+};
+export type ClientDeleteASavedCommandResponse = ClientDeleteASavedCommandResponses[keyof ClientDeleteASavedCommandResponses];
+export type ClientUpdateASavedCommandData = {
+    body: ClientUpdateASavedCommandRequest;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientUpdateASavedCommandServerUuidPathParameter;
+        /**
+         * The saved command ID.
+         */
+        savedCommand: ClientUpdateASavedCommandSavedCommandPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/console/commands/{savedCommand}';
+};
+export type ClientUpdateASavedCommandErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientUpdateASavedCommandError = ClientUpdateASavedCommandErrors[keyof ClientUpdateASavedCommandErrors];
+export type ClientUpdateASavedCommandResponses = {
+    /**
+     * Saved command updated.
+     */
+    200: ClientServerSavedCommandResource;
+};
+export type ClientUpdateASavedCommandResponse = ClientUpdateASavedCommandResponses[keyof ClientUpdateASavedCommandResponses];
 export type ClientListServerSchedulesData = {
     body?: never;
     path: {
@@ -14205,6 +15487,578 @@ export type ClientSetServerDockerImageResponses = {
     204: void;
 };
 export type ClientSetServerDockerImageResponse = ClientSetServerDockerImageResponses[keyof ClientSetServerDockerImageResponses];
+export type ClientGetPortsAndEnvironmentData = {
+    body?: never;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientGetPortsAndEnvironmentServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/settings/ports';
+};
+export type ClientGetPortsAndEnvironmentErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+};
+export type ClientGetPortsAndEnvironmentError = ClientGetPortsAndEnvironmentErrors[keyof ClientGetPortsAndEnvironmentErrors];
+export type ClientGetPortsAndEnvironmentResponses = {
+    /**
+     * Ports and environment settings returned.
+     */
+    200: ClientServerPortsResource;
+};
+export type ClientGetPortsAndEnvironmentResponse = ClientGetPortsAndEnvironmentResponses[keyof ClientGetPortsAndEnvironmentResponses];
+export type ClientUpdatePortsAndEnvironmentData = {
+    body?: ClientUpdatePortsAndEnvironmentRequest;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientGetPortsAndEnvironmentServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/settings/ports';
+};
+export type ClientUpdatePortsAndEnvironmentErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientUpdatePortsAndEnvironmentError = ClientUpdatePortsAndEnvironmentErrors[keyof ClientUpdatePortsAndEnvironmentErrors];
+export type ClientUpdatePortsAndEnvironmentResponses = {
+    /**
+     * Ports updated; meta.write says whether the file was written.
+     */
+    200: ClientServerPortsResource;
+};
+export type ClientUpdatePortsAndEnvironmentResponse = ClientUpdatePortsAndEnvironmentResponses[keyof ClientUpdatePortsAndEnvironmentResponses];
+export type ClientPreviewTheEnvironmentFileData = {
+    body?: ClientPreviewTheEnvironmentFileRequest;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientPreviewTheEnvironmentFileServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/settings/ports/preview';
+};
+export type ClientPreviewTheEnvironmentFileErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientPreviewTheEnvironmentFileError = ClientPreviewTheEnvironmentFileErrors[keyof ClientPreviewTheEnvironmentFileErrors];
+export type ClientPreviewTheEnvironmentFileResponses = {
+    /**
+     * Preview returned.
+     */
+    200: ClientServerPortsPreviewResource;
+};
+export type ClientPreviewTheEnvironmentFileResponse = ClientPreviewTheEnvironmentFileResponses[keyof ClientPreviewTheEnvironmentFileResponses];
+export type ClientRegenerateTheEnvironmentFileData = {
+    body?: never;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientRegenerateTheEnvironmentFileServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/settings/ports/regenerate';
+};
+export type ClientRegenerateTheEnvironmentFileErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+};
+export type ClientRegenerateTheEnvironmentFileError = ClientRegenerateTheEnvironmentFileErrors[keyof ClientRegenerateTheEnvironmentFileErrors];
+export type ClientRegenerateTheEnvironmentFileResponses = {
+    /**
+     * File regenerated.
+     */
+    200: ClientServerPortsWriteResource;
+};
+export type ClientRegenerateTheEnvironmentFileResponse = ClientRegenerateTheEnvironmentFileResponses[keyof ClientRegenerateTheEnvironmentFileResponses];
+export type ClientReassignAutomaticPortsData = {
+    body?: never;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientReassignAutomaticPortsServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/settings/ports/reassign';
+};
+export type ClientReassignAutomaticPortsErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+};
+export type ClientReassignAutomaticPortsError = ClientReassignAutomaticPortsErrors[keyof ClientReassignAutomaticPortsErrors];
+export type ClientReassignAutomaticPortsResponses = {
+    /**
+     * Automatic roles reassigned.
+     */
+    200: ClientServerPortsResource;
+};
+export type ClientReassignAutomaticPortsResponse = ClientReassignAutomaticPortsResponses[keyof ClientReassignAutomaticPortsResponses];
+export type ClientGetTheModPlatformData = {
+    body?: never;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientGetTheModPlatformServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/mods/platform';
+};
+export type ClientGetTheModPlatformErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+};
+export type ClientGetTheModPlatformError = ClientGetTheModPlatformErrors[keyof ClientGetTheModPlatformErrors];
+export type ClientGetTheModPlatformResponses = {
+    /**
+     * Detected platform returned.
+     */
+    200: ClientModPlatformResource;
+};
+export type ClientGetTheModPlatformResponse = ClientGetTheModPlatformResponses[keyof ClientGetTheModPlatformResponses];
+export type ClientSearchModrinthData = {
+    body?: never;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientSearchModrinthServerUuidPathParameter;
+    };
+    query?: {
+        /**
+         * Text to search for.
+         */
+        query?: ClientSearchModrinthQueryQueryParameter;
+        /**
+         * Loader slug, defaulting to the detected one.
+         */
+        loader?: ClientSearchModrinthLoaderQueryParameter;
+        /**
+         * Minecraft version, defaulting to the detected one.
+         */
+        game_version?: ClientSearchModrinthGameVersionQueryParameter;
+        /**
+         * Results to skip.
+         */
+        offset?: ClientSearchModrinthOffsetQueryParameter;
+        /**
+         * Results to return, at most 50.
+         */
+        limit?: ClientSearchModrinthLimitQueryParameter;
+        /**
+         * One of relevance, downloads, updated or newest.
+         */
+        sort?: ClientSearchModrinthSortQueryParameter;
+    };
+    url: '/api/client/servers/{server_uuid}/mods/search';
+};
+export type ClientSearchModrinthErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * This server cannot install mods.
+     */
+    409: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientSearchModrinthError = ClientSearchModrinthErrors[keyof ClientSearchModrinthErrors];
+export type ClientSearchModrinthResponses = {
+    /**
+     * Search results returned.
+     */
+    200: ClientSearchModrinthResponseBody;
+};
+export type ClientSearchModrinthResponse = ClientSearchModrinthResponses[keyof ClientSearchModrinthResponses];
+export type ClientListProjectVersionsData = {
+    body?: never;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientListProjectVersionsServerUuidPathParameter;
+        /**
+         * The mod project ID at its provider.
+         */
+        projectId: ClientListProjectVersionsProjectIdPathParameter;
+    };
+    query?: {
+        /**
+         * Loader slug, defaulting to the detected one.
+         */
+        loader?: ClientListProjectVersionsLoaderQueryParameter;
+        /**
+         * Minecraft version, defaulting to the detected one.
+         */
+        game_version?: ClientListProjectVersionsGameVersionQueryParameter;
+    };
+    url: '/api/client/servers/{server_uuid}/mods/projects/{projectId}/versions';
+};
+export type ClientListProjectVersionsErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * This server cannot install mods.
+     */
+    409: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientListProjectVersionsError = ClientListProjectVersionsErrors[keyof ClientListProjectVersionsErrors];
+export type ClientListProjectVersionsResponses = {
+    /**
+     * Versions returned.
+     */
+    200: ClientListProjectVersionsResponseBody;
+};
+export type ClientListProjectVersionsResponse = ClientListProjectVersionsResponses[keyof ClientListProjectVersionsResponses];
+export type ClientListInstalledModsData = {
+    body?: never;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientListInstalledModsServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/mods/installed';
+};
+export type ClientListInstalledModsErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * This server cannot install mods.
+     */
+    409: ErrorEnvelope;
+};
+export type ClientListInstalledModsError = ClientListInstalledModsErrors[keyof ClientListInstalledModsErrors];
+export type ClientListInstalledModsResponses = {
+    /**
+     * Installed mods returned.
+     */
+    200: ClientListInstalledModsResponseBody;
+};
+export type ClientListInstalledModsResponse = ClientListInstalledModsResponses[keyof ClientListInstalledModsResponses];
+export type ClientInstallAModVersionData = {
+    body: ClientInstallAModVersionRequest;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientInstallAModVersionServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/mods/install';
+};
+export type ClientInstallAModVersionErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * This server cannot install mods.
+     */
+    409: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientInstallAModVersionError = ClientInstallAModVersionErrors[keyof ClientInstallAModVersionErrors];
+export type ClientInstallAModVersionResponses = {
+    /**
+     * Install queued.
+     */
+    202: ClientModInstallResource;
+};
+export type ClientInstallAModVersionResponse = ClientInstallAModVersionResponses[keyof ClientInstallAModVersionResponses];
+export type ClientEnableOrDisableAModData = {
+    body: ClientEnableOrDisableAModRequest;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientEnableOrDisableAModServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/mods/installed/toggle';
+};
+export type ClientEnableOrDisableAModErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * This server cannot install mods.
+     */
+    409: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientEnableOrDisableAModError = ClientEnableOrDisableAModErrors[keyof ClientEnableOrDisableAModErrors];
+export type ClientEnableOrDisableAModResponses = {
+    /**
+     * Mod toggled.
+     */
+    200: ClientModInstallResource;
+};
+export type ClientEnableOrDisableAModResponse = ClientEnableOrDisableAModResponses[keyof ClientEnableOrDisableAModResponses];
+export type ClientDeleteAModByFileNameData = {
+    body: ClientDeleteAModByFileNameRequest;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientDeleteAModByFileNameServerUuidPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/mods/installed/delete';
+};
+export type ClientDeleteAModByFileNameErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * This server cannot install mods.
+     */
+    409: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientDeleteAModByFileNameError = ClientDeleteAModByFileNameErrors[keyof ClientDeleteAModByFileNameErrors];
+export type ClientDeleteAModByFileNameResponses = {
+    /**
+     * Mod deleted.
+     */
+    204: void;
+};
+export type ClientDeleteAModByFileNameResponse = ClientDeleteAModByFileNameResponses[keyof ClientDeleteAModByFileNameResponses];
+export type ClientChangeAnInstalledVersionData = {
+    body: ClientChangeAnInstalledVersionRequest;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientChangeAnInstalledVersionServerUuidPathParameter;
+        /**
+         * The installed mod ID.
+         */
+        install: ClientChangeAnInstalledVersionInstallPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/mods/installed/{install}/version';
+};
+export type ClientChangeAnInstalledVersionErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * This server cannot install mods.
+     */
+    409: ErrorEnvelope;
+    /**
+     * The submitted data is invalid.
+     */
+    422: ValidationErrorEnvelope;
+};
+export type ClientChangeAnInstalledVersionError = ClientChangeAnInstalledVersionErrors[keyof ClientChangeAnInstalledVersionErrors];
+export type ClientChangeAnInstalledVersionResponses = {
+    /**
+     * Version change queued.
+     */
+    202: ClientModInstallResource;
+};
+export type ClientChangeAnInstalledVersionResponse = ClientChangeAnInstalledVersionResponses[keyof ClientChangeAnInstalledVersionResponses];
+export type ClientRemoveAnInstalledModData = {
+    body?: never;
+    path: {
+        /**
+         * The server UUID.
+         */
+        server_uuid: ClientRemoveAnInstalledModServerUuidPathParameter;
+        /**
+         * The installed mod ID.
+         */
+        install: ClientRemoveAnInstalledModInstallPathParameter;
+    };
+    query?: never;
+    url: '/api/client/servers/{server_uuid}/mods/installed/{install}';
+};
+export type ClientRemoveAnInstalledModErrors = {
+    /**
+     * Authentication credentials were missing or invalid.
+     */
+    401: ErrorEnvelope;
+    /**
+     * The API key does not have permission to perform this action.
+     */
+    403: ErrorEnvelope;
+    /**
+     * The requested resource could not be found.
+     */
+    404: ErrorEnvelope;
+    /**
+     * This server cannot install mods.
+     */
+    409: ErrorEnvelope;
+};
+export type ClientRemoveAnInstalledModError = ClientRemoveAnInstalledModErrors[keyof ClientRemoveAnInstalledModErrors];
+export type ClientRemoveAnInstalledModResponses = {
+    /**
+     * Mod removed.
+     */
+    204: void;
+};
+export type ClientRemoveAnInstalledModResponse = ClientRemoveAnInstalledModResponses[keyof ClientRemoveAnInstalledModResponses];
 export type AuthGetCsrfCookieData = {
     body?: never;
     path?: never;

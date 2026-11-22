@@ -1,3 +1,12 @@
+import type { BreadcrumbProps } from '@/components/elements/Breadcrumb';
+import type { CommandPaletteProps } from '@/components/elements/CommandPalette';
+import type { DrawerSide, DrawerSize } from '@/components/elements/Drawer';
+import type { KeyboardShortcutProps } from '@/components/elements/KeyboardShortcut';
+import type { SecretFieldProps } from '@/components/elements/SecretField';
+import type { SkeletonProps, SkeletonKind } from '@/components/elements/Skeleton';
+import type { StatusDotProps, StatusDotStatus } from '@/components/elements/StatusDot';
+import type { StepperProps, StepStatus } from '@/components/elements/Stepper';
+import type { TabsOrientation } from '@/components/elements/Tabs';
 import type { AlertProps, AlertType } from '@/components/elements/alert/Alert';
 import type { AvatarProps, AvatarVariant } from '@/components/Avatar';
 import type { BadgeProps, BadgeSize, BadgeVariant } from '@/components/elements/Badge';
@@ -10,6 +19,7 @@ import type { ListRowProps } from '@/components/elements/ListRow';
 import type { PageFooterProps } from '@/components/elements/PageFooter';
 import type { PageHeadingProps } from '@/components/elements/PageHeading';
 import type { ProgressBarProps, ProgressBarVariant } from '@/components/elements/ProgressBar';
+import type { SparklineProps } from '@/components/elements/Sparkline';
 import type { SpinnerProps, SpinnerSize } from '@/components/elements/Spinner';
 import type { StatProps, StatVariant } from '@/components/elements/Stat';
 
@@ -33,6 +43,7 @@ export interface UiPrimitives {
         state: { tone: UiTone; size: BadgeSize; variant: BadgeVariant };
         props: BadgeProps;
     };
+    Breadcrumb: { state: NoState; props: BreadcrumbProps };
     /**
      * `label` wraps the children in a row with a gap, so an icon beside the text needs no margin.
      * `Button.Text` is `color: grey` and `Button.Danger` is `color: red`.
@@ -49,11 +60,20 @@ export interface UiPrimitives {
     ChartCard: { state: NoState; props: ChartCardProps };
     Checkbox: { state: NoState };
     Code: { state: { dark: boolean } };
+    /** A floating search layer; `list` and its `item`s are plain fills. The active option has `aria-selected`. */
+    CommandPalette: { state: { empty: boolean }; props: CommandPaletteProps };
     /** `target` is added to the clicked child; the other parts are the status toast. */
     CopyOnClick: { state: { status?: 'copied' | 'failed' } };
     Dialog: {
         /** `type` is the state of the `icon` part. */
         state: { described: boolean; type?: DialogIconProps['type'] };
+    };
+    /**
+     * A modal side sheet. `viewport` positions the `root` popup at the `side` edge; `body` scrolls and `footer`
+     * holds the actions. Base UI sets `data-starting-style` and `data-ending-style` for the slide.
+     */
+    Drawer: {
+        state: { side: DrawerSide; size: DrawerSize; described: boolean; footer: boolean };
     };
     DropdownMenu: { state: { context: boolean } };
     /** `checked` is set on an item given `checked`, such as the scheme in use. */
@@ -67,6 +87,8 @@ export interface UiPrimitives {
     };
     FileInput: { state: NoState };
     Input: { state: ControlState };
+    /** The `?` overlay's content: shortcuts as `group`s of `item`s, each a `description` and its keycaps. */
+    KeyboardShortcut: { state: NoState; props: KeyboardShortcutProps };
     Label: { state: { light: boolean } };
     /**
      * `icon`, `title` and `description` are `ListRow.Icon`, `ListRow.Title` and `ListRow.Description`,
@@ -91,9 +113,17 @@ export interface UiPrimitives {
         state: { variant: ProgressBarVariant; tone: UiTone };
         props: ProgressBarProps;
     };
+    /** `label` and `description` belong to the field; `control` wraps the masked `SecretInput`. */
+    SecretField: { state: { empty: boolean }; props: SecretFieldProps };
     Select: {
         state: { error: boolean; multiple: boolean; selected: boolean; richLabel: boolean; searching: boolean };
     };
+    ShortcutsOverlay: { state: { empty: boolean } };
+    /**
+     * A static placeholder: a plain fill, never animated. `row`, `card` and `chart` are containers (`body` holds
+     * a row's lines); their pieces are `line`, `block` and `circle` roots with their own `kind`.
+     */
+    Skeleton: { state: { kind: SkeletonKind }; props: SkeletonProps };
     /**
      * `root` is the spinning element, an empty `span` with no text or role: the region that loads
      * announces it. `container` centres it when `centered`. A skin can animate anything, such as the
@@ -103,7 +133,19 @@ export interface UiPrimitives {
         state: { size: SpinnerSize; blue: boolean; centered: boolean };
         props: SpinnerProps;
     };
+    /**
+     * A tiny line of recent values in a stretched `viewBox`: `line` is the stroke and `area` the fill beneath it.
+     * It is never animated; `empty` means fewer than two samples, so nothing is drawn yet.
+     */
+    Sparkline: { state: { tone: UiTone; empty: boolean }; props: SparklineProps };
     SpinnerOverlay: { state: { fixed: boolean } };
+    /** A transitional status shows a Spinner in place of `dot`. */
+    StatusDot: { state: { status: StatusDotStatus; labelled: boolean }; props: StatusDotProps };
+    /**
+     * A step is `complete`, `current` or `upcoming`; `item`, `step`, `marker` and `label` carry it as `status`.
+     * `interactive` means completed steps are buttons.
+     */
+    Stepper: { state: { interactive: boolean; status?: StepStatus }; props: StepperProps };
     /**
      * `glyph` is the icon inside `icon`; `indicator` is a bar for the tone, and `limit` follows `value`.
      * `unavailable` means the value says why there is no reading, such as "Offline".
@@ -119,6 +161,8 @@ export interface UiPrimitives {
     Table: {
         state: { fetching: boolean };
     };
+    /** Base UI sets `data-selected`, `data-disabled` and `data-active` on a `tab`. */
+    Tabs: { state: { orientation: TabsOrientation } };
     TextArea: { state: ControlState };
     Tooltip: { state: { side: 'top' | 'right' | 'bottom' | 'left'; arrow: boolean } };
 }
@@ -128,6 +172,7 @@ export const UI_PRIMITIVE_PARTS = {
     Alert: ['root', 'icon', 'body', 'title', 'content'],
     Avatar: ['root'],
     Badge: ['root'],
+    Breadcrumb: ['root', 'list', 'item', 'link', 'current', 'separator'],
     Button: ['root', 'spinner', 'label'],
     Card: ['root', 'header', 'title', 'icon', 'actions', 'body'],
     ChartCard: ['root', 'header', 'title', 'legend', 'body'],
@@ -153,11 +198,42 @@ export const UI_PRIMITIVE_PARTS = {
         'icon',
         'iconGlyph',
     ],
+    CommandPalette: [
+        'backdrop',
+        'viewport',
+        'root',
+        'search',
+        'searchIcon',
+        'input',
+        'list',
+        'group',
+        'heading',
+        'item',
+        'itemLabel',
+        'itemHint',
+        'empty',
+        'footer',
+        'footerHint',
+    ],
+    Drawer: [
+        'backdrop',
+        'viewport',
+        'root',
+        'header',
+        'heading',
+        'title',
+        'description',
+        'closeButton',
+        'closeIcon',
+        'body',
+        'footer',
+    ],
     DropdownMenu: ['trigger', 'positioner', 'root'],
     DropdownMenuItem: ['root', 'icon', 'glyph', 'text', 'label', 'description'],
     Empty: ['root', 'header', 'media', 'title', 'description', 'content'],
     FileInput: ['root'],
     Input: ['root'],
+    KeyboardShortcut: ['root', 'key'],
     Label: ['root'],
     ListRow: ['root', 'icon', 'title', 'description', 'status'],
     NewButton: ['root', 'content', 'icon'],
@@ -166,6 +242,7 @@ export const UI_PRIMITIVE_PARTS = {
     PageHeading: ['root', 'text', 'title', 'description', 'actions'],
     Pagination: ['root', 'page'],
     ProgressBar: ['root', 'indicator'],
+    SecretField: ['root', 'label', 'control', 'description'],
     Select: [
         'root',
         'input',
@@ -182,11 +259,17 @@ export const UI_PRIMITIVE_PARTS = {
         'summary',
         'preview',
     ],
+    ShortcutsOverlay: ['root', 'group', 'heading', 'list', 'item', 'description'],
+    Skeleton: ['root', 'body'],
     Spinner: ['root', 'container'],
+    Sparkline: ['root', 'area', 'line'],
     SpinnerOverlay: ['root', 'text'],
+    StatusDot: ['root', 'dot', 'label'],
+    Stepper: ['root', 'list', 'item', 'step', 'marker', 'check', 'text', 'label', 'description'],
     Stat: ['root', 'indicator', 'icon', 'glyph', 'body', 'label', 'value', 'limit'],
     Switch: ['root', 'control', 'thumb', 'text', 'label', 'description'],
     Table: ['root', 'empty', 'scroller', 'table', 'head', 'headerRow', 'headerCell', 'body', 'row', 'cell'],
+    Tabs: ['root', 'list', 'tab', 'panel'],
     TextArea: ['root'],
     Tooltip: ['root', 'arrow'],
 } as const satisfies { readonly [N in keyof UiPrimitives]: readonly string[] };

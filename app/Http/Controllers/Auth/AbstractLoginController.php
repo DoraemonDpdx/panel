@@ -31,7 +31,7 @@ abstract class AbstractLoginController extends Controller
             $this->getField($login) => $login,
         ]);
 
-        if ($request->route()?->named('auth.login-checkpoint')) {
+        if ($request->route()?->named('auth.login-checkpoint', 'auth.login-passkey')) {
             throw new DisplayException($message ?? trans('auth.two_factor.checkpoint_failed'));
         }
 

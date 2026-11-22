@@ -99,14 +99,14 @@ describe('bootTheme', () => {
         expect(extensions.getExtensionStates()[0]).toMatchObject({ id: 'aurora', status: 'failed' });
     });
 
-    it('stays on classic without importing anything in safe mode', async () => {
+    it('still loads the chain the server sends in safe mode', async () => {
         configure({ id: 'aurora', chain, safeMode: true });
-        const importer = vi.fn();
+        const importer = vi.fn(async () => ({ default: theme.defineTheme({ views: { 'app.search': Search } }) }));
 
         await boot.bootTheme(importer);
 
-        expect(importer).not.toHaveBeenCalled();
-        expect(layerIds('app.search')).toEqual(['classic']);
+        expect(importer).toHaveBeenCalledTimes(2);
+        expect(layerIds('app.search')).toEqual(['classic', 'parent', 'aurora']);
     });
 
     it('falls back to classic and tells admins when the chain takes too long', async () => {

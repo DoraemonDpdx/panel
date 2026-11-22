@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Pterodactyl\Contracts\Eggs\CreatesEggs;
+use Pterodactyl\Enum\WorkloadProfile;
 use Pterodactyl\Models\Egg;
 use Pterodactyl\Rules\DockerImageList;
 use Pterodactyl\Services\Extensions\ExtensionFields;
@@ -40,6 +41,7 @@ final readonly class CreateEgg implements CreatesEggs
             'description' => ['nullable', 'string'],
             'docker_images' => ['required', 'string', new DockerImageList],
             'force_outgoing_ip' => ['sometimes', 'boolean'],
+            'workload_profile' => ['sometimes', Rule::enum(WorkloadProfile::class)],
             'file_denylist' => ['array'],
             'file_denylist.*' => ['string'],
             'features' => ['sometimes', 'array'],

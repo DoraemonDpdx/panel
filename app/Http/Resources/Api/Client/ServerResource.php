@@ -30,9 +30,10 @@ use UnexpectedValueException;
 #[ResponseField('feature_limits.backups', 'integer', example: 5, nullable: true)]
 #[ResponseField('egg_features', schema: ['type' => 'array', 'nullable' => true, 'items' => ['type' => 'string'], 'example' => ['eula']])]
 #[ResponseField('egg_tags', schema: ['type' => 'array', 'items' => ['type' => 'string'], 'example' => ['minecraft']])]
+#[ResponseField('workload_profile', schema: ['type' => 'string', 'enum' => ['game', 'bot', 'web', 'database', 'lavalink', 'generic'], 'example' => 'game'])]
 class ServerResource extends ClientResource
 {
-    protected array $eagerLoads = ['egg.variables', 'egg.configFrom', 'egg.tags', 'serverVariables', 'node', 'transfer', 'subusers', 'allocation'];
+    protected array $eagerLoads = ['egg.variables', 'egg.configFrom', 'egg.tags', 'serverVariables', 'node', 'transfer', 'subusers', 'allocation', 'allocations', 'portBindings.allocation', 'envSetting'];
 
     protected array $includeRelations = [
         'allocations' => ['relation' => 'allocations', 'resource' => AllocationResource::class],
@@ -89,6 +90,7 @@ class ServerResource extends ClientResource
             'docker_image' => $server->image,
             'egg_features' => $egg->inherit_features,
             'egg_tags' => $egg->tagSlugs(),
+            'workload_profile' => $egg->workload_profile,
             'feature_limits' => [
                 'databases' => $server->database_limit,
                 'allocations' => $server->allocation_limit,

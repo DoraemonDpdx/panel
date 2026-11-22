@@ -112,7 +112,7 @@ test('an entry on a server whose actor was deleted does not reveal that actor ad
 });
 test('an administrator sees the same address in both fields', function () {
     [$user, $server] = $this->generateTestAccount([Permissions::ActivityRead->value]);
-    $user->update(['root_admin' => true]);
+    $user->update(['root_admin' => true, 'use_totp' => true]);
     Activity::event('server:power.start')->actor(User::factory()->create())->subject($server)->withRequestMetadata()->log();
 
     $row = $this->actingAs($user)->getJson($this->link($server, '/activity'))->assertOk()->json('data.0.attributes');

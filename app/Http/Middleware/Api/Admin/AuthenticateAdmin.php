@@ -15,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class AuthenticateAdmin
 {
     /**
-     * Allow a request through to the admin API only for a root administrator using
+     * Allow a request through to the admin API only for a root administrator or role holder using
      * a session or an account API key. Application API keys are rejected.
      *
      * @param  Closure(Request):Response  $next
@@ -26,7 +26,7 @@ class AuthenticateAdmin
     public function handle(Request $request, Closure $next): mixed
     {
         $user = $request->user();
-        throw_if(! $user || ! $user->root_admin, AccessDeniedHttpException::class, 'This action is unauthorized.');
+        throw_if(! $user || ! $user->isStaff(), AccessDeniedHttpException::class, 'This action is unauthorized.');
 
         $token = $user->currentAccessToken();
         if ($token instanceof HasAbilities && ! $token instanceof TransientToken) {

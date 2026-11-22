@@ -57,6 +57,7 @@ use Pterodactyl\Http\Controllers\Api\Admin\Settings\LogoController;
 use Pterodactyl\Http\Controllers\Api\Admin\Settings\MailController;
 use Pterodactyl\Http\Controllers\Api\Admin\Settings\SettingsController;
 use Pterodactyl\Http\Controllers\Api\Admin\Settings\TestMailController;
+use Pterodactyl\Http\Controllers\Api\Admin\Roles\RoleController;
 use Pterodactyl\Http\Controllers\Api\Admin\Tags\TagController;
 use Pterodactyl\Http\Controllers\Api\Admin\Themes\ThemeController;
 use Pterodactyl\Http\Controllers\Api\Admin\Users\DisableTwoFactorController;
@@ -416,6 +417,28 @@ Route::prefix('/tags')->name('api.admin.tags')->group(function (): void {
     Route::put('/{tag:id}', [TagController::class, 'update'])->name('.update');
 
     Route::delete('/{tag:id}', [TagController::class, 'destroy'])->name('.delete');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Role Controller Routes
+|--------------------------------------------------------------------------
+|
+| Endpoint: /api/admin/roles
+|
+| Roles grant a subset of admin:* permissions. Managing them is root only.
+|
+*/
+Route::prefix('/roles')->name('api.admin.roles')->group(function (): void {
+    Route::get('/', [RoleController::class, 'index']);
+    // Literal before `/{role:id}` so it is not bound as an id.
+    Route::get('/permissions', [RoleController::class, 'permissions'])->name('.permissions');
+    Route::get('/{role:id}', [RoleController::class, 'show'])->name('.view');
+
+    Route::post('/', [RoleController::class, 'store'])->name('.store');
+    Route::put('/{role:id}', [RoleController::class, 'update'])->name('.update');
+
+    Route::delete('/{role:id}', [RoleController::class, 'destroy'])->name('.delete');
 });
 
 /*

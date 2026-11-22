@@ -14,13 +14,13 @@ use Pterodactyl\Services\Extensions\ExtensionSettings;
 use WeakMap;
 
 /**
- * Decides which theme a request renders with: classic in safe mode, the previewed theme for
+ * Decides which theme a request renders with: the bundled theme in safe mode, the previewed theme for
  * a root admin who asked for one, otherwise the active theme. A theme that cannot be used
  * renders as classic.
  */
 class ThemeResolver
 {
-    /** Session flag set by `?safe_mode=1`: classic, without extension bundles. */
+    /** Session flag set by `?safe_mode=1`: the bundled theme only, without other extension bundles. */
     public const string SAFE_MODE = 'theme.safe_mode';
 
     /** Session key holding the theme a root admin previews. */
@@ -53,7 +53,8 @@ class ThemeResolver
         $admin = $request->user()?->root_admin === true;
         $preview = $admin && ! $safeMode ? $session?->get(self::PREVIEW) : null;
 
-        [$id, $chain] = $safeMode ? [ThemeRepository::CLASSIC, []] : $this->usable(array_filter([is_string($preview) ? $preview : null, $this->themes->active()]));
+        // Safe mode drops previews and the chosen theme, but still renders the bundled theme.
+        [$id, $chain] = $this->usable($safeMode ? [ThemeRepository::BUNDLED] : array_filter([is_string($preview) ? $preview : null, $this->themes->active()]));
         $schemes = $this->themes->schemes($chain);
         $preference = $request->cookie(self::SCHEME_COOKIE);
         $styled = array_find(array_reverse($chain), fn (ExtensionManifest $theme): bool => $theme->theme?->stylesheet !== null);

@@ -1,0 +1,131 @@
+/*
+ * ==========================================================================
+ *  ____  ____  ____  __  __
+ * |  _ \|  _ \|  _ \ \ \/ /
+ * | | | | |_) | | | | \  /
+ * | |_| |  __/| |_| | /  \
+ * |____/|_|   |____/ /_/\_\
+ *
+ * BUILT BY  DPDX DEVELOPMENT  ·  BENGALURU, INDIA  ·  dpdx.in
+ * BUILT FOR ASTRELYSE
+ * ==========================================================================
+ *
+ * PROPRIETARY & CONFIDENTIAL. This file belongs to DPDX. A customer who receives
+ * it inside a site, panel theme or bot built and shipped by DPDX may run it as
+ * delivered, but does not own it, and no right to copy, modify, resell or reuse
+ * it elsewhere is granted without prior written authorisation from DPDX.
+ */
+
+/*
+ * Liquid glass pointer (src/cursor.ts). A clear glass arrow that refracts the page behind it, with a silver rim.
+ * Its glass sides only show while it tilts (--tw, written by cursor.ts). Fine pointers only.
+ * Never add mix-blend-mode to any layer here: in Chromium it isolates the group and silently disables the lens.
+ */
+
+/* Hide the native cursor while the glass one is live, but keep the I-beam on text fields and the code editor. */
+html.ast-cursor-on,
+html.ast-cursor-on * {
+    cursor: none !important;
+}
+html.ast-cursor-on input:not([type='button']):not([type='submit']):not([type='reset']):not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+html.ast-cursor-on textarea,
+html.ast-cursor-on [contenteditable=''],
+html.ast-cursor-on [contenteditable='true'],
+html.ast-cursor-on .cm-content,
+html.ast-cursor-on .cm-content * {
+    cursor: text !important;
+}
+
+.ast-cursor {
+    --a: 135deg;
+    --spec: 0.8;
+    --tw: 0;
+    --ast-cursor-fill: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M5.2 3.6L28.4 12.2C29.9 12.8 29.8 14.1 28.3 14.6L18.2 17.9L14.7 28.2C14.2 29.7 12.9 29.8 12.3 28.3L3.6 5.2C3.2 4.1 4.1 3.2 5.2 3.6Z'/%3E%3C/svg%3E");
+    --ast-cursor-wall: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M5.2 3.6L28.4 12.2C29.9 12.8 29.8 14.1 28.3 14.6L18.2 17.9L14.7 28.2C14.2 29.7 12.9 29.8 12.3 28.3L3.6 5.2C3.2 4.1 4.1 3.2 5.2 3.6Z' fill='none' stroke='%23000' stroke-width='3.4' stroke-linejoin='round'/%3E%3C/svg%3E");
+    --ast-cursor-line: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M5.2 3.6L28.4 12.2C29.9 12.8 29.8 14.1 28.3 14.6L18.2 17.9L14.7 28.2C14.2 29.7 12.9 29.8 12.3 28.3L3.6 5.2C3.2 4.1 4.1 3.2 5.2 3.6Z' fill='none' stroke='%23000' stroke-width='.9' stroke-linejoin='round'/%3E%3C/svg%3E");
+    /* side walls are clear glass: light catching the thickness */
+    --ast-cursor-edge: linear-gradient(
+        var(--a),
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(220, 226, 255, 0.35) 30%,
+        rgba(255, 255, 255, 0.08) 55%,
+        rgba(220, 226, 255, 0.35) 80%,
+        rgba(255, 255, 255, 0.8) 100%
+    );
+    position: fixed;
+    left: -5px;
+    top: -5px;
+    width: 40px;
+    height: 40px;
+    pointer-events: none;
+    z-index: 2147483647;
+    opacity: 0;
+    transition: opacity 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+    perspective: 160px;
+    will-change: transform;
+}
+.ast-cursor[data-show='1'] {
+    opacity: 1;
+}
+.ast-cursor[data-mode='text'] {
+    opacity: 0;
+}
+
+.ast-cursor__tilt {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform-origin: 5px 5px;
+    will-change: transform;
+}
+.ast-cursor__tilt > * {
+    position: absolute;
+    inset: 0;
+    display: block;
+}
+
+.ast-cursor__slab {
+    background: var(--ast-cursor-edge);
+    -webkit-mask: var(--ast-cursor-wall) center / 100% 100% no-repeat;
+    mask: var(--ast-cursor-wall) center / 100% 100% no-repeat;
+    transform: translateZ(calc(var(--i) * -1px));
+    opacity: calc((0.34 - var(--i) * 0.03) * var(--tw));
+}
+.ast-cursor__back {
+    -webkit-mask: var(--ast-cursor-fill) center / 100% 100% no-repeat;
+    mask: var(--ast-cursor-fill) center / 100% 100% no-repeat;
+    background: rgba(255, 255, 255, 0.03);
+    opacity: var(--tw);
+    transform: translateZ(calc(var(--n) * -1px));
+}
+
+/* Glass face. The lens (cursor.ts) sets backdrop-filter inline; this frosted pane is the fallback. */
+.ast-cursor__body {
+    -webkit-mask: var(--ast-cursor-fill) center / 100% 100% no-repeat;
+    mask: var(--ast-cursor-fill) center / 100% 100% no-repeat;
+    background: rgba(255, 255, 255, 0.015);
+    -webkit-backdrop-filter: blur(2px) saturate(1.5) brightness(1.15);
+    backdrop-filter: blur(2px) saturate(1.5) brightness(1.15);
+}
+.ast-cursor__sheen {
+    -webkit-mask: var(--ast-cursor-fill) center / 100% 100% no-repeat;
+    mask: var(--ast-cursor-fill) center / 100% 100% no-repeat;
+    background: linear-gradient(calc(var(--a) + 20deg), rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 28%, rgba(255, 255, 255, 0) 100%);
+}
+.ast-cursor__rim {
+    background: linear-gradient(calc(var(--a) + 40deg), #fff 0%, #dfe4ff 30%, #8a93b8 55%, #fff 75%, #c9d2ff 100%);
+    -webkit-mask: var(--ast-cursor-line) center / 100% 100% no-repeat;
+    mask: var(--ast-cursor-line) center / 100% 100% no-repeat;
+}
+.ast-cursor__spec {
+    opacity: var(--spec);
+    overflow: visible;
+}
+
+@media (hover: none), (pointer: coarse) {
+    .ast-cursor {
+        display: none;
+    }
+}
+
+/* ― Built by DPDX Development · Bengaluru · dpdx.in · for Astrelyse ― */

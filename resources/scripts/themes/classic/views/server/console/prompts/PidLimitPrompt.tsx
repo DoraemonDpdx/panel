@@ -1,41 +1,38 @@
-import { Dialog } from '@/sdk';
+import { TriangleAlert } from 'lucide-react';
 import type { ViewProps } from '@/sdk/theme';
-import { Close, LimitIcon } from './parts';
+import PromptCard from './PromptCard';
 
-export default function PidLimitPrompt({ model }: ViewProps<'server.feature.pidLimit'>) {
+export default function PidLimitPrompt({ model, className }: ViewProps<'server.feature.pidLimit'>) {
     return (
-        <Dialog
+        <PromptCard
+            className={className}
             open={model.open}
             title={model.admin ? 'Memory or process limit reached' : 'Possible resource limit reached'}
+            icon={TriangleAlert}
             onClose={model.close}
         >
-            <LimitIcon />
             {model.admin ? (
                 <>
-                    <p className='mt-4'>This server has reached the maximum process or memory limit.</p>
-                    <p className='mt-4'>
-                        Increasing <code className='font-mono bg-muted'>container_pid_limit</code> in the wings
-                        configuration, <code className='font-mono bg-muted'>config.yml</code>, might help resolve this
-                        issue.
-                    </p>
-                    <p className='mt-4'>
-                        <b>Note: Wings must be restarted for the configuration file changes to take effect</b>
+                    <p>This server hit the maximum process or memory limit.</p>
+                    <p>
+                        Raising <code className='font-mono bg-muted'>container_pid_limit</code> in the wings{' '}
+                        <code className='font-mono bg-muted'>config.yml</code> may fix it. Restart Wings for the change
+                        to apply.
                     </p>
                 </>
             ) : (
                 <>
-                    <p className='mt-4'>
-                        This server is attempting to use more resources than allocated. Please contact the administrator
-                        and give them the error below.
+                    <p>
+                        This server is trying to use more resources than it has. Tell an administrator and give them
+                        this error:
                     </p>
-                    <p className='mt-4'>
+                    <p>
                         <code className='font-mono bg-muted'>
                             pthread_create failed, Possibly out of memory or process/resource limits reached
                         </code>
                     </p>
                 </>
             )}
-            <Close onClick={model.close} />
-        </Dialog>
+        </PromptCard>
     );
 }

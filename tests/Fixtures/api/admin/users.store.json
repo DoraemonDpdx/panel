@@ -14,6 +14,8 @@
                 "last_name": "Ated",
                 "language": "en",
                 "root_admin": false,
+                "role_id": null,
+                "is_owner": false,
                 "2fa": false,
                 "image": "https://gravatar.com/avatar/4d424991ab1cf7b00e26af6c206252a3",
                 "avatar": null,

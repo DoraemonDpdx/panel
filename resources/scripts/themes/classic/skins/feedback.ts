@@ -100,6 +100,24 @@ export const progressBar = {
     },
 } satisfies CompleteSkin<'ProgressBar'>;
 
+export const sparkline = {
+    root: {
+        base: 'block h-6 w-full overflow-visible',
+        variants: {
+            tone: {
+                neutral: 'text-muted-foreground',
+                success: 'text-success',
+                warning: 'text-warning',
+                danger: 'text-destructive',
+                info: 'text-primary',
+                accent: 'text-accent',
+            },
+        },
+    },
+    area: 'fill-current opacity-15',
+    line: 'stroke-current stroke-[1.5] [stroke-linejoin:round] [stroke-linecap:round]',
+} satisfies CompleteSkin<'Sparkline'>;
+
 export const spinner = {
     root: {
         base: 'block rounded-full animate-[spin_1s_cubic-bezier(0.55,0.25,0.25,0.7)_infinite] border-muted border-t-foreground',
@@ -120,8 +138,8 @@ export const spinner = {
 
 export const spinnerOverlay = {
     root: {
-        base: 'top-0 left-0 flex items-center justify-center w-full h-full rounded-sm flex-col z-40 bg-background/(--spinner-overlay-opacity)',
-        variants: { fixed: { true: 'fixed', false: 'absolute' } },
+        base: 'top-0 left-0 flex items-center justify-center w-full h-full rounded-sm flex-col z-10 bg-background/(--spinner-overlay-opacity)',
+        variants: { fixed: { true: 'fixed z-50', false: 'absolute' } },
     },
     text: 'mt-4 text-muted-foreground',
 } satisfies CompleteSkin<'SpinnerOverlay'>;

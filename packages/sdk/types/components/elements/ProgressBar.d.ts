@@ -8,10 +8,24 @@ export interface ProgressBarProps {
     variant?: ProgressBarVariant;
     /** Defaults to `accent` for the page bar and `neutral` otherwise. */
     tone?: UiTone;
+    /**
+     * Picks the tone from the value: `success` below `warning` (70%), `warning` up to `danger` (90%), `danger`
+     * above. `true` uses those defaults. Overrides `tone`; without it `tone` is used as before.
+     */
+    threshold?: boolean | ProgressBarThresholds;
     /** Names a meter for assistive technology. */
     label?: string;
     className?: string;
 }
+export interface ProgressBarThresholds {
+    /** Percent from which the bar is amber (exclusive of the green range below it). */
+    warning: number;
+    /** Percent above which the bar is red. */
+    danger: number;
+}
+export declare const DEFAULT_PROGRESS_THRESHOLDS: ProgressBarThresholds;
+/** `success` below `warning`, `warning` up to and including `danger`, `danger` above; `null` has no reading. */
+export declare function thresholdTone(value: number | null, thresholds?: ProgressBarThresholds): UiTone | null;
 declare const ProgressBar: (props: ProgressBarProps) => import("react").ReactElement;
 export default ProgressBar;
 /** The page loading bar, driven by the panel's HTTP requests. */

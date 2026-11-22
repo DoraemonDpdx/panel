@@ -49,6 +49,13 @@ export const currentUserQueryOptions = () =>
 
 export const useCurrentUser = () => useQuery(currentUserQueryOptions()).data;
 
+/** Whether the current user holds an admin:* ability (root holds all). */
+export const useHasAdminPermission = (ability: string): boolean => {
+    const user = useCurrentUser();
+
+    return user.rootAdmin || (user.adminPermissions ?? []).includes(ability);
+};
+
 export const setCurrentUserQueryData = (queryClient: QueryClient, updater: CurrentUserUpdater) => {
     queryClient.setQueryData<UserData>(currentUserQueryKey, (user) => {
         const current = user ?? getBootstrapCurrentUser();

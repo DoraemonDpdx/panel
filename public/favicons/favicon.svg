@@ -1,1 +1,128 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 450"><path fill="#3d7bfd" fill-rule="evenodd" transform="translate(9.00 29.28) scale(0.96)" d="M450,0,284.79,78.49,224,221.14l-28.55-13,47-109.65L130,151.62,0,257.23l136.77-36.86,32,98.11,249.26,89.26L307.68,309ZM140.74,175.28a12.85,12.85,0,0,1-14.44,12L116.19,186l25.06-19.14Z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Bright glass slab (Sol, lit half) -->
+    <linearGradient id="gBright" x1="320" y1="60" x2="420" y2="450" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#DCDDFF"/>
+      <stop offset=".28" stop-color="#7C8CFF"/>
+      <stop offset=".7" stop-color="#1846FF"/>
+      <stop offset="1" stop-color="#0E2DB8"/>
+    </linearGradient>
+    <!-- Dark glass slab (Sol, shadow half) -->
+    <linearGradient id="gDark" x1="100" y1="80" x2="220" y2="440" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2A3045"/>
+      <stop offset=".5" stop-color="#141826"/>
+      <stop offset="1" stop-color="#0B0D14"/>
+    </linearGradient>
+    <linearGradient id="gDarkEdge" x1="190" y1="60" x2="190" y2="450" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B8B8FF" stop-opacity=".9"/>
+      <stop offset=".5" stop-color="#1846FF" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#B8B8FF" stop-opacity=".25"/>
+    </linearGradient>
+    <!-- Star facets -->
+    <linearGradient id="gLit" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#C9CBFF"/>
+    </linearGradient>
+    <linearGradient id="gShade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8A93FF"/>
+      <stop offset="1" stop-color="#2E52FF"/>
+    </linearGradient>
+    <radialGradient id="gCore" cx="256" cy="256" r="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B8B8FF" stop-opacity=".55"/>
+      <stop offset=".45" stop-color="#1846FF" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#1846FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gSheen" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+
+    <filter id="fGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="fSoft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <filter id="fNode" x="-300%" y="-300%" width="700%" height="700%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <path id="arcR" d="M324.4,68 A200,200 0 0 1 324.4,444 L310.7,406.4 A160,160 0 0 0 310.7,105.6 Z"/>
+    <path id="arcL" d="M187.6,444 A200,200 0 0 1 187.6,68 L201.3,105.6 A160,160 0 0 0 201.3,406.4 Z"/>
+    <clipPath id="clipR"><use href="#arcR"/></clipPath>
+    <clipPath id="clipL"><use href="#arcL"/></clipPath>
+    <filter id="fBloom" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="22" result="b2"/>
+      <feColorMatrix in="b2" values="0 0 0 0 .3  0 0 0 0 .45  0 0 0 0 1  0 0 0 1.4 0" result="b2c"/>
+      <feMerge><feMergeNode in="b2c"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <g id="starShape">
+      <polygon points="256,36 238,238 256,256" fill="url(#gShade)"/>
+      <polygon points="256,36 274,238 256,256" fill="url(#gLit)"/>
+      <polygon points="360,256 274,238 256,256" fill="url(#gShade)"/>
+      <polygon points="360,256 274,274 256,256" fill="url(#gLit)"/>
+      <polygon points="256,476 274,274 256,256" fill="url(#gShade)"/>
+      <polygon points="256,476 238,274 256,256" fill="url(#gLit)"/>
+      <polygon points="152,256 238,274 256,256" fill="url(#gShade)"/>
+      <polygon points="152,256 238,238 256,256" fill="url(#gLit)"/>
+    </g>
+  </defs>
+
+
+  <!-- L0 · core light -->
+  <circle id="core-light" cx="256" cy="256" r="120" fill="url(#gCore)"/>
+
+  <!-- L1 · orbit track + satellite node track -->
+  <g id="track" fill="none">
+    <circle cx="256" cy="256" r="226" stroke="#B8B8FF" stroke-opacity=".14" stroke-width="1" stroke-dasharray="2 7"/>
+  </g>
+
+  <!-- L2 · precision bezel (ticks) -->
+  <g id="bezel" stroke="#B8B8FF" fill="none">
+    <circle cx="256" cy="256" r="140" stroke-opacity=".16" stroke-width="1"/>
+    <g stroke-opacity=".35" stroke-width="1.5" stroke-linecap="round">
+      <path d="M256,124v-8 M256,388v8 M124,256h-8 M388,256h8"/>
+    </g>
+    <g stroke-opacity=".22" stroke-width="1" id="ticks"><path d="M394.8,274.3L391.8,273.9 M391.2,292.2L385.4,290.7 M385.3,309.6L382.6,308.4 M377.2,326.0L372.0,323.0 M367.1,341.2L364.7,339.4 M355.0,355.0L350.8,350.8 M341.2,367.1L339.4,364.7 M326.0,377.2L323.0,372.0 M309.6,385.3L308.4,382.6 M292.2,391.2L290.7,385.4 M274.3,394.8L273.9,391.8 M237.7,394.8L238.1,391.8 M219.8,391.2L221.3,385.4 M202.4,385.3L203.6,382.6 M186.0,377.2L189.0,372.0 M170.8,367.1L172.6,364.7 M157.0,355.0L161.2,350.8 M144.9,341.2L147.3,339.4 M134.8,326.0L140.0,323.0 M126.7,309.6L129.4,308.4 M120.8,292.2L126.6,290.7 M117.2,274.3L120.2,273.9 M117.2,237.7L120.2,238.1 M120.8,219.8L126.6,221.3 M126.7,202.4L129.4,203.6 M134.8,186.0L140.0,189.0 M144.9,170.8L147.3,172.6 M157.0,157.0L161.2,161.2 M170.8,144.9L172.6,147.3 M186.0,134.8L189.0,140.0 M202.4,126.7L203.6,129.4 M219.8,120.8L221.3,126.6 M237.7,117.2L238.1,120.2 M274.3,117.2L273.9,120.2 M292.2,120.8L290.7,126.6 M309.6,126.7L308.4,129.4 M326.0,134.8L323.0,140.0 M341.2,144.9L339.4,147.3 M355.0,157.0L350.8,161.2 M367.1,170.8L364.7,172.6 M377.2,186.0L372.0,189.0 M385.3,202.4L382.6,203.6 M391.2,219.8L385.4,221.3 M394.8,237.7L391.8,238.1"/></g>
+  </g>
+
+  <!-- L3 · Sol: dark glass half -->
+  <g id="sol-dark">
+    <use href="#arcL" fill="url(#gDark)"/>
+    <use href="#arcL" fill="none" stroke="url(#gDarkEdge)" stroke-width="1.5"/>
+    <path d="M184,74 A193,193 0 0 0 73,186" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M200,256 L40,256 L40,470 L200,470 Z" fill="#000" opacity=".18" clip-path="url(#clipL)"/>
+  </g>
+
+  <!-- L4 · Sol: bright glass half -->
+  <g id="sol-bright">
+    <use href="#arcR" fill="#1846FF" filter="url(#fSoft)" opacity=".55"/>
+    <use href="#arcR" fill="url(#gBright)"/>
+    <!-- inner bevel facet -->
+    <path d="M310.7,105.6 A160,160 0 0 1 310.7,406.4 L317,388 A141,141 0 0 0 317,124 Z" fill="#0B1A6E" opacity=".0"/>
+    <g clip-path="url(#clipR)">
+      <!-- facet split: lower half slightly deeper -->
+      <path d="M300,256 L470,256 L470,470 L300,470 Z" fill="#0A1E8C" opacity=".22"/>
+      <!-- sheen streak (animatable) -->
+      <rect id="sheen" x="330" y="-40" width="38" height="600" fill="url(#gSheen)" transform="rotate(28 256 256)" opacity=".7"/>
+    </g>
+    <path d="M314,116 A150,150 0 0 1 314,396" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="1"/>
+    <use href="#arcR" fill="none" stroke="#E6E7FF" stroke-opacity=".75" stroke-width="1.2"/>
+  </g>
+
+  <!-- L5 · Astra: faceted star -->
+  <g id="astra" filter="url(#fGlow)">
+    <use href="#starShape"/>
+    <circle cx="256" cy="256" r="5" fill="#fff"/>
+  </g>
+
+  <!-- L6 · satellite node: server online -->
+  <g id="node">
+    <circle cx="415.8" cy="96.2" r="8" fill="#39FF14" filter="url(#fNode)"/>
+    <circle cx="415.8" cy="96.2" r="3.2" fill="#EFFFE8"/>
+  </g>
+</svg>

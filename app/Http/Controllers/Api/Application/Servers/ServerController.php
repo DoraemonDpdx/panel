@@ -62,7 +62,7 @@ class ServerController extends ApplicationApiController
     #[ResponseFromResource(ServerResource::class, Server::class, collection: true, factoryStates: ['withRelationships'], resourceKey: 'server', paginate: 50)]
     public function index(GetServersRequest $request): ApiResourceCollection
     {
-        $query = Server::query()->with(['egg.variables', 'serverVariables', 'location']);
+        $query = Server::query()->with(['egg.variables', 'serverVariables', 'location', 'allocation', 'allocations', 'portBindings.allocation', 'envSetting']);
         $search = $request->validated('search');
 
         if (is_string($search) && $search !== '') {

@@ -29,6 +29,8 @@ declare module '@tanstack/history' {
     interface HistoryState {
         // Login confirmation token for the 2FA checkpoint.
         token?: string;
+        // Which proof the 2FA checkpoint asks for; defaults to the authenticator code.
+        step?: 'totp' | 'passkey';
         // Set when a request was redirected to /account for 2FA setup.
         twoFactorRedirect?: boolean;
     }

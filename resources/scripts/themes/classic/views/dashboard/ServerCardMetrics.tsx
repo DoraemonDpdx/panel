@@ -1,5 +1,5 @@
 import { Cpu, HardDrive, MemoryStick } from 'lucide-react';
-import { Badge, bytesToString, cn, Spinner, Stat } from '@/sdk';
+import { Badge, bytesToString, cn, Spinner, Sparkline, Stat, useSparklineBuffer } from '@/sdk';
 import type { ServerCardState, ServerStatMetric, ServerUnavailableReason, UiTone, ViewProps } from '@/sdk/theme';
 
 const unavailableLabels = {
@@ -33,7 +33,10 @@ function UnavailableBadge({ reason }: { reason: ServerUnavailableReason }) {
 // The card shows only the danger alarm; a warning draws like no alarm.
 const tone = ({ alarm }: ServerStatMetric): UiTone => (alarm === 'danger' ? 'danger' : 'neutral');
 
-function MetricsContent({ state }: { state: ServerCardState }) {
+function MetricsContent({ state, sample }: { state: ServerCardState; sample: unknown }) {
+    const ready = state.kind === 'ready';
+    const cpu = useSparklineBuffer(state.kind === 'ready' ? state.cpu.value : 0, { sample, active: ready });
+
     if (state.kind === 'loading') {
         return <Spinner size='small' />;
     }
@@ -75,6 +78,17 @@ function MetricsContent({ state }: { state: ServerCardState }) {
                     value={value}
                     limit={`of ${limit}`}
                     tone={tone(metric)}
+                    trend={
+                        label === 'CPU' ? (
+                            <Sparkline
+                                values={cpu}
+                                max={100}
+                                tone={tone(metric)}
+                                label='CPU, recent'
+                                className='h-4 w-16'
+                            />
+                        ) : undefined
+                    }
                     className='flex-1 ml-4 hidden sm:flex'
                 />
             ))}
@@ -85,7 +99,7 @@ function MetricsContent({ state }: { state: ServerCardState }) {
 export default function ServerCardMetrics({ model, className }: ViewProps<'dashboard.serverCard.metrics'>) {
     return (
         <div className={cn('hidden col-span-7 lg:col-span-4 sm:flex items-baseline justify-center', className)}>
-            <MetricsContent state={model.state} />
+            <MetricsContent state={model.state} sample={model.sample} />
         </div>
     );
 }

@@ -31,5 +31,9 @@ return [
         'schedule_read' => 'Allows a user permission to view schedules for a server.',
         'schedule_update' => 'Allows a user permission to make modifications to an existing server schedule.',
         'schedule_delete' => 'Allows a user to delete a schedule for the server.',
+        'mods_read' => 'Allows the user to view the mods or plugins installed on the server and search Modrinth.',
+        'mods_install' => 'Allows the user to install, update, enable, disable and remove mods or plugins.',
+        'software_read' => 'Allows the user to see the server software and the versions available.',
+        'software_manage' => 'Allows the user to switch, reinstall or clear the server software, and install modpacks and worlds.',
     ],
 ];

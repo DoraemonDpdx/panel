@@ -111,6 +111,34 @@ return [
             'primary' => 'Set :allocation as the primary server allocation',
             'delete' => 'Deleted the :allocation allocation',
         ],
+        'ports' => [
+            'assign' => 'Assigned :allocation to the :role port role',
+            'remove' => 'Removed the :role port role',
+            'reassign' => 'Reassigned the automatic port roles',
+            'settings' => 'Updated the environment file settings',
+            'regenerate' => 'Regenerated the environment file :file',
+        ],
+        'saved-command' => [
+            'create' => 'Pinned the :label console command',
+            'update' => 'Updated the :label saved command',
+            'delete' => 'Removed the :label saved command',
+            'reorder' => 'Reordered the saved console commands',
+        ],
+        'mods' => [
+            'install' => 'Installed :title (:filename) from Modrinth',
+            'remove' => 'Removed :title (:filename)',
+            'enable' => 'Enabled :filename',
+            'disable' => 'Disabled :filename',
+        ],
+        'software' => [
+            'install' => 'Switched the server software to :label :minecraft',
+            'reinstall' => 'Reinstalled the :label server software',
+            'clear' => 'Cleared the server files',
+            'convert' => 'Converted the server to the Astrelyse Minecraft egg',
+            'modpack' => 'Installed the :title modpack',
+            'world' => 'Installed the :title world',
+            'mods' => 'Installed :title',
+        ],
         'schedule' => [
             'create' => 'Created the :name schedule',
             'update' => 'Updated the :name schedule',
@@ -137,6 +165,11 @@ return [
         ],
     ],
     'admin' => [
+        'role' => [
+            'create' => 'Created the :name admin role',
+            'update' => 'Updated the :name admin role',
+            'delete' => 'Deleted the :name admin role',
+        ],
         'api-key' => [
             'create' => 'Created application API key :identifier',
             'update' => 'Updated application API key :identifier',

@@ -3,6 +3,8 @@ interface SecretInputProps {
     id?: string;
     value: string | null | undefined;
     label: string;
+    /** Called each time the value is revealed, for an audit entry. */
+    onReveal?: () => void;
 }
-declare const SecretInput: ({ id, value, label }: SecretInputProps) => import("react").JSX.Element;
+declare const SecretInput: ({ id, value, label, onReveal }: SecretInputProps) => import("react").JSX.Element;
 export default SecretInput;

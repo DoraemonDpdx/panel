@@ -42,6 +42,7 @@
                             "minecraft",
                             "premium"
                         ],
+                        "workload_profile": "generic",
                         "feature_limits": {
                             "databases": 5,
                             "allocations": 5,
@@ -148,6 +149,7 @@
                         "egg_tags": [
                             "minecraft"
                         ],
+                        "workload_profile": "generic",
                         "feature_limits": {
                             "databases": 0,
                             "allocations": null,
@@ -251,6 +253,7 @@
                             "minecraft",
                             "premium"
                         ],
+                        "workload_profile": "generic",
                         "feature_limits": {
                             "databases": 5,
                             "allocations": 5,
@@ -420,6 +423,7 @@
                         "egg_tags": [
                             "minecraft"
                         ],
+                        "workload_profile": "generic",
                         "feature_limits": {
                             "databases": 0,
                             "allocations": null,
@@ -552,6 +556,7 @@
                             "minecraft",
                             "premium"
                         ],
+                        "workload_profile": "generic",
                         "feature_limits": {
                             "databases": 5,
                             "allocations": 5,
@@ -679,6 +684,7 @@
                         "egg_tags": [
                             "minecraft"
                         ],
+                        "workload_profile": "generic",
                         "feature_limits": {
                             "databases": 0,
                             "allocations": null,
@@ -804,6 +810,7 @@
                             "minecraft",
                             "premium"
                         ],
+                        "workload_profile": "generic",
                         "feature_limits": {
                             "databases": 5,
                             "allocations": 5,
@@ -938,6 +945,7 @@
                         "egg_tags": [
                             "minecraft"
                         ],
+                        "workload_profile": "generic",
                         "feature_limits": {
                             "databases": 0,
                             "allocations": null,

@@ -10,7 +10,10 @@ import { useSocketConnected, useSocketInstance } from '@/state/server';
 import type { ServerConsoleCommand, ServerTerminalModel, TerminalCanvasProps } from '@/views/server/console';
 import ConsoleScrollbar from './ConsoleScrollbar';
 import type { TerminalScrollStore } from './TerminalScrollStore';
+import { ConsoleLog } from './consoleLog';
 import { useConsoleSocketLogs } from './useConsoleSocketLogs';
+import { useConsoleToolbar } from './useConsoleToolbar';
+import { useSavedCommands } from './useSavedCommands';
 import { useTerminal } from './useTerminal';
 
 const HISTORY_LENGTH = 32;
@@ -77,10 +80,14 @@ export function useServerTerminal(): ServerTerminalModel {
     const scrolledUp = useSyncExternalStore(scroll.subscribe, () => scroll.getSnapshot().viewportY > 0.5);
     const connected = useSocketConnected();
     const instance = useSocketInstance();
-    const command = useConsoleCommand(useCurrentServerIdentifier() ?? '', instance, connected);
+    const serverId = useCurrentServerIdentifier() ?? '';
+    const command = useConsoleCommand(serverId, instance, connected);
+    const saved = useSavedCommands(instance, connected);
     const [Terminal] = useState(() => createTerminalCanvas({ ref, scroll, terminal }));
+    const [log] = useState(() => new ConsoleLog());
+    const { toolbar, viewer } = useConsoleToolbar(serverId, log, terminal);
 
-    useConsoleSocketLogs({ connected, instance, terminal, terminalReady });
+    useConsoleSocketLogs({ connected, instance, log, terminal, terminalReady });
 
     return useMemo(
         () => ({
@@ -91,8 +98,23 @@ export function useServerTerminal(): ServerTerminalModel {
             scrolledUp,
             scrollToBottom: () => terminal.current?.scrollToBottom(),
             command,
+            saved,
+            toolbar,
+            viewer,
         }),
-        [Terminal, terminalError, connected, terminalReady, retry, scrolledUp, terminal, command]
+        [
+            Terminal,
+            terminalError,
+            connected,
+            terminalReady,
+            retry,
+            scrolledUp,
+            terminal,
+            command,
+            saved,
+            toolbar,
+            viewer,
+        ]
     );
 }
 

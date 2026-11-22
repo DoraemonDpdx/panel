@@ -1,0 +1,19 @@
+<!doctype html>
+<!-- Built by DPDX Development · Bengaluru · dpdx.in · for Astrelyse. Proprietary: belongs to DPDX. -->
+<html lang="en" class="dark" data-theme="astrelyse">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Astrelyse theme gallery</title>
+<style>
+  #pick{position:fixed;right:12px;bottom:12px;z-index:99999;display:flex;gap:6px;padding:8px;border-radius:14px;background:#0b0d1a;box-shadow:0 0 0 1px rgb(255 255 255 / .15);font:12px ui-monospace,monospace}
+  #pick select{background:#151833;color:#f2f4fa;border:0;border-radius:8px;padding:6px 8px;font:inherit;max-width:220px}
+  #err{position:fixed;left:12px;bottom:12px;z-index:99999;max-width:60ch;color:#ff8a8a;font:12px ui-monospace,monospace;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div id="pick"><select id="view" aria-label="View"></select><select id="fixture" aria-label="Fixture"></select></div>
+<pre id="err"></pre>
+<script type="module" src="./gallery.tsx"></script>
+</body>
+</html>

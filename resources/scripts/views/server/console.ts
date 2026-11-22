@@ -1,9 +1,13 @@
 import { useMemo, type ComponentType } from 'react';
 import type { Server } from '@/api/server/types';
 import { relationshipData } from '@/api/relationships';
+import { useServerResourceUsage } from '@/api/account/servers/queries';
 import { CHART_WINDOW_MS, type ServerGraphPoint, type ServerNetworkPoint } from '@/components/server/console/chart';
 import type { PowerAction } from '@/components/server/console/types';
 import { createSampleTerminal, useServerTerminal } from '@/components/server/console/useServerTerminal';
+import type { ServerConsoleToolbar, ServerLogViewerModel } from '@/components/server/console/toolbarTypes';
+import type { ServerSavedCommands } from '@/components/server/console/useSavedCommands';
+import { groupLogEntries, parseLogLine } from '@/components/server/console/logParser';
 import { SocketRequest } from '@/components/server/events';
 import { ip, mbToBytes } from '@/lib/formatters';
 import { usePermissions } from '@/plugins/usePermissions';
@@ -21,6 +25,9 @@ import { statMetric as metric, type ServerRunState, type ServerStatMetric } from
 // The console page places the feature prompts, so they are implemented with it.
 import { featureViews, type ServerFeatureView } from './features';
 
+export type { ServerConsoleToolbar, ServerLogViewerModel, ServerSavedCommands };
+export type { LogEntry, LogFilter, LogLevel, LogLine } from '@/components/server/console/logParser';
+export type { SavedCommand } from '@/api/server/savedCommands';
 export type { ServerGraphPoint, ServerNetworkPoint, ServerRunState, ServerStatMetric };
 
 export interface ServerConsoleModel {
@@ -65,6 +72,12 @@ export interface ServerTerminalModel {
     readonly scrolledUp: boolean;
     readonly scrollToBottom: () => void;
     readonly command: ServerConsoleCommand;
+    /** The commands pinned to this server, shown as buttons above the command line. */
+    readonly saved: ServerSavedCommands;
+    /** Search, filter chips, pause, clear, download and the structured-view switches. */
+    readonly toolbar: ServerConsoleToolbar;
+    /** The lines of the structured view; when set it replaces the terminal canvas. */
+    readonly viewer: ServerLogViewerModel | null;
 }
 
 export interface ServerPowerModel {
@@ -85,6 +98,8 @@ export interface ServerPowerModel {
         readonly stop: () => void;
         readonly restart: () => void;
         readonly kill: () => void;
+        /** Sends a console command, such as a `say` warning before a delayed restart. */
+        readonly command: (command: string) => void;
     };
     /** The server as the API returns it, which the power slots receive. */
     readonly server: Server;
@@ -182,7 +197,13 @@ function useServerPowerModel(): ServerPowerModel {
                 kill: connected,
             },
             killable: state === 'stopping',
-            actions: { start: send('start'), stop: send('stop'), restart: send('restart'), kill: send('kill') },
+            actions: {
+                start: send('start'),
+                stop: send('stop'),
+                restart: send('restart'),
+                kill: send('kill'),
+                command: (command) => instance?.send(SocketRequest.SEND_COMMAND, command),
+            },
             server,
         };
     }, [server, state, connected, instance, start, stop, restart]);
@@ -200,6 +221,8 @@ function useServerStatsModel(): ServerStatsModel {
     const server = useLoadedServer();
     const state = useServerStatus();
     const stats = useServerStats();
+    // Wings streams disk usage only while the server runs; offline, the polled resources are the only reading.
+    const polledDisk = useServerResourceUsage(server.attributes.uuid).data?.attributes.resources.disk_bytes ?? 0;
 
     return useMemo(() => {
         const { limits } = server.attributes;
@@ -210,10 +233,10 @@ function useServerStatsModel(): ServerStatsModel {
             uptime: stats.uptime,
             cpu: metric(stats.cpu, limits.cpu),
             memory: metric(stats.memory, mbToBytes(limits.memory)),
-            disk: metric(stats.disk, mbToBytes(limits.disk)),
+            disk: metric(stats.disk || polledDisk, mbToBytes(limits.disk)),
             network: { rx: stats.rx, tx: stats.tx },
         };
-    }, [server, state, stats]);
+    }, [server, state, stats, polledDisk]);
 }
 
 function useServerGraphsModel(): ServerGraphsModel {
@@ -235,7 +258,7 @@ function useServerGraphsModel(): ServerGraphsModel {
 
 const noop = () => {};
 
-const PRELUDE = '\u001b[1m\u001b[33mcontainer@pterodactyl~ \u001b[0m';
+const PRELUDE = '\u001b[1m\u001b[33mcontainer@astrelyse~ \u001b[0m';
 
 const RunningTerminal = createSampleTerminal([
     `${PRELUDE}Server marked as starting...`,
@@ -259,6 +282,57 @@ const command = (options: Partial<ServerConsoleCommand> = {}): ServerConsoleComm
     ...options,
 });
 
+const savedFixture = (options: Partial<ServerSavedCommands> = {}): ServerSavedCommands => ({
+    allowed: true,
+    loading: false,
+    commands: [
+        { id: 1, label: 'Save world', command: 'save-all', confirm: false, position: 0 },
+        { id: 2, label: 'Say restarting', command: 'say Restarting', confirm: true, position: 1 },
+    ],
+    disabled: false,
+    run: noop,
+    manage: {
+        pending: false,
+        add: async () => {},
+        edit: async () => {},
+        remove: async () => {},
+        move: async () => {},
+    },
+    ...options,
+});
+
+const toolbarFixture = (options: Partial<ServerConsoleToolbar> = {}): ServerConsoleToolbar => ({
+    search: '',
+    setSearch: noop,
+    filters: [],
+    toggleFilter: noop,
+    clearFilters: noop,
+    timestamps: false,
+    setTimestamps: noop,
+    structured: false,
+    setStructured: noop,
+    paused: false,
+    setPaused: noop,
+    clear: noop,
+    download: noop,
+    ...options,
+});
+
+const viewerFixture = (): ServerLogViewerModel => {
+    const lines = [
+        '[12:00:01 INFO]: Starting minecraft server version 1.21.4',
+        "[12:00:03 WARN]: Can't keep up! Is the server overloaded?",
+        '[12:00:04 INFO]: Steve joined the game',
+        '[12:00:05 ERROR]: Could not load plugin',
+        '\tat org.bukkit.Loader.load(Loader.java:10)',
+        'Caused by: java.io.IOException: nope',
+        '\tat org.bukkit.Io.read(Io.java:3)',
+        '{"level":"info","msg":"listening","port":25565}',
+    ].map((line) => parseLogLine(line, 0));
+
+    return { entries: groupLogEntries(lines), total: lines.length, search: '', timestamps: false, paused: false };
+};
+
 const terminalFixture = (options: Partial<ServerTerminalModel> = {}): ServerTerminalModel => ({
     Terminal: RunningTerminal,
     loading: false,
@@ -267,6 +341,9 @@ const terminalFixture = (options: Partial<ServerTerminalModel> = {}): ServerTerm
     scrolledUp: false,
     scrollToBottom: noop,
     command: command(),
+    saved: savedFixture(),
+    toolbar: toolbarFixture(),
+    viewer: null,
     ...options,
 });
 
@@ -284,7 +361,7 @@ const powerFixture = (state: ServerRunState | null, options: Partial<ServerPower
         kill: true,
     },
     killable: state === 'stopping',
-    actions: { start: noop, stop: noop, restart: noop, kill: noop },
+    actions: { start: noop, stop: noop, restart: noop, kill: noop, command: noop },
     server: fixtureServer(),
     ...options,
 });
@@ -358,7 +435,16 @@ implementViews({
                 terminalFixture({ Terminal: OfflineTerminal, loading: true, command: command({ disabled: true }) }),
             failed: () => terminalFixture({ Terminal: OfflineTerminal, failed: true }),
             scrolledUp: () => terminalFixture({ scrolledUp: true }),
-            readOnly: () => terminalFixture({ command: command({ allowed: false }) }),
+            readOnly: () =>
+                terminalFixture({ command: command({ allowed: false }), saved: savedFixture({ allowed: false }) }),
+            structured: () =>
+                terminalFixture({ toolbar: toolbarFixture({ structured: true }), viewer: viewerFixture() }),
+            filtered: () =>
+                terminalFixture({
+                    toolbar: toolbarFixture({ filters: ['error'], search: 'plugin' }),
+                    viewer: viewerFixture(),
+                }),
+            noSavedCommands: () => terminalFixture({ saved: savedFixture({ commands: [] }) }),
         },
     },
     'server.power': {

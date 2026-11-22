@@ -11,6 +11,7 @@ return [
     Pterodactyl\Providers\BladeServiceProvider::class,
     Pterodactyl\Providers\EventServiceProvider::class,
     Pterodactyl\Providers\HashidsServiceProvider::class,
+    Pterodactyl\Providers\ServerPortsServiceProvider::class,
     Pterodactyl\Providers\ViewComposerServiceProvider::class,
     // Last so extensions register against a fully-bound core container.
     Pterodactyl\Providers\ExtensionServiceProvider::class,

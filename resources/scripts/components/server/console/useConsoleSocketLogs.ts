@@ -3,8 +3,9 @@ import type { Terminal } from 'ghostty-web';
 import { SocketEvent, SocketRequest } from '@/components/server/events';
 import { normalizeTransferStatus } from '@/components/server/transfer';
 import type { Websocket } from '@/plugins/Websocket';
+import type { ConsoleLog } from './consoleLog';
 
-const TERMINAL_PRELUDE = '\u001b[1m\u001b[33mcontainer@pterodactyl~ \u001b[0m';
+const TERMINAL_PRELUDE = '\u001b[1m\u001b[33mcontainer@astrelyse~ \u001b[0m';
 
 // Wings answers a throttled request with this event, naming the request it dropped.
 const THROTTLED_EVENT = 'throttled';
@@ -21,11 +22,14 @@ const formatLine = (line: string, prelude = false) =>
 export const useConsoleSocketLogs = ({
     connected,
     instance,
+    log,
     terminal,
     terminalReady,
 }: {
     connected: boolean;
     instance: Websocket | null;
+    /** Keeps a searchable copy of the output and can hold it back while paused. */
+    log?: ConsoleLog;
     terminal: RefObject<Terminal | null>;
     terminalReady: boolean;
 }) => {
@@ -39,6 +43,10 @@ export const useConsoleSocketLogs = ({
             return;
         }
 
+        const print = (line: string) => (log ? log.write(line) : term.writeln(line));
+
+        log?.setSink((line) => term.writeln(line));
+
         const writeTransferLine = (line: string) => {
             const lines = transferLines.current;
 
@@ -47,7 +55,7 @@ export const useConsoleSocketLogs = ({
                 lines.splice(0, lines.length - MAX_RETAINED_TRANSFER_LINES);
             }
 
-            term.writeln(line);
+            print(line);
         };
 
         const handleTransferStatus = (status: string) => {
@@ -57,25 +65,26 @@ export const useConsoleSocketLogs = ({
         };
 
         const handleDaemonErrorOutput = (line: string) =>
-            term.writeln(`${TERMINAL_PRELUDE}\u001b[1m\u001b[41m${formatLine(line)}`);
+            print(`${TERMINAL_PRELUDE}\u001b[1m\u001b[41m${formatLine(line)}`);
 
         const handlePowerChangeEvent = (state: string) =>
-            term.writeln(`${TERMINAL_PRELUDE}Server marked as ${state}...\u001b[0m`);
+            print(`${TERMINAL_PRELUDE}Server marked as ${state}...\u001b[0m`);
 
         const listeners = [
             [SocketEvent.STATUS, handlePowerChangeEvent],
-            [SocketEvent.CONSOLE_OUTPUT, (line: string) => term.writeln(formatLine(line))],
-            [SocketEvent.INSTALL_OUTPUT, (line: string) => term.writeln(formatLine(line))],
+            [SocketEvent.CONSOLE_OUTPUT, (line: string) => print(formatLine(line))],
+            [SocketEvent.INSTALL_OUTPUT, (line: string) => print(formatLine(line))],
             [SocketEvent.TRANSFER_LOGS, (line: string) => writeTransferLine(formatLine(line))],
             [SocketEvent.TRANSFER_STATUS, handleTransferStatus],
-            [SocketEvent.DAEMON_MESSAGE, (line: string) => term.writeln(formatLine(line, true))],
+            [SocketEvent.DAEMON_MESSAGE, (line: string) => print(formatLine(line, true))],
             [SocketEvent.DAEMON_ERROR, handleDaemonErrorOutput],
         ] satisfies readonly (readonly [SocketEvent, (line: string) => void])[];
 
         const requestHistory = () => {
             term.clear();
+            log?.clear();
             for (const line of transferLines.current) {
-                term.writeln(line);
+                print(line);
             }
 
             instance.send(SocketRequest.SEND_LOGS);
@@ -107,6 +116,7 @@ export const useConsoleSocketLogs = ({
             }
 
             instance.removeListener(THROTTLED_EVENT, handleThrottled);
+            log?.setSink(null);
         };
-    }, [connected, instance, terminal, terminalReady]);
+    }, [connected, instance, log, terminal, terminalReady]);
 };

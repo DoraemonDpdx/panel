@@ -11,6 +11,7 @@ use JsonException;
 use Pterodactyl\Actions\Eggs\CreateEgg;
 use Pterodactyl\Actions\Eggs\Variables\CreateEggVariable;
 use Pterodactyl\Actions\Tags\SyncTags;
+use Pterodactyl\Enum\WorkloadProfile;
 use Pterodactyl\Exceptions\Service\InvalidFileUploadException;
 use Pterodactyl\Models\Egg;
 
@@ -41,6 +42,7 @@ final readonly class EggImportData
         public string $scriptContainer,
         public array $variables,
         public ?array $tags = null,
+        public ?WorkloadProfile $workloadProfile = null,
     ) {}
 
     /**
@@ -70,6 +72,8 @@ final readonly class EggImportData
     public function attributes(): array
     {
         return [
+            // A file without a profile leaves an updated egg's profile alone and a new egg generic.
+            ...($this->workloadProfile instanceof WorkloadProfile ? ['workload_profile' => $this->workloadProfile] : []),
             'name' => $this->name,
             'description' => $this->description,
             'features' => $this->features,
@@ -119,6 +123,7 @@ final readonly class EggImportData
             scriptContainer: self::string($installation['container'] ?? null, 'scripts.installation.container'),
             variables: self::variables($root['variables'] ?? []),
             tags: self::tags($root['tags'] ?? null),
+            workloadProfile: self::workloadProfile($root['workload_profile'] ?? null),
         );
         $data->validate();
 
@@ -175,6 +180,15 @@ final readonly class EggImportData
         }
 
         return $variables;
+    }
+
+    private static function workloadProfile(mixed $value): ?WorkloadProfile
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return WorkloadProfile::tryFrom(self::string($value, 'workload_profile')) ?? throw self::invalid('workload_profile');
     }
 
     /**

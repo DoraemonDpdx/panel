@@ -25,6 +25,7 @@ use Pterodactyl\Support\JsonEmptyObject;
 #[ResponseField('config.logs', nullable: true, schema: ['type' => 'object', 'additionalProperties' => ['oneOf' => [['type' => 'string'], ['type' => 'number'], ['type' => 'boolean']]], 'example' => ['custom' => true, 'location' => 'logs/latest.log']])]
 #[ResponseField('config.startup', nullable: true, schema: ['type' => 'object', 'additionalProperties' => ['oneOf' => [['type' => 'string'], ['type' => 'array', 'items' => ['type' => 'string']]]], 'example' => ['done' => ['Done']]])]
 #[ResponseField('config.file_denylist', schema: ['type' => 'array', 'nullable' => true, 'items' => ['type' => 'string'], 'example' => ['secret.txt']])]
+#[ResponseField('workload_profile', schema: ['type' => 'string', 'enum' => ['game', 'bot', 'web', 'database', 'lavalink', 'generic'], 'example' => 'game'])]
 #[ResponseField('force_outgoing_ip', 'boolean', nullable: true)]
 #[ResponseField('script.privileged', 'boolean', nullable: true)]
 class EggResource extends AdminResource
@@ -53,6 +54,7 @@ class EggResource extends AdminResource
             'name' => $egg->name,
             'description' => $egg->description,
             'features' => $egg->features,
+            'workload_profile' => $egg->workload_profile,
             // "docker_image" is deprecated in favor of "docker_images"; kept for external compatibility.
             'docker_image' => count($egg->docker_images) > 0 ? Arr::first($egg->docker_images) : '',
             'docker_images' => $egg->docker_images,

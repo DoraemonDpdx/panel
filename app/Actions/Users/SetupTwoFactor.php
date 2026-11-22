@@ -14,6 +14,8 @@ final readonly class SetupTwoFactor implements SetsUpTwoFactor
 {
     public const string VALID_BASE32_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
+    public const string ISSUER = 'Astrelyse Panel';
+
     public function setup(User $user): array
     {
         $secret = '';
@@ -27,12 +29,10 @@ final readonly class SetupTwoFactor implements SetsUpTwoFactor
 
         $user->update(['totp_secret' => Crypt::encrypt($secret)]);
 
-        $company = urlencode(preg_replace('/\s/', '', config()->string('app.name')) ?? '');
-
         return [
             'image_url_data' => sprintf(
                 'otpauth://totp/%1$s:%2$s?secret=%3$s&issuer=%1$s',
-                rawurlencode($company),
+                rawurlencode(self::ISSUER),
                 rawurlencode($user->email),
                 rawurlencode($secret),
             ),

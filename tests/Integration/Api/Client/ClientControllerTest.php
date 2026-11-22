@@ -38,7 +38,7 @@ test('only logged in users servers are returned', function () {
 test('servers are filtered using name and uuid information', function () {
     /** @var User[] $users */
     $users = User::factory()->times(2)->create();
-    $users[0]->update(['root_admin' => true]);
+    $users[0]->update(['root_admin' => true, 'use_totp' => true]);
     /** @var Server[] $servers */
     $servers = [$this->createServerModel(['user_id' => $users[0]->id, 'name' => 'Julia']), $this->createServerModel(['user_id' => $users[1]->id, 'uuidShort' => '12121212', 'name' => 'Janice']), $this->createServerModel(['user_id' => $users[1]->id, 'uuid' => Uuid::uuid4()->toString(), 'external_id' => 'ext123', 'name' => 'Julia']), $this->createServerModel(['user_id' => $users[1]->id, 'uuid' => Uuid::uuid4()->toString(), 'name' => 'Jennifer'])];
     $this->actingAs($users[1])->getJson('/api/client?filter[*]=Julia')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.attributes.identifier', $servers[2]->uuidShort);
@@ -100,7 +100,7 @@ test('permissions are returned', function () {
 test('only admin level servers are returned', function () {
     /** @var User[] $users */
     $users = User::factory()->times(4)->create();
-    $users[0]->update(['root_admin' => true]);
+    $users[0]->update(['root_admin' => true, 'use_totp' => true]);
     $servers = [$this->createServerModel(['user_id' => $users[0]->id]), $this->createServerModel(['user_id' => $users[1]->id]), $this->createServerModel(['user_id' => $users[2]->id]), $this->createServerModel(['user_id' => $users[3]->id])];
     Subuser::query()->create(['user_id' => $users[0]->id, 'server_id' => $servers[1]->id, 'permissions' => [Permissions::WebsocketConnect->value]]);
     // Only servers 2 & 3 (0 indexed) should be returned by the API at this point. The user making
@@ -116,7 +116,7 @@ test('only admin level servers are returned', function () {
 test('all servers are returned to admin', function () {
     /** @var User[] $users */
     $users = User::factory()->times(4)->create();
-    $users[0]->update(['root_admin' => true]);
+    $users[0]->update(['root_admin' => true, 'use_totp' => true]);
     $servers = [$this->createServerModel(['user_id' => $users[0]->id]), $this->createServerModel(['user_id' => $users[1]->id]), $this->createServerModel(['user_id' => $users[2]->id]), $this->createServerModel(['user_id' => $users[3]->id])];
     Subuser::query()->create(['user_id' => $users[0]->id, 'server_id' => $servers[1]->id, 'permissions' => [Permissions::WebsocketConnect->value]]);
     // All servers should be returned.

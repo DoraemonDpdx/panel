@@ -3,6 +3,7 @@ export { default as PasswordCard } from './PasswordCard';
 export { default as EmailCard } from './EmailCard';
 export { default as AvatarCard } from './AvatarCard';
 export { default as TwoFactorCard } from './TwoFactorCard';
+export { default as PasskeysCard } from './PasskeysCard';
 export { default as ApiKeysPage } from './ApiKeysPage';
 export { default as ApiKeyList } from './ApiKeyList';
 export { default as ApiKeyCreate } from './ApiKeyCreate';

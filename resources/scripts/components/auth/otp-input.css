@@ -1,0 +1,359 @@
+/* Ported verbatim from the Astrelyse website's ui.css so the panel's one-time-code boxes match it. */
+.ui-otp {
+    --lav: #b8b8ff;
+    --green: #39ff14;
+    --danger: #ff5a6a;
+    --ink: #f2f4fa;
+    --bg: #05060a;
+    --sans: inherit;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --spring: cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+@media (prefers-reduced-motion: no-preference) {
+    .ui-otp {
+        --spring: linear(
+            0,
+            0.28 6%,
+            0.62 12%,
+            0.9 19%,
+            1.04 26%,
+            1.085 33%,
+            1.07 41%,
+            1.03 50%,
+            1.005 60%,
+            0.995 72%,
+            1
+        );
+    }
+}
+/* ---------- one-time code: filled slots, masked digits (Material-level fill, never clear glass) ---------- */
+.ui-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+.ui-otp {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--otp-n), minmax(0, 1fr));
+    --otp-gap: clamp(6px, 2vw, 10px);
+    gap: var(--otp-gap);
+    width: 100%;
+    max-width: 400px;
+    cursor: text;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+.ui-otp[data-disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.ui-otp-input {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    font-size: 16px;
+    cursor: inherit;
+}
+.ui-otp-input:focus-visible {
+    outline: none;
+}
+.ui-otp-slot {
+    --ring: rgba(255, 255, 255, 0.09);
+    --liquid: var(--green);
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    height: clamp(52px, 16vw, 62px);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow:
+        inset 0 0 0 1px var(--ring),
+        inset 0 1px 2px rgba(0, 0, 0, 0.35);
+    transition:
+        background 0.3s var(--ease),
+        box-shadow 0.3s var(--ease),
+        scale 0.6s var(--spring);
+}
+.ui-otp:not([data-disabled]):hover .ui-otp-slot {
+    background: rgba(255, 255, 255, 0.07);
+}
+.ui-otp-slot[data-active] {
+    background: rgba(184, 184, 255, 0.1);
+}
+.ui-otp-glide {
+    --ring: var(--lav);
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: calc((100% - (var(--otp-n) - 1)*var(--otp-gap))/var(--otp-n));
+    border-radius: 18px;
+    pointer-events: none;
+    opacity: 0;
+    scale: 0.92;
+    translate: calc(var(--otp-i)*(100% + var(--otp-gap))) 0;
+    box-shadow:
+        inset 0 0 0 2px var(--ring),
+        0 0 22px -4px rgba(184, 184, 255, 0.45);
+    transition:
+        translate 0.55s var(--spring),
+        opacity 0.3s var(--ease),
+        scale 0.55s var(--spring);
+}
+.ui-otp-glide[data-on] {
+    opacity: 1;
+    scale: 1;
+}
+.ui-otp-slot[data-filled] {
+    background: rgba(255, 255, 255, 0.085);
+}
+/* Liquid fill: a big soft-cornered blob waits under each slot, then rises and turns as a digit lands, so the surface
+   sloshes on the way up and ends covering the whole slot. Removing the digit drains it the same way. */
+.ui-otp-slot::before {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    left: -70%;
+    top: calc(100% + 4px);
+    width: 240%;
+    aspect-ratio: 1;
+    border-radius: 40%;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 0, color-mix(in srgb, var(--liquid) 78%, #fff), var(--liquid) 55%);
+    transition:
+        translate 1.1s cubic-bezier(0.45, 0.05, 0.25, 1),
+        rotate 1.6s cubic-bezier(0.3, 0.1, 0.25, 1),
+        background 0.3s var(--ease);
+}
+.ui-otp-slot[data-filled]::before {
+    translate: 0 -66%;
+    rotate: 150deg;
+}
+.ui-otp-star {
+    position: relative;
+    z-index: 1;
+    font: 600 34px/1 var(--sans);
+    color: var(--ink);
+    padding-top: 0.32em;
+    animation: ui-otp-land 0.55s var(--spring);
+}
+.ui-otp-caret {
+    position: relative;
+    z-index: 1;
+    width: 2px;
+    height: 44%;
+    border-radius: 2px;
+    background: var(--lav);
+    animation: ui-blink 1s steps(1) infinite;
+}
+@keyframes ui-otp-land {
+    from {
+        scale: 0.3;
+        opacity: 0;
+        translate: 0 8px;
+    }
+}
+@keyframes ui-blink {
+    50% {
+        opacity: 0;
+    }
+}
+.ui-otp[data-status='error'] .ui-otp-slot {
+    --ring: var(--danger);
+    --liquid: var(--danger);
+    background: rgba(255, 90, 106, 0.14);
+}
+.ui-otp[data-status='error'] .ui-otp-glide {
+    --ring: var(--danger);
+    box-shadow: inset 0 0 0 2px var(--ring);
+}
+.ui-otp[data-status='incomplete'] .ui-otp-slot[data-filled] {
+    --ring: var(--danger);
+    --liquid: var(--danger);
+}
+.ui-otp[data-status='error'],
+.ui-otp[data-status='incomplete'] {
+    animation: ui-shake 0.42s var(--ease);
+}
+@keyframes ui-shake {
+    20% {
+        translate: -7px 0;
+    }
+    45% {
+        translate: 6px 0;
+    }
+    70% {
+        translate: -3px 0;
+    }
+}
+.ui-otp[data-status='success'] .ui-otp-slot {
+    --ring: var(--green);
+    --liquid: var(--green);
+    background: rgba(57, 255, 20, 0.12);
+}
+/* result: slots tint in a left-to-right wave, digits sink away, then a mark draws itself over the row */
+.ui-otp[data-status='success'] .ui-otp-slot,
+.ui-otp[data-status='error'] .ui-otp-slot {
+    transition-delay: calc(var(--i)*40ms);
+    scale: 0.96;
+}
+.ui-otp[data-status='success'] .ui-otp-star,
+.ui-otp[data-status='error'] .ui-otp-star {
+    animation: ui-otp-sink 0.35s var(--ease) calc(var(--i)*40ms) forwards;
+}
+@keyframes ui-otp-sink {
+    to {
+        scale: 0.5;
+        opacity: 0.18;
+        translate: 0 4px;
+    }
+}
+.ui-otp-mark {
+    --tone: var(--green);
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+}
+.ui-otp[data-status='error'] .ui-otp-mark {
+    --tone: var(--danger);
+}
+.ui-otp-mark::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 62px;
+    height: 62px;
+    margin: -31px 0 0 -31px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--tone);
+    opacity: 0;
+    animation: ui-mark-burst 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) 0.5s;
+}
+.ui-otp-mark svg {
+    width: 62px;
+    height: 62px;
+    overflow: visible;
+    border-radius: 50%;
+    background: var(--bg);
+    box-shadow:
+        0 0 0 7px var(--bg),
+        0 0 36px -4px color-mix(in srgb, var(--tone) 70%, transparent);
+    animation:
+        ui-mark-pop 0.5s var(--spring) both,
+        ui-mark-thump 0.45s var(--spring) 0.78s;
+}
+.ui-otp-mark-ring {
+    fill: color-mix(in srgb, var(--tone) 13%, transparent);
+    stroke: var(--tone);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transform-origin: center;
+    rotate: -90deg;
+    animation: ui-mark-draw 0.55s cubic-bezier(0.65, 0, 0.35, 1) 0.08s forwards;
+}
+.ui-otp-mark-glyph {
+    fill: none;
+    stroke: var(--tone);
+    stroke-width: 4.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: ui-mark-draw 0.32s cubic-bezier(0.5, 0, 0.3, 1) 0.5s forwards;
+}
+.ui-otp-mark-glyph2 {
+    animation-delay: 0.66s;
+}
+@keyframes ui-mark-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+@keyframes ui-mark-pop {
+    from {
+        scale: 0.35;
+        opacity: 0;
+    }
+}
+@keyframes ui-mark-thump {
+    50% {
+        scale: 1.1;
+    }
+}
+@keyframes ui-mark-burst {
+    0% {
+        opacity: 0.7;
+        scale: 1;
+    }
+    100% {
+        opacity: 0;
+        scale: 1.9;
+    }
+}
+@media (prefers-reduced-transparency: reduce) {
+    .ui-otp-slot {
+        background: #171b33;
+    }
+    .ui-otp-slot[data-active] {
+        background: #232a52;
+    }
+}
+@media (prefers-contrast: more) {
+    .ui-otp-slot {
+        background: rgba(8, 10, 22, 0.86);
+        --ring: rgba(255, 255, 255, 0.6);
+    }
+    .ui-otp-glide {
+        --ring: #fff;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ui-otp,
+    .ui-otp-star,
+    .ui-otp-mark svg,
+    .ui-otp-mark::after {
+        animation: none;
+    }
+    .ui-otp-mark-ring,
+    .ui-otp-mark-glyph {
+        animation: none;
+        stroke-dashoffset: 0;
+    }
+    .ui-otp[data-status] .ui-otp-slot {
+        transition-delay: 0s;
+    }
+    .ui-otp-caret {
+        animation: none;
+    }
+    .ui-otp-slot {
+        transition:
+            background 0.2s,
+            box-shadow 0.2s;
+    }
+    .ui-otp-glide {
+        transition: opacity 0.2s;
+        scale: 1;
+    }
+    .ui-otp-slot::before {
+        transition: none;
+    }
+}

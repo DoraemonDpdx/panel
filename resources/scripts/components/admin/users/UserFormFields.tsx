@@ -1,6 +1,7 @@
 import type { UserValues } from '@/api/admin/users/queries';
 import type { AppForm } from '@/components/form';
 import type { SelectOption } from '@/components/ui/Select';
+import UserRoleField from '@/components/admin/users/UserRoleField';
 import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import {
     validateFirstName,
@@ -82,14 +83,17 @@ const AuthenticationFields = ({ form, languageOptions, languagesLoading }: Props
 );
 
 const AccessFields = ({ form }: Pick<Props, 'form'>) => (
-    <form.AppField name='rootAdmin'>
-        {(field) => (
-            <field.SwitchField
-                label='Administrator'
-                description='Grant this account full administrative access to the Panel.'
-            />
-        )}
-    </form.AppField>
+    <div className='space-y-6'>
+        <form.AppField name='rootAdmin'>
+            {(field) => (
+                <field.SwitchField
+                    label='Administrator'
+                    description='Grant this account full administrative access to the Panel.'
+                />
+            )}
+        </form.AppField>
+        <UserRoleField form={form} />
+    </div>
 );
 
 export default function UserFormFields({ form, languageOptions, languagesLoading }: Props) {

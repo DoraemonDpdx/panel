@@ -23,6 +23,9 @@ export default function AccountOverview({ model, className }: ViewProps<'page.ac
                     <View name='account.avatar' className={CARD_WIDTH} />
                 </div>
             )}
+            <div className='mb-10 lg:w-1/3'>
+                <View name='account.passkeys' className={CARD_WIDTH} />
+            </div>
             <Slot name='account.overview.after' />
         </PageContentBlock>
     );

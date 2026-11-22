@@ -1,0 +1,410 @@
+/*
+ * ==========================================================================
+ *  ____  ____  ____  __  __
+ * |  _ \|  _ \|  _ \ \ \/ /
+ * | | | | |_) | | | | \  /
+ * | |_| |  __/| |_| | /  \
+ * |____/|_|   |____/ /_/\_\
+ *
+ * BUILT BY  DPDX DEVELOPMENT  ·  BENGALURU, INDIA  ·  dpdx.in
+ * BUILT FOR ASTRELYSE
+ * ==========================================================================
+ *
+ * PROPRIETARY & CONFIDENTIAL. This file belongs to DPDX. A customer who receives
+ * it inside a site, panel theme or bot built and shipped by DPDX may run it as
+ * delivered, but does not own it, and no right to copy, modify, resell or reuse
+ * it elsewhere is granted without prior written authorisation from DPDX.
+ */
+
+/*
+ * Admin area stream: the panel's admin pages in Liquid Glass. Contract: ../../../PANEL_DESIGN.md (stream E) and
+ * ../../../../docs/PTERO_ADMIN.md part 2.
+ *
+ * The admin pages are upstream's, not views. They are reached through layout.admin (views/admin), which wraps the
+ * page in `[data-ast-area='admin']`, so EVERY selector in this file starts with that attribute. Hooks, in order of
+ * preference: a primitive's `data-ui` / `data-part` / state attribute (stable: the skin contract), a `data-*` or ARIA
+ * attribute upstream sets itself, and last a utility-class attribute selector such as `[class~='bg-card']`. Those
+ * last ones are marked FRAGILE below; an upstream update can rename them. Utilities sit in a later layer than
+ * `components`, so beating one takes `!important`, used only where a class selector had to override a class.
+ *
+ * Rules that bind here: the backdrop is still, nothing animates by itself, hover answers in 120ms and never moves a
+ * neighbour, dense text sits on near-solid fills, rows are plain fills, no glass on glass.
+ */
+
+@layer components {
+    /* ---------- the page heading block (AdminContentBlock → PageHeading) ---------- */
+
+    [data-ast-area='admin'] [data-ui='page-heading'][data-part='root'] {
+        margin-bottom: 1.5rem;
+    }
+
+    [data-ast-area='admin'] [data-ui='page-heading'] [data-part='title'] {
+        overflow-wrap: anywhere;
+    }
+
+    /* The toolbar above a list: search field and the create button on one row, a stack on a phone. */
+    [data-ast-area='admin'] form:has(> div > [data-ui='input'][name='filter']) {
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    /*
+     * The search field upstream tints with bg-card, which is a clear surface here. A field is a near-solid fill
+     * (kit skin), so put it back, and match the capsule buttons beside it. FRAGILE: bg-card on a data-ui input.
+     */
+    [data-ast-area='admin'] [data-ui='input'][class~='bg-card'] {
+        height: 2.5rem !important;
+        background-color: var(--input) !important;
+        border-color: var(--input-border) !important;
+    }
+
+    /* ---------- cards and boxes ---------- */
+
+    /*
+     * FRAGILE. Upstream draws a handful of panels by hand instead of through Card: overview tiles and link tiles,
+     * egg variable boxes, node and mount info panels. They all carry `rounded-sm` and `bg-card`. They get the
+     * material look of Card (the `mat` recipe, repeated here because they cannot take a class), a 24px radius and the
+     * hairline rim. The tab track is also `rounded-sm bg-card`: it is excluded here and styled under Tabs.
+     */
+    [data-ast-area='admin'] :is([class~='rounded-sm'][class~='bg-card']):not(:has(> div > [data-nav-item])),
+    [data-ast-area='admin'] div[class~='rounded-lg'][class~='bg-card'][class~='shadow-lg'] {
+        border-color: transparent !important;
+        border-radius: 1.5rem !important;
+        background: rgb(255 255 255 / 0.035) !important;
+        box-shadow:
+            var(--mat-rim),
+            0 18px 50px -18px rgb(0 0 0 / 0.6) !important;
+        backdrop-filter: blur(22px) saturate(165%) brightness(1.06);
+        -webkit-backdrop-filter: blur(22px) saturate(165%) brightness(1.06);
+    }
+
+    /* A note box: a plain fill (it sits inside a card), rounded like a row. FRAGILE: bg-popover on a div. */
+    [data-ast-area='admin'] div[class~='rounded-sm'][class~='bg-popover'] {
+        border-radius: 1rem !important;
+        border-color: rgb(255 255 255 / 0.06) !important;
+        background: rgb(255 255 255 / 0.05) !important;
+    }
+
+    /* Clickable tiles: a tint in 120ms and light under the pointer (written by AdminLayout). Nothing moves. */
+    [data-ast-area='admin'] a[class~='bg-card'] {
+        position: relative;
+        overflow: hidden;
+        transition: background-color var(--t-fast) ease-out !important;
+    }
+
+    [data-ast-area='admin'] a[class~='bg-card']::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity var(--t-fast) ease-out;
+        background: radial-gradient(130px circle at var(--px, 50%) var(--py, 50%), rgb(255 255 255 / 0.2), transparent 70%);
+    }
+
+    [data-ast-area='admin'] a[class~='bg-card']:hover {
+        background: rgb(255 255 255 / 0.09) !important;
+    }
+
+    [data-ast-area='admin'] a[class~='bg-card']:hover::after {
+        opacity: 1;
+    }
+
+    /* A tile's title reads as the title; the line under it is muted already (text-muted-foreground). */
+    [data-ast-area='admin'] a[class~='bg-card'] > p:first-child {
+        font-weight: 600;
+    }
+
+    /* ---------- tables, toolbars, pagination ---------- */
+
+    /*
+     * Table root, rows and hover are the Table skin (one `mat` frame, plain-fill rows). Here: the head stays in view
+     * while a long list scrolls inside its frame, on a near-solid fill so rows never show through it.
+     */
+    [data-ast-area='admin'] [data-ui='table'][data-part='scroller'] {
+        max-height: min(72dvh, 60rem);
+        overflow-y: auto;
+    }
+
+    [data-ast-area='admin'] [data-ui='table'][data-part='headerCell'] {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: #0c0f20;
+    }
+
+    [data-ast-area='admin'] [data-ui='table'][data-part='cell'] {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Sort buttons: upstream's focus colour is the primary (green); focus here is lavender everywhere. FRAGILE-ish: tag + type. */
+    [data-ast-area='admin'] th button {
+        outline-color: var(--lav) !important;
+    }
+
+    /* "Showing 1–50 of 312 servers" and "Page 2 of 7": numerals do not jitter as pages change. */
+    [data-ast-area='admin'] :is(p, span)[aria-label^='Showing '],
+    [data-ast-area='admin'] span[aria-label^='Page '] {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- tabs ---------- */
+
+    /*
+     * The detail pages' tabs are SubNavigation: a root div holding a row div holding links with `data-nav-item`. That
+     * attribute is the hook. The track is a capsule, the active tab a tinted fill with a lavender ring (so it is
+     * marked by more than colour) and a heavier label. No sliding indicator: the fill changes in 120ms.
+     */
+    [data-ast-area='admin'] :is(div):has(> div > [data-nav-item]) {
+        border-radius: 1.75rem !important;
+        background: rgb(255 255 255 / 0.05) !important;
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08) !important;
+    }
+
+    html:not([data-sub-navigation='side']) [data-ast-area='admin'] :is(div):has(> div > [data-nav-item]) {
+        padding: 0.3125rem;
+    }
+
+    [data-ast-area='admin'] [data-nav-item] {
+        border-radius: 9999px !important;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.875rem;
+        transition:
+            background-color var(--t-fast) ease-out,
+            color var(--t-fast) ease-out !important;
+    }
+
+    html:not([data-sub-navigation='side']) [data-ast-area='admin'] :is(div):has(> div > [data-nav-item]) > div {
+        gap: 0.25rem;
+        padding: 0 !important;
+    }
+
+    html:not([data-sub-navigation='side']) [data-ast-area='admin'] [data-nav-item] {
+        margin-left: 0 !important;
+    }
+
+    [data-ast-area='admin'] [data-nav-item]:hover {
+        background: rgb(255 255 255 / 0.08);
+        color: var(--ink);
+    }
+
+    [data-ast-area='admin'] [data-nav-item][data-status='active'],
+    [data-ast-area='admin'] [data-nav-item].active,
+    [data-ast-area='admin'] [data-nav-item][aria-current='page'] {
+        background: rgb(184 184 255 / 0.18);
+        box-shadow: inset 0 0 0 1px rgb(184 184 255 / 0.4) !important;
+        color: var(--ink);
+        font-weight: 600;
+    }
+
+    /*
+     * Settings tabs are hand-made buttons (SettingsTabButton): uppercase, with a 2px underline. FRAGILE: they have no
+     * hook, so they are found by the classes that make them tabs. Same capsule track and tinted active tab as above.
+     */
+    [data-ast-area='admin'] div[class~='border-b'][class~='mb-6']:has(> button[class~='border-b-2']) {
+        display: flex;
+        width: fit-content;
+        max-width: 100%;
+        gap: 0.25rem;
+        padding: 0.3125rem;
+        overflow-x: auto;
+        border-bottom: 0 !important;
+        border-radius: 9999px;
+        background: rgb(255 255 255 / 0.05);
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+    }
+
+    [data-ast-area='admin'] button[class~='border-b-2'] {
+        border-width: 0 !important;
+        border-radius: 9999px;
+        padding: 0.5rem 1rem !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
+        white-space: nowrap;
+        transition:
+            background-color var(--t-fast) ease-out,
+            color var(--t-fast) ease-out !important;
+    }
+
+    [data-ast-area='admin'] button[class~='border-b-2']:hover {
+        background: rgb(255 255 255 / 0.08);
+        color: var(--ink);
+    }
+
+    [data-ast-area='admin'] button[class~='border-b-2'][class~='border-primary'] {
+        background: rgb(184 184 255 / 0.18);
+        box-shadow: inset 0 0 0 1px rgb(184 184 255 / 0.4);
+        color: var(--ink);
+        font-weight: 600;
+    }
+
+    /* ---------- forms ---------- */
+
+    /*
+     * Fields, labels, switches and selects are skins (forms.ts), and help text is the panel's `.input-help` (70%
+     * foreground, red for `.error`), which is already muted: left alone so an error keeps its colour.
+     */
+
+    /* ---------- code and editors ---------- */
+
+    /*
+     * Code and editors are dense text: the editor ground (never clear glass), Geist Mono, a hairline frame.
+     * `.cm-editor` is CodeMirror's own, stable. The `pre` blocks (Wings YAML, node information, one-time tokens) are
+     * upstream's own `pre` elements; FRAGILE only in that they carry no hook.
+     */
+    [data-ast-area='admin'] .cm-editor {
+        border: 1px solid var(--line) !important;
+        border-radius: 1rem !important;
+        background: var(--editor-background);
+        font-family: var(--font-mono);
+    }
+
+    [data-ast-area='admin'] .cm-editor .cm-scroller,
+    [data-ast-area='admin'] .cm-editor .cm-content {
+        font-family: var(--font-mono);
+    }
+
+    [data-ast-area='admin'] pre {
+        border: 1px solid var(--line) !important;
+        border-radius: 1rem !important;
+        background: var(--editor-background) !important;
+        color: var(--editor-foreground) !important;
+        font-family: var(--font-mono);
+    }
+
+    /* ---------- status chips ---------- */
+
+    /*
+     * ServerStatusBadge and NodeStatusBadge: `span[role='status']` with a dot and a text label (Active, Installing,
+     * Suspended, Online, Checking, Offline), so the state is never colour alone. Upstream already tints them by
+     * state, green only for active and online. They become capsules, and the "Checking" dot stops pulsing.
+     */
+    [data-ast-area='admin'] span[role='status'][class~='inline-flex'] {
+        border-radius: 9999px !important;
+        padding: 0.1875rem 0.625rem !important;
+        font-weight: 600;
+    }
+
+    [data-ast-area='admin'] span[role='status'][class~='inline-flex'] > [aria-hidden='true'] {
+        animation: none !important;
+    }
+
+    /*
+     * Tag chips and small labels: `border bg-muted` spans. FRAGILE: no hook. Capsule, quiet fill, lavender hairline.
+     */
+    [data-ast-area='admin'] span[class~='border'][class~='bg-muted'] {
+        border-color: var(--line-2) !important;
+        border-radius: 9999px !important;
+        background: rgb(255 255 255 / 0.07) !important;
+    }
+
+    /* ---------- empty, loading, error ---------- */
+
+    /* An Empty that upstream gave `border bg-card`: back to the quiet dashed block of the Empty skin. */
+    [data-ast-area='admin'] [data-ui='empty'][data-part='root'][class~='bg-card'] {
+        border-style: dashed !important;
+        border-color: rgb(255 255 255 / 0.14) !important;
+        background: rgb(255 255 255 / 0.02) !important;
+    }
+
+    /* ScreenBlock (error, not found): the material panel above; its heading is Ancola, not bold Geist. */
+    [data-ast-area='admin'] div[class~='shadow-lg'][class~='bg-card'] h2 {
+        font-family: var(--font-header);
+        font-weight: 400 !important;
+        letter-spacing: -0.01em;
+    }
+
+    /* The retry button spins on hover upstream: chrome does not animate on its own, so it only tints. */
+    [data-ast-area='admin'] [class*='hover:animate']:hover {
+        animation: none !important;
+    }
+
+    /* ---------- destructive regions ---------- */
+
+    /*
+     * The Delete tab (and any card holding a danger alert): a red-tinted material, set with the same custom
+     * properties `mat` reads, so the rim and the blur stay. The action inside is the Button skin's `lq-danger`.
+     */
+    [data-ast-area='admin'] [data-ui='card'][data-part='root']:has([data-ui='alert'][data-type='danger']) {
+        --lg-tint: linear-gradient(180deg, rgb(255 77 94 / 0.11), rgb(255 77 94 / 0.04));
+        --lg-drop:
+            0 18px 50px -18px rgb(255 77 94 / 0.28), inset 0 0 0 1px rgb(255 77 94 / 0.26);
+    }
+
+    [data-ast-area='admin'] [data-ui='card'][data-part='root']:has([data-ui='alert'][data-type='danger']) > [data-part='header'] {
+        border-color: rgb(255 77 94 / 0.22);
+    }
+
+    [data-ast-area='admin'] [data-ui='card'][data-part='root']:has([data-ui='alert'][data-type='danger']) [data-part='title'] {
+        color: #ffb8c0;
+    }
+
+    /* ---------- accessibility fallbacks ---------- */
+
+    @media (prefers-reduced-transparency: reduce) {
+        [data-ast-area='admin'] :is([class~='rounded-sm'][class~='bg-card']):not(:has(> div > [data-nav-item])),
+        [data-ast-area='admin'] div[class~='rounded-lg'][class~='bg-card'][class~='shadow-lg'] {
+            background: #10142a !important;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+
+        [data-ast-area='admin'] a[class~='bg-card']:hover {
+            background: #1a1f3d !important;
+        }
+
+        [data-ast-area='admin'] [data-ui='card'][data-part='root']:has([data-ui='alert'][data-type='danger']) {
+            background: #2a1119 !important;
+        }
+
+        [data-ast-area='admin'] :is(div):has(> div > [data-nav-item]),
+        [data-ast-area='admin'] div[class~='border-b'][class~='mb-6']:has(> button[class~='border-b-2']) {
+            background: #151833 !important;
+        }
+
+        [data-ast-area='admin'] [data-nav-item][data-status='active'],
+        [data-ast-area='admin'] [data-nav-item].active,
+        [data-ast-area='admin'] button[class~='border-b-2'][class~='border-primary'] {
+            background: #2a2f5c;
+        }
+    }
+
+    @media (prefers-contrast: more) {
+        [data-ast-area='admin'] :is([class~='rounded-sm'][class~='bg-card']):not(:has(> div > [data-nav-item])),
+        [data-ast-area='admin'] div[class~='rounded-lg'][class~='bg-card'][class~='shadow-lg'] {
+            background: rgb(8 10 22 / 0.86) !important;
+            box-shadow:
+                inset 0 0 0 1.5px rgb(255 255 255 / 0.6),
+                0 18px 50px -18px rgb(0 0 0 / 0.6) !important;
+        }
+
+        [data-ast-area='admin'] :is(div):has(> div > [data-nav-item]),
+        [data-ast-area='admin'] div[class~='border-b'][class~='mb-6']:has(> button[class~='border-b-2']) {
+            box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.6) !important;
+        }
+
+        [data-ast-area='admin'] [data-nav-item][data-status='active'],
+        [data-ast-area='admin'] [data-nav-item].active,
+        [data-ast-area='admin'] button[class~='border-b-2'][class~='border-primary'] {
+            box-shadow: inset 0 0 0 2px #fff !important;
+        }
+
+        [data-ast-area='admin'] pre,
+        [data-ast-area='admin'] .cm-editor {
+            border-color: rgb(255 255 255 / 0.6) !important;
+        }
+    }
+
+    /* Under reduced motion the 120ms tints are instant. */
+    @media (prefers-reduced-motion: reduce) {
+        [data-ast-area='admin'] a[class~='bg-card'],
+        [data-ast-area='admin'] a[class~='bg-card']::after,
+        [data-ast-area='admin'] [data-nav-item],
+        [data-ast-area='admin'] button[class~='border-b-2'] {
+            transition: none !important;
+        }
+    }
+}
+
+/* ― Built by DPDX Development · Bengaluru · dpdx.in · for Astrelyse ― */

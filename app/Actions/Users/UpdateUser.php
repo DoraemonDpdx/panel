@@ -29,6 +29,11 @@ final readonly class UpdateUser implements UpdatesUsers
             $attributes['external_id'] ??= null;
         }
 
+        // An explicit null removes the user's role.
+        if (array_key_exists('role_id', $validated)) {
+            $attributes['role_id'] = $validated['role_id'];
+        }
+
         DB::transaction(function () use ($user, $attributes, $extensions): void {
             $user->forceFill($attributes)->saveOrFail();
             $this->extensions->save($user, $extensions);

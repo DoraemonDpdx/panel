@@ -1,0 +1,533 @@
+/*
+ * ==========================================================================
+ *  ____  ____  ____  __  __
+ * |  _ \|  _ \|  _ \ \ \/ /
+ * | | | | |_) | | | | \  /
+ * | |_| |  __/| |_| | /  \
+ * |____/|_|   |____/ /_/\_\
+ *
+ * BUILT BY  DPDX DEVELOPMENT  ·  BENGALURU, INDIA  ·  dpdx.in
+ * BUILT FOR ASTRELYSE
+ * ==========================================================================
+ *
+ * PROPRIETARY & CONFIDENTIAL. This file belongs to DPDX. A customer who receives
+ * it inside a site, panel theme or bot built and shipped by DPDX may run it as
+ * delivered, but does not own it, and no right to copy, modify, resell or reuse
+ * it elsewhere is granted without prior written authorisation from DPDX.
+ */
+
+/*
+ * Astrelyse Liquid Glass for the Pterodactyl panel (v2 theme API).
+ * The contract is ../../PANEL_DESIGN.md, which extends the site's DESIGN.md. Read it before changing anything here.
+ *
+ * This file owns: fonts, tokens, the two glass tiers (.lq liquid, .mat material), the backdrop and the accessibility
+ * fallbacks. Stream partials at the bottom own page-specific rules; do not put page rules in this file.
+ */
+
+/* The panel stylesheet with every class the panel uses. Everything after it is this theme's. */
+@import '@pterodactyl/sdk/theme-entry.css';
+
+/* Stream partials: each stream owns exactly one of these files. CSS requires imports before any other rule. */
+@import './styles/kit.css';
+@import './styles/shell.css';
+@import './styles/console.css';
+@import './styles/server.css';
+@import './styles/admin.css';
+@import './styles/cursor.css';
+
+/* ---------- fonts (bundled: the build copies them beside dist/theme.css) ---------- */
+
+@font-face {
+    font-family: 'Geist';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('./fonts/geist-latin-wght-normal.woff2') format('woff2-variations');
+}
+
+@font-face {
+    font-family: 'Geist Mono';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('./fonts/geist-mono-latin-wght-normal.woff2') format('woff2-variations');
+}
+
+@font-face {
+    font-family: 'Ancola';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/ancola-regular.otf') format('opentype');
+}
+
+@theme {
+    --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+    --font-header: 'Ancola', 'Geist', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Geist Mono', ui-monospace, monospace;
+
+    /* Brand colours as utilities: bg-ast-blue, text-ast-lav, … */
+    --color-ast-blue: #1846ff;
+    --color-ast-blue-deep: #0e2db8;
+    --color-ast-lav: #b8b8ff;
+    --color-ast-green: #39ff14;
+    --color-ast-ink-3: #6b7189;
+
+    /*
+     * Classic lifts cards, tiles and dialogs with Tailwind's shadow scale. Here that scale IS the material rim plus a
+     * drop, so every classic surface that nobody has skinned yet still gets a lit glass edge instead of a flat shadow.
+     */
+    --shadow-2xs: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+    --shadow-xs: inset 0 0 0 1px rgb(255 255 255 / 0.07), inset 0 1px 0 rgb(255 255 255 / 0.18);
+    --shadow-sm: var(--mat-rim);
+    --shadow-md: var(--mat-rim), 0 12px 34px -16px rgb(0 0 0 / 0.6);
+    --shadow-lg: var(--mat-rim), 0 18px 50px -18px rgb(0 0 0 / 0.6);
+    --shadow-xl: var(--mat-rim), 0 26px 70px -22px rgb(0 0 0 / 0.7);
+    --shadow-2xl: var(--mat-rim), 0 40px 90px -30px rgb(0 0 0 / 0.75);
+}
+
+/* ---------- tokens ---------- */
+
+:root {
+    /* Site palette (DESIGN.md 3.1). */
+    --bg: #05060a;
+    --bg-2: #0a0c14;
+    --ink: #f2f4fa;
+    --ink-2: #a3a9bc;
+    --ink-3: #6b7189;
+    --blue: #1846ff;
+    --blue-deep: #0e2db8;
+    --lav: #b8b8ff;
+    --green: #39ff14;
+    --line: rgb(184 184 255 / 0.12);
+    --line-2: rgb(184 184 255 / 0.22);
+
+    /* Rims (DESIGN.md 4.2). */
+    --mat-rim:
+        inset 0 0 0 1px rgb(255 255 255 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.26),
+        inset 0 -1px 0 rgb(255 255 255 / 0.07), inset 0 -12px 18px -12px rgb(184 184 255 / 0.14),
+        0 1px 2px rgb(0 0 0 / 0.4);
+    --lq-rim:
+        inset 0 0 0 1px rgb(255 255 255 / 0.05), inset 0 -10px 16px -10px rgb(184 184 255 / 0.22),
+        inset 0 0 20px rgb(255 255 255 / 0.04), 0 1px 2px rgb(0 0 0 / 0.4);
+
+    /*
+     * Motion. The panel is a tool, so it answers faster than the landing page: colour and light change in ~120ms, a
+     * press lands in 80ms, and the release spring settles in 320ms (the site uses 700ms). Nothing moves by itself.
+     */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --spring: cubic-bezier(0.3, 1.5, 0.5, 1);
+    --t-fast: 120ms;
+    --t-press: 80ms;
+    --t-release: 320ms;
+
+    --radius: 0.875rem;
+    --layout-content-width: 82rem;
+    --layout-sidebar-width: 16rem;
+    --color-scheme: dark;
+    --theme-color: #05060a;
+}
+
+@supports (transition-timing-function: linear(0, 1)) {
+    :root {
+        --spring: linear(0, 0.28 6%, 0.62 12%, 0.9 19%, 1.04 26%, 1.085 33%, 1.07 41%, 1.03 50%, 1.005 60%, 0.995 72%, 1);
+    }
+}
+
+/* Dark is the only scheme (extension.json). */
+.dark {
+    --background: var(--bg);
+    --foreground: var(--ink);
+
+    /* Surfaces are tints over the backdrop, not solid slabs: a card is glass, a row on a card is a plain fill. */
+    --card: rgb(255 255 255 / 0.04);
+    --card-foreground: var(--ink);
+    /* Floating layers (menus, popups, tooltips) must stay readable over anything, so the raised fill is near-solid. */
+    --popover: #12152a;
+    --popover-foreground: var(--ink);
+    --muted: rgb(255 255 255 / 0.05);
+    --muted-foreground: var(--ink-2);
+    --sunken: rgb(0 0 0 / 0.36);
+    --border: var(--line);
+    --input: rgb(255 255 255 / 0.055);
+    --input-border: rgb(184 184 255 / 0.16);
+    --ring: var(--lav);
+
+    /* Green is the one primary action and "online" (DESIGN.md 3.1). Text on it is dark. */
+    --primary: var(--green);
+    --primary-foreground: #04140a;
+    --secondary: rgb(255 255 255 / 0.09);
+    --secondary-foreground: var(--ink);
+    --accent: var(--blue);
+    --accent-foreground: #ffffff;
+    --destructive: #ff4d5e;
+    --destructive-foreground: #1a0306;
+    --success: var(--green);
+    --success-foreground: #04140a;
+    --warning: #ffc53d;
+    --warning-foreground: #1a1300;
+    --caution: #ff8a3d;
+    --caution-foreground: #1a0d00;
+    --state-foreground: #04140a;
+
+    --chart-1: var(--green);
+    --chart-2: var(--lav);
+    --chart-3: #4d74ff;
+    --chart-4: #ffc53d;
+    --chart-5: #ff4d5e;
+
+    --sidebar: rgb(8 10 22 / 0.4);
+    --sidebar-foreground: var(--ink);
+    --sidebar-primary: rgb(255 255 255 / 0.1);
+    --sidebar-primary-foreground: var(--ink);
+    --sidebar-accent: rgb(255 255 255 / 0.06);
+    --sidebar-accent-foreground: var(--ink);
+    --sidebar-border: var(--line);
+    --sidebar-ring: var(--lav);
+
+    --selection: rgb(24 70 255 / 0.5);
+    --selection-foreground: #ffffff;
+    --scrollbar-thumb: rgb(184 184 255 / 0.34);
+    --scrollbar-thumb-fill: rgb(184 184 255 / 0.18);
+    --scrollbar-track: transparent;
+
+    /* The console and the editor are dense text: near-solid, never clear glass (DESIGN.md principle 6). */
+    --terminal-background: #070912;
+    --terminal-foreground: #d9deee;
+    --terminal-cursor: var(--green);
+    --terminal-selection: rgb(24 70 255 / 0.45);
+    --terminal-ansi-green: #39ff14;
+    --terminal-ansi-bright-green: #7dff62;
+    --terminal-ansi-blue: #4d74ff;
+    --terminal-ansi-bright-blue: #8ea6ff;
+    --terminal-ansi-magenta: #b8b8ff;
+    --terminal-ansi-red: #ff4d5e;
+    --terminal-ansi-yellow: #ffc53d;
+
+    --editor-background: #070912;
+    --editor-foreground: #d9deee;
+    --editor-caret: var(--green);
+    --editor-selection: rgb(24 70 255 / 0.4);
+    --editor-border: var(--line);
+    --editor-muted: var(--ink-3);
+    --editor-active-line: rgb(255 255 255 / 0.04);
+    --editor-tooltip: #12152a;
+    --editor-tooltip-border: var(--line-2);
+}
+
+/* ---------- backdrop ---------- */
+
+/*
+ * Glass needs something to refract (DESIGN.md 9), so the page has depth: fixed pools of brand light on near-black.
+ * It is completely still. No drift, no parallax, no animation: in the panel the only things that move are the things
+ * the user moves.
+ */
+@layer base {
+    body {
+        background:
+            radial-gradient(64rem 40rem at 8% -12%, rgb(24 70 255 / 0.3), transparent 62%),
+            radial-gradient(48rem 32rem at 104% 4%, rgb(184 184 255 / 0.13), transparent 60%),
+            radial-gradient(56rem 36rem at 62% 118%, rgb(14 45 184 / 0.3), transparent 62%),
+            radial-gradient(30rem 22rem at 28% 62%, rgb(57 255 20 / 0.035), transparent 70%), var(--bg);
+        background-attachment: fixed;
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--lav);
+        outline-offset: 3px;
+    }
+}
+
+/* ---------- custom scrollbars ---------- */
+
+/*
+ * Every scroller in the panel gets the same slim lavender thumb: no arrows, no track, a rounded thumb that sits inside
+ * a transparent gutter and brightens under the pointer. Chromium and Safari use the ::-webkit rules; Firefox, which has
+ * no pseudo-element, gets scrollbar-color. (Setting scrollbar-* in Chromium would switch the webkit rules off, so the
+ * standard properties are fenced behind a feature test.) .ast-scroll still hides the bar where a scroller must not show one.
+ */
+@layer base {
+    *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    *::-webkit-scrollbar-track,
+    *::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        min-height: 40px;
+        border: 3px solid transparent;
+        border-radius: 9999px;
+        background: linear-gradient(180deg, rgb(184 184 255 / 0.42), rgb(77 116 255 / 0.3)) padding-box;
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14);
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, rgb(184 184 255 / 0.7), rgb(77 116 255 / 0.55)) padding-box;
+    }
+
+    *::-webkit-scrollbar-thumb:active {
+        background: linear-gradient(180deg, #d4d4ff, #7d9bff) padding-box;
+    }
+
+    @supports not selector(::-webkit-scrollbar) {
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgb(184 184 255 / 0.4) transparent;
+        }
+    }
+}
+
+/* ---------- the two tiers ---------- */
+
+/*
+ * These sit in the components layer so a Tailwind utility at the call site still wins (absolute, fixed, rounded-*).
+ * Tune them with the custom properties only: --lg-tint, --lg-drop, --lg-frost. Never restyle background, box-shadow
+ * or backdrop-filter on a glass element directly.
+ */
+@layer components {
+    /* Material: content containers. Frosted enough to carry paragraphs and tables. */
+    .mat {
+        --lg-tint: rgb(255 255 255 / 0.035);
+        --lg-drop: 0 18px 50px -18px rgb(0 0 0 / 0.6);
+        background: var(--lg-tint);
+        border: 0;
+        box-shadow: var(--mat-rim), var(--lg-drop);
+        backdrop-filter: blur(22px) saturate(165%) brightness(1.06);
+        -webkit-backdrop-filter: blur(22px) saturate(165%) brightness(1.06);
+    }
+
+    /* A floating material layer over arbitrary content: menus, select popups, dialogs. Darker, so text always reads. */
+    .mat-float {
+        --lg-tint: rgb(10 12 26 / 0.72);
+        --lg-drop: 0 26px 70px -22px rgb(0 0 0 / 0.8);
+    }
+
+    /* Liquid Glass: floating controls and navigation only. lens.ts swaps the blur for a refracting lens in Chromium. */
+    .lq {
+        --lg-tint: rgb(255 255 255 / 0.035);
+        --lg-drop: 0 18px 50px -18px rgb(0 0 0 / 0.6);
+        position: relative;
+        background: var(--lg-tint);
+        border: 0;
+        box-shadow: var(--lq-rim), var(--lg-drop);
+        backdrop-filter: blur(10px) saturate(170%) brightness(1.08);
+        -webkit-backdrop-filter: blur(10px) saturate(170%) brightness(1.08);
+    }
+
+    /* The specular rim: bright where the light enters, an echo where it leaves. --lg-a is written by lens.ts. */
+    .lq::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1.2px;
+        pointer-events: none;
+        background:
+            linear-gradient(
+                var(--lg-a, 135deg),
+                rgb(255 255 255 / 0.92),
+                rgb(255 255 255 / 0.06) 30%,
+                rgb(255 255 255 / 0.03) 70%,
+                rgb(255 255 255 / 0.55)
+            ),
+            linear-gradient(180deg, rgb(255 255 255 / 0.3), rgb(255 255 255 / 0.02) 55%, rgb(255 255 255 / 0.12));
+        -webkit-mask:
+            linear-gradient(#000 0 0) content-box,
+            linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+    }
+
+    /*
+     * Interactive glass. The light under the pointer and the press are the feedback that says "this is yours to
+     * control", so they are immediate: the glow tracks the pointer with no lag, the tint steps up in 120ms, the
+     * press lands in 80ms and only the release is allowed a short spring.
+     */
+    .lq-touch {
+        cursor: pointer;
+        transition:
+            scale var(--t-release) var(--spring),
+            background-color var(--t-fast) ease-out,
+            color var(--t-fast) ease-out;
+    }
+
+    .lq-touch::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity var(--t-fast) ease-out;
+        background: radial-gradient(130px circle at var(--px, 50%) var(--py, 50%), rgb(255 255 255 / 0.28), transparent 70%);
+    }
+
+    .lq-touch:hover:not(:disabled, [aria-disabled='true']) {
+        --lg-tint: rgb(255 255 255 / 0.09);
+    }
+
+    .lq-touch:hover:not(:disabled, [aria-disabled='true'])::after {
+        opacity: 1;
+    }
+
+    .lq-touch:active:not(:disabled, [aria-disabled='true']) {
+        scale: 0.96;
+        transition:
+            scale var(--t-press) ease-out,
+            background-color var(--t-fast) ease-out;
+    }
+
+    .lq-touch:disabled,
+    .lq-touch[aria-disabled='true'] {
+        cursor: default;
+    }
+
+    /*
+     * Tinted glass: still glass, never a solid slab. The colour is a translucent gradient you can see the page through,
+     * the label carries the hue, and the drop is a coloured glow. One primary per region; the rest mark meaning.
+     */
+    .lq-primary,
+    .lq-danger,
+    .lq-caution,
+    .lq-info {
+        font-weight: 600;
+        text-shadow: 0 0 14px var(--lg-glow);
+    }
+
+    .lq-primary {
+        --lg-glow: rgb(57 255 20 / 0.45);
+        --lg-tint: linear-gradient(180deg, rgb(57 255 20 / 0.34), rgb(57 255 20 / 0.12));
+        --lg-drop: 0 12px 32px -12px rgb(57 255 20 / 0.6), inset 0 0 0 1px rgb(57 255 20 / 0.28);
+        color: #b6ffa4;
+    }
+
+    .lq-danger {
+        --lg-glow: rgb(255 77 94 / 0.45);
+        --lg-tint: linear-gradient(180deg, rgb(255 77 94 / 0.34), rgb(255 77 94 / 0.12));
+        --lg-drop: 0 12px 32px -12px rgb(255 77 94 / 0.55), inset 0 0 0 1px rgb(255 77 94 / 0.3);
+        color: #ffb8c0;
+    }
+
+    .lq-caution {
+        --lg-glow: rgb(255 138 61 / 0.45);
+        --lg-tint: linear-gradient(180deg, rgb(255 138 61 / 0.34), rgb(255 138 61 / 0.12));
+        --lg-drop: 0 12px 32px -12px rgb(255 138 61 / 0.5), inset 0 0 0 1px rgb(255 138 61 / 0.3);
+        color: #ffd0a8;
+    }
+
+    /* Blue glass: neutral actions that deserve a hue (Restart). Lavender label, brand-blue body. */
+    .lq-info {
+        --lg-glow: rgb(77 116 255 / 0.4);
+        --lg-tint: linear-gradient(180deg, rgb(77 116 255 / 0.3), rgb(24 70 255 / 0.1));
+        --lg-drop: 0 12px 32px -12px rgb(24 70 255 / 0.6), inset 0 0 0 1px rgb(120 150 255 / 0.28);
+        color: #cdd8ff;
+    }
+
+    .lq-primary.lq-touch:hover:not(:disabled, [aria-disabled='true']) {
+        --lg-tint: linear-gradient(180deg, rgb(57 255 20 / 0.5), rgb(57 255 20 / 0.2));
+    }
+
+    .lq-danger.lq-touch:hover:not(:disabled, [aria-disabled='true']) {
+        --lg-tint: linear-gradient(180deg, rgb(255 77 94 / 0.5), rgb(255 77 94 / 0.2));
+    }
+
+    .lq-caution.lq-touch:hover:not(:disabled, [aria-disabled='true']) {
+        --lg-tint: linear-gradient(180deg, rgb(255 138 61 / 0.5), rgb(255 138 61 / 0.2));
+    }
+
+    .lq-info.lq-touch:hover:not(:disabled, [aria-disabled='true']) {
+        --lg-tint: linear-gradient(180deg, rgb(77 116 255 / 0.46), rgb(24 70 255 / 0.2));
+    }
+
+    /* Navigation capsule: regular variant, more frost because arbitrary content scrolls beneath it. */
+    .lq-nav {
+        --lg-tint: rgb(8 10 22 / 0.4);
+        --lg-frost: 7;
+        --lg-drop: 0 18px 50px -20px rgb(0 0 0 / 0.8);
+    }
+
+    /* Glass inside glass cannot see the page, so it never gets clear glass: a plain fill instead (DESIGN.md 9). */
+    .fill {
+        background: rgb(255 255 255 / 0.05);
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+    }
+
+    .fill-hover {
+        transition: background-color var(--t-fast) ease-out;
+    }
+
+    .fill-hover:hover {
+        background: rgb(255 255 255 / 0.09);
+    }
+}
+
+/* ---------- accessibility (DESIGN.md 8): none of these is optional ---------- */
+
+@media (prefers-reduced-transparency: reduce) {
+    .lq,
+    .mat {
+        background: #10142a;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    .lq-primary {
+        background: #0f3a12;
+    }
+
+    .lq-danger {
+        background: #4a121b;
+    }
+
+    .lq-caution {
+        background: #4a2a10;
+    }
+
+    .lq-info {
+        background: #14246b;
+    }
+
+    .dark {
+        --card: #10142a;
+        --sidebar: #10142a;
+    }
+}
+
+@media (prefers-contrast: more) {
+    .lq,
+    .mat {
+        --lg-tint: rgb(8 10 22 / 0.86);
+        box-shadow:
+            inset 0 0 0 1.5px rgb(255 255 255 / 0.6),
+            var(--lg-drop);
+    }
+
+    .lq-primary {
+        --lg-tint: #0f3a12;
+        color: #fff;
+    }
+
+    .dark {
+        --border: rgb(255 255 255 / 0.5);
+        --input-border: rgb(255 255 255 / 0.6);
+        --muted-foreground: #c9cede;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lq-touch,
+    .lq-touch:active:not(:disabled, [aria-disabled='true']) {
+        scale: 1;
+        transition:
+            background-color var(--t-fast) ease-out,
+            color var(--t-fast) ease-out;
+    }
+}
+
+/* ― Built by DPDX Development · Bengaluru · dpdx.in · for Astrelyse ― */

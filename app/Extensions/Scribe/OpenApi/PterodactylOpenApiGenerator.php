@@ -2404,7 +2404,7 @@ class PterodactylOpenApiGenerator extends OpenApiGenerator
                         'app:locale',
                     ],
                     'properties' => [
-                        'app:name' => ['type' => 'string', 'example' => 'Pterodactyl'],
+                        'app:name' => ['type' => 'string', 'example' => 'Astrelyse'],
                         'app:logo' => ['type' => 'string', 'nullable' => true, 'example' => null],
                         'pterodactyl:auth:2fa_required' => ['type' => 'integer', 'enum' => [0, 1, 2], 'example' => 0],
                         'pterodactyl:client_features:avatars:enabled' => ['type' => 'boolean', 'example' => false],
@@ -2436,7 +2436,7 @@ class PterodactylOpenApiGenerator extends OpenApiGenerator
                         'mail:mailers:smtp:username' => ['type' => 'string', 'nullable' => true, 'example' => 'panel@example.com'],
                         'mail:mailers:smtp:password' => ['type' => 'string', 'example' => ''],
                         'mail:from:address' => ['type' => 'string', 'example' => 'panel@example.com'],
-                        'mail:from:name' => ['type' => 'string', 'nullable' => true, 'example' => 'Pterodactyl'],
+                        'mail:from:name' => ['type' => 'string', 'nullable' => true, 'example' => 'Astrelyse'],
                     ],
                 ],
                 'advanced' => [
@@ -2455,6 +2455,7 @@ class PterodactylOpenApiGenerator extends OpenApiGenerator
                         'recaptcha:enabled' => ['type' => 'boolean', 'example' => false],
                         'recaptcha:secret_key' => ['type' => 'string', 'example' => ''],
                         'recaptcha:website_key' => ['type' => 'string', 'example' => 'website'],
+                        'curseforge:api_key' => ['type' => 'string', 'description' => 'Always blank. See meta.curseforge_api_key_set.', 'example' => ''],
                         'pterodactyl:guzzle:timeout' => ['type' => 'integer', 'example' => 15],
                         'pterodactyl:guzzle:connect_timeout' => ['type' => 'integer', 'example' => 5],
                         'pterodactyl:client_features:allocations:enabled' => ['type' => 'boolean', 'example' => false],
@@ -2468,6 +2469,7 @@ class PterodactylOpenApiGenerator extends OpenApiGenerator
                     'properties' => [
                         'load_environment_only' => ['type' => 'boolean', 'example' => false],
                         'show_recaptcha_warning' => ['type' => 'boolean', 'example' => false],
+                        'curseforge_api_key_set' => ['type' => 'boolean', 'example' => false],
                     ],
                 ],
             ],

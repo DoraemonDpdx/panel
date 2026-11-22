@@ -23,6 +23,21 @@ class EnvironmentService
         $this->additional[$key] = $closure;
     }
 
+    /** @var list<callable(Server): array<string, bool|float|int|string|null>> */
+    private array $defaults = [];
+
+    /**
+     * Register a resolver for built-in variables whose names depend on the server, such as one
+     * variable per port role. What it returns never replaces an egg variable, a configured
+     * variable or a key set through setEnvironmentKey().
+     *
+     * @param  callable(Server): array<string, bool|float|int|string|null>  $resolver
+     */
+    public function setEnvironmentDefaults(callable $resolver): void
+    {
+        $this->defaults[] = $resolver;
+    }
+
     /**
      * @return array<string, EnvironmentValue> environment variable name => value
      */
@@ -56,6 +71,14 @@ class EnvironmentService
         // Process dynamically included environment variables.
         foreach ($this->additional as $key => $closure) {
             $variables[$key] = $this->environmentValue($key, $closure($server));
+        }
+
+        foreach ($this->defaults as $resolver) {
+            foreach ($resolver($server) as $key => $value) {
+                if (! array_key_exists($key, $variables)) {
+                    $variables[$key] = $this->environmentValue($key, $value);
+                }
+            }
         }
 
         return $variables;

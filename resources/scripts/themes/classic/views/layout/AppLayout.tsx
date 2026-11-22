@@ -1,5 +1,5 @@
 import { Layers, LogOut, Moon, Sun, UserCog } from 'lucide-react';
-import { Avatar, DropdownMenu, Icon, PanelLink, SpinnerOverlay, Tooltip } from '@/sdk';
+import { Avatar, DropdownMenu, Icon, PanelLink, ShortcutsOverlay, SpinnerOverlay, Tooltip } from '@/sdk';
 import { Main, Slot, View, type AppLayoutLink, type AppLayoutModel, type ViewProps } from '@/sdk/theme';
 
 const navItemClass = [
@@ -103,6 +103,7 @@ export default function AppLayout({ model, className, children }: ViewProps<'lay
     return (
         <div className={className}>
             <NavigationBar model={model} />
+            <ShortcutsOverlay />
             <Main>{children}</Main>
         </div>
     );

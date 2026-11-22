@@ -80,12 +80,16 @@ const extensionName = (extension: AdminExtension): string => extension.name || e
 
 const extensionId = (extension: AdminExtension): string => extension.id || extensionName(extension);
 
-const canRemove = (extension: AdminExtension): boolean => extension.state !== 'invalid' && !!extension.id;
+const BUNDLED_EXTENSION = 'astrelyse';
+
+const canRemove = (extension: AdminExtension): boolean =>
+    extension.state !== 'invalid' && !!extension.id && extension.id !== BUNDLED_EXTENSION;
 
 const canEnable = (extension: AdminExtension): boolean =>
     extension.state !== 'invalid' && !extension.enabled && !!extension.id;
 
-const canDisable = (extension: AdminExtension): boolean => extension.enabled === true && !!extension.id;
+const canDisable = (extension: AdminExtension): boolean =>
+    extension.enabled === true && !!extension.id && extension.id !== BUNDLED_EXTENSION;
 
 const extensionInitials = (extension: AdminExtension): string =>
     extensionName(extension)

@@ -42,7 +42,11 @@
                         "STARTUP": "java -jar {{SERVER_JARFILE}}",
                         "P_SERVER_LOCATION": "us-east",
                         "P_SERVER_UUID": "e45a916b-7b34-4394-9e17-48fad8d0185e",
-                        "P_SERVER_ALLOCATION_LIMIT": 2
+                        "P_SERVER_ALLOCATION_LIMIT": 2,
+                        "PORT": "25568",
+                        "PORT_1": "25565",
+                        "ALLOCATION_LIST": "192.0.2.10:25568,192.0.2.11:25565",
+                        "PUBLIC_ADDRESS": "192.0.2.10:25568"
                     },
                     "skip_scripts": false
                 },

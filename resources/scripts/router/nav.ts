@@ -1,4 +1,5 @@
 import type { ExtensionScreenRegistration } from '@/extensions/registry';
+import type { WorkloadScope } from '@/views/workload';
 
 export type NavArea = 'account' | 'server' | 'admin';
 
@@ -14,6 +15,11 @@ export interface RouteNavMeta {
     badge?: string;
     /** A lucide icon name. */
     icon?: string;
+    /**
+     * The workload profiles the link applies to (server area); leave it out for every workload. Servers
+     * with the `generic` profile show every link regardless.
+     */
+    profiles?: WorkloadScope;
     /** Gates the link and supplies its live badge. */
     screen?: ExtensionScreenRegistration;
 }

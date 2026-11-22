@@ -28,7 +28,7 @@ class TwoFactorController extends ClientApiController
 {
     private const array TWO_FACTOR_SETUP_EXAMPLE = [
         'data' => [
-            'image_url_data' => 'otpauth://totp/Pterodactyl:user@example.com?secret=EXAMPLESECRET&issuer=Pterodactyl',
+            'image_url_data' => 'otpauth://totp/Astrelyse:user@example.com?secret=EXAMPLESECRET&issuer=Astrelyse',
             'secret' => 'EXAMPLESECRET',
         ],
     ];
@@ -82,6 +82,22 @@ class TwoFactorController extends ClientApiController
     }
 
     /**
+     * Confirms the account password before the two-factor setup is shown.
+     */
+    #[Endpoint('Verify password for two-factor setup', 'Checks the current account password before two-factor setup begins.')]
+    #[BodyParam('password', 'string', 'The current account password.', required: true, example: 'current-password')]
+    #[ScribeResponse(status: 204, description: 'The password is correct.')]
+    #[ScribeResponse(self::BAD_REQUEST_ERROR, status: 400, description: 'The password is invalid.')]
+    public function verifyPassword(Request $request): JsonResponse
+    {
+        $user = $this->authenticatedUser($request);
+        $password = $request->validate(['password' => ['required', 'string']])['password'];
+        throw_unless(Hash::check($password, $user->password), InvalidPasswordProvidedException::class, trans('validation.internal.invalid_password'));
+
+        return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
      * Updates a user's account to have two-factor enabled.
      *
      * @throws Throwable
@@ -122,6 +138,8 @@ class TwoFactorController extends ClientApiController
     public function delete(DisableTwoFactorRequest $request, DisablesTwoFactor $twoFactor): JsonResponse
     {
         $user = $this->authenticatedUser($request);
+        throw_if($user->mustUseTwoFactor(), BadRequestHttpException::class, 'Two-factor authentication is required for staff accounts and cannot be disabled.');
+
         $password = $request->string('password')->toString();
         throw_unless(Hash::check($password, $user->password), InvalidPasswordProvidedException::class, trans('validation.internal.invalid_password'));
 

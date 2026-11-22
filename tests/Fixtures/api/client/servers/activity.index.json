@@ -132,7 +132,7 @@
                                     "email": "admin@example.test",
                                     "image": "https://gravatar.com/avatar/51965088c5db83c3fd307f308d25198a",
                                     "avatar": null,
-                                    "2fa_enabled": false,
+                                    "2fa_enabled": true,
                                     "created_at": "2026-01-02T03:04:05+00:00"
                                 }
                             }
@@ -229,7 +229,7 @@
                                     "email": "admin@example.test",
                                     "image": "https://gravatar.com/avatar/51965088c5db83c3fd307f308d25198a",
                                     "avatar": null,
-                                    "2fa_enabled": false,
+                                    "2fa_enabled": true,
                                     "created_at": "2026-01-02T03:04:05+00:00"
                                 }
                             }
@@ -422,7 +422,7 @@
                                     "email": "admin@example.test",
                                     "image": "https://gravatar.com/avatar/51965088c5db83c3fd307f308d25198a",
                                     "avatar": null,
-                                    "2fa_enabled": false,
+                                    "2fa_enabled": true,
                                     "created_at": "2026-01-02T03:04:05+00:00"
                                 }
                             }

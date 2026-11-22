@@ -1,40 +1,40 @@
-import { Button, Dialog, SpinnerOverlay } from '@/sdk';
+import { FileCheck } from 'lucide-react';
+import { Button } from '@/sdk';
 import type { ViewProps } from '@/sdk/theme';
-import { cancelClass } from './parts';
+import PromptCard, { PromptActions } from './PromptCard';
 
-export default function EulaPrompt({ model }: ViewProps<'server.feature.eula'>) {
+export default function EulaPrompt({ model, className }: ViewProps<'server.feature.eula'>) {
     return (
-        <Dialog
+        <PromptCard
+            className={className}
             open={model.open}
-            title={<>Accept Minecraft&reg; EULA</>}
+            title='Accept the Minecraft® EULA'
+            icon={FileCheck}
+            pending={model.pending}
             onClose={model.close}
-            preventExternalClose={model.pending}
-            hideCloseIcon={model.pending}
         >
-            <SpinnerOverlay visible={model.pending} />
             <p className='text-foreground'>
-                By pressing "I Accept" below you are indicating your agreement to the&nbsp;
+                The server stopped because the EULA has not been accepted. By pressing &ldquo;I accept&rdquo; you agree
+                to the&nbsp;
                 <a
                     target='_blank'
                     className='text-accent underline transition-colors duration-150 hover:text-accent/80'
                     rel='noreferrer noopener'
                     href='https://www.minecraft.net/eula'
                 >
-                    Minecraft&reg; EULA
+                    Minecraft® EULA
                 </a>
-                .
+                . This writes <code className='font-mono'>eula=true</code> and restarts the server.
             </p>
-            <div className='mt-8 sm:flex items-center justify-end'>
-                <Button isSecondary onClick={model.close} className={cancelClass}>
-                    Cancel
-                </Button>
+            <PromptActions>
                 <Button
+                    isLoading={model.pending}
                     onClick={() => void model.accept().catch(() => {})}
-                    className='mt-4 sm:mt-0 sm:ml-4 w-full sm:w-auto'
+                    disabled={model.pending}
                 >
-                    I Accept
+                    I accept
                 </Button>
-            </div>
-        </Dialog>
+            </PromptActions>
+        </PromptCard>
     );
 }

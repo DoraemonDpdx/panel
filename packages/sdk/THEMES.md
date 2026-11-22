@@ -1432,18 +1432,22 @@ included: the engine converts the terminal's colours to the hex and `rgba()` its
 | Alert | `root`, `icon`, `body`, `title`, `content` | `data-type`: success, info, warning, danger | yes |  |
 | Avatar | `root` | `data-variant`: beam, marble, pixel, sunset, ring, bauhaus | yes |  |
 | Badge | `root` | `data-tone`: neutral, success, warning, danger, info, accent; `data-size`: sm, md; `data-variant`: solid, soft | yes |  |
+| Breadcrumb | `root`, `list`, `item`, `link`, `current`, `separator` | none | yes |  |
 | Button | `root`, `spinner`, `label` | `data-color`: green, red, orange, primary, grey; `data-size`: xsmall, small, large, xlarge; `data-secondary`; `data-loading` | yes | `label` wraps the children in a row with a gap, so an icon beside the text needs no margin. `Button.Text` is `color: grey` and `Button.Danger` is `color: red`. |
 | Card | `root`, `header`, `title`, `icon`, `actions`, `body` | `data-titled`; `data-actions`; `data-loading` | yes |  |
 | ChartCard | `root`, `header`, `title`, `legend`, `body` | none | yes | The frame of a chart: `legend` sits at the end of the header, `body` holds the chart. |
 | Checkbox | `root`, `indicator` | none | no |  |
 | Code | `root` | `data-dark` | no |  |
+| CommandPalette | `backdrop`, `viewport`, `root`, `search`, `searchIcon`, `input`, `list`, `group`, `heading`, `item`, `itemLabel`, `itemHint`, `empty`, `footer`, `footerHint` | `data-empty` | yes | A floating search layer; `list` and its `item`s are plain fills. The active option has `aria-selected`. |
 | CopyOnClick | `root`, `status`, `message`, `target` | `data-status`: copied, failed | no | `target` is added to the clicked child; the other parts are the status toast. |
 | Dialog | `backdrop`, `viewport`, `container`, `root`, `body`, `content`, `header`, `heading`, `title`, `description`, `spacer`, `footer`, `close`, `closeButton`, `closeIcon`, `icon`, `iconGlyph` | `data-described`; `data-type`: danger, info, success, warning | no | `type` is the state of the `icon` part. |
+| Drawer | `backdrop`, `viewport`, `root`, `header`, `heading`, `title`, `description`, `closeButton`, `closeIcon`, `body`, `footer` | `data-side`: right, left; `data-size`: sm, md, lg; `data-described`; `data-footer` | no | A modal side sheet. `viewport` positions the `root` popup at the `side` edge; `body` scrolls and `footer` holds the actions. Base UI sets `data-starting-style` and `data-ending-style` for the slide. |
 | DropdownMenu | `trigger`, `positioner`, `root` | `data-context` | no |  |
 | DropdownMenuItem | `root`, `icon`, `glyph`, `text`, `label`, `description` | `data-danger`; `data-described`; `data-checked` | no | `checked` is set on an item given `checked`, such as the scheme in use. |
 | Empty | `root`, `header`, `media`, `title`, `description`, `content` | `data-size`: default, compact; `data-variant`: default, icon | yes | `variant` is the state of the `media` part. |
 | FileInput | `root` | none | no |  |
 | Input | `root` | `data-light`; `data-error` | no |  |
+| KeyboardShortcut | `root`, `key` | none | yes | The `?` overlay's content: shortcuts as `group`s of `item`s, each a `description` and its keycaps. |
 | Label | `root` | `data-light` | no |  |
 | ListRow | `root`, `icon`, `title`, `description`, `status` | `data-interactive`; `data-status`: neutral, success, warning, danger, info, accent | yes | `icon`, `title` and `description` are `ListRow.Icon`, `ListRow.Title` and `ListRow.Description`, placed by the row's content; `status` is drawn when the row has a `status`. |
 | NewButton | `root`, `content`, `icon` | `data-link` | no | `root` is added to the Button it renders, `content` wraps the icon and label. |
@@ -1452,12 +1456,19 @@ included: the engine converts the terminal's colours to the hex and `rgba()` its
 | PageHeading | `root`, `text`, `title`, `description`, `actions` | none | yes |  |
 | Pagination | `root`, `page` | `data-current` | no | `page` is added to each page Button. |
 | ProgressBar | `root`, `indicator` | `data-variant`: meter, page; `data-tone`: neutral, success, warning, danger, info, accent | yes |  |
+| SecretField | `root`, `label`, `control`, `description` | `data-empty` | yes | `label` and `description` belong to the field; `control` wraps the masked `SecretInput`. |
 | Select | `root`, `input`, `trigger`, `positioner`, `popup`, `list`, `item`, `itemLabel`, `indicator`, `empty`, `group`, `groupLabel`, `summary`, `preview` | `data-error`; `data-multiple`; `data-selected`; `data-rich-label`; `data-searching` | no |  |
+| ShortcutsOverlay | `root`, `group`, `heading`, `list`, `item`, `description` | `data-empty` | no |  |
+| Skeleton | `root`, `body` | `data-kind`: line, block, circle, row, card, chart | yes | A static placeholder: a plain fill, never animated. `row`, `card` and `chart` are containers (`body` holds a row's lines); their pieces are `line`, `block` and `circle` roots with their own `kind`. |
 | Spinner | `root`, `container` | `data-size`: small, base, large; `data-blue`; `data-centered` | yes | `root` is the spinning element, an empty `span` with no text or role: the region that loads announces it. `container` centres it when `centered`. A skin can animate anything, such as the `content` of `::before`. |
+| Sparkline | `root`, `area`, `line` | `data-tone`: neutral, success, warning, danger, info, accent; `data-empty` | yes | A tiny line of recent values in a stretched `viewBox`: `line` is the stroke and `area` the fill beneath it. It is never animated; `empty` means fewer than two samples, so nothing is drawn yet. |
 | SpinnerOverlay | `root`, `text` | `data-fixed` | no |  |
+| StatusDot | `root`, `dot`, `label` | `data-status`: running, starting, stopping, offline, suspended; `data-labelled` | yes | A transitional status shows a Spinner in place of `dot`. |
+| Stepper | `root`, `list`, `item`, `step`, `marker`, `check`, `text`, `label`, `description` | `data-interactive`; `data-status`: complete, current, upcoming | yes | A step is `complete`, `current` or `upcoming`; `item`, `step`, `marker` and `label` carry it as `status`. `interactive` means completed steps are buttons. |
 | Stat | `root`, `indicator`, `icon`, `glyph`, `body`, `label`, `value`, `limit` | `data-variant`: tile, inline; `data-tone`: neutral, success, warning, danger, info, accent; `data-unavailable` | yes | `glyph` is the icon inside `icon`; `indicator` is a bar for the tone, and `limit` follows `value`. `unavailable` means the value says why there is no reading, such as "Offline". |
 | Switch | `root`, `control`, `thumb`, `text`, `label`, `description` | `data-described`; `data-position`: start, end | no | `label` is added to the Label it renders. |
 | Table | `root`, `empty`, `scroller`, `table`, `head`, `headerRow`, `headerCell`, `body`, `row`, `cell` | `data-fetching` | no |  |
+| Tabs | `root`, `list`, `tab`, `panel` | `data-orientation`: horizontal, vertical | no | Base UI sets `data-selected`, `data-disabled` and `data-active` on a `tab`. |
 | TextArea | `root` | `data-light`; `data-error` | no |  |
 | Tooltip | `root`, `arrow` | `data-side`: top, right, bottom, left; `data-arrow` | no |  |
 <!-- /generated:primitives -->
@@ -1498,8 +1509,8 @@ the view's layers; a page's **engine slots** are rendered around it by the engin
 | `page.account.api` | account | `PageStatusModel` |  |  | `account.api.before` `account.api.after` | default, loading, error |
 | `page.account.overview` | account | `AccountOverviewModel` |  | `account.overview.before` `account.overview.after` |  | default, twoFactorRequired, avatars |
 | `page.account.ssh` | account | `PageStatusModel` |  |  | `account.ssh.before` `account.ssh.after` | default, loading, error |
-| `page.auth.checkpoint` | auth | `CheckpointFormModel` |  |  | `auth.checkpoint.before` `auth.checkpoint.after` | code, recovery |
-| `page.auth.login` | auth | `LoginFormModel` |  | `auth.login.form.after` | `auth.login.before` `auth.login.after` | default, invalid, submitting |
+| `page.auth.checkpoint` | auth | `CheckpointFormModel` |  |  | `auth.checkpoint.before` `auth.checkpoint.after` | code, recovery, passkey |
+| `page.auth.login` | auth | `LoginFormModel` |  | `auth.login.form.after` | `auth.login.before` `auth.login.after` | default, invalid, submitting, discord, google |
 | `page.auth.password` | auth | `ForgotPasswordFormModel` |  |  | `auth.password.before` `auth.password.after` | default, invalid |
 | `page.auth.passwordReset` | auth | `ResetPasswordFormModel` |  |  | `auth.passwordReset.before` `auth.passwordReset.after` | default, mismatch |
 | `page.dashboard` | app | `PageStatusModel` |  |  |  | default, loading, error |
@@ -1509,6 +1520,7 @@ the view's layers; a page's **engine slots** are rendered around it by the engin
 | `page.server.databases` | server | `PageStatusModel` |  |  | `server.databases.before` `server.databases.after` | default, loading, error |
 | `page.server.files` | server | `PageStatusModel` |  | `server.files.before` `server.files.after` |  | default, loading, error |
 | `page.server.files.editor` | server | `FileEditorPageModel` |  |  | `server.files.editor.before` `server.files.editor.after` | file, new, loading, error |
+| `page.server.mods` | server | `PageStatusModel` |  |  |  | default, loading, error |
 | `page.server.network` | server | `PageStatusModel` |  |  | `server.network.before` `server.network.after` | default, loading, error |
 | `page.server.schedules` | server | `PageStatusModel` |  |  | `server.schedules.before` `server.schedules.after` | default, loading, error |
 | `page.server.schedules.detail` | server | `PageStatusModel` |  |  | `server.schedules.detail.before` `server.schedules.detail.after` | default, loading, error |
@@ -1525,6 +1537,7 @@ the view's layers; a page's **engine slots** are rendered around it by the engin
 | `account.apiKeys.list` | account | `ApiKeyListModel` |  |  | keys, empty, loading, deleting |
 | `account.avatar` | account | `AccountAvatarModel` |  |  | default, uploaded, picked |
 | `account.email` | account | `AccountEmailModel` |  |  | default, submitting |
+| `account.passkeys` | account | `AccountPasskeysModel` |  |  | empty, loading, list, failed |
 | `account.password` | account | `AccountPasswordModel` |  |  | default, invalid |
 | `account.sshKeys.create` | account | `SshKeyCreateModel` |  |  | default, submitting |
 | `account.sshKeys.list` | account | `SshKeyListModel` |  |  | keys, empty, loading |
@@ -1558,6 +1571,8 @@ the view's layers; a page's **engine slots** are rendered around it by the engin
 | `server.files.manager.selection` | server | `FileManagerModel` | `model: FileManagerModel` | `server.files.selectionActions` |  |
 | `server.files.manager.toolbar` | server | `FileManagerModel` | `model: FileManagerModel` | `server.files.toolbar` |  |
 | `server.graphs` | server | `ServerGraphsModel` |  |  | running, offline |
+| `server.mods` | server | `ServerModsModel` |  |  | installed, browse, readOnly, unsupported, loading |
+| `server.ports` | server | `ServerPortsModel` |  |  | default, restartRequired, readOnly, loading, full |
 | `server.power` | server | `ServerPowerModel` |  | `server.console.power.before` `server.console.power.after` | running, offline, starting, stopping, disconnected, noPermission |
 | `server.reinstall` | server | `ServerReinstallModel` |  |  | default, skipped, denied |
 | `server.rename` | server | `ServerRenameModel` |  |  | default, empty, denied |
@@ -1571,7 +1586,7 @@ the view's layers; a page's **engine slots** are rendered around it by the engin
 | `server.stats` | server | `ServerStatsModel` |  |  | running, offline, starting, alarms, unlimited |
 | `server.subuserForm` | server | `SubuserFormModel` | `subuser?: SubuserSummary`, `onClose?: () => void` | `server.users.permissions.before` | create, edit, restricted, viewOnly, loading |
 | `server.subusers` | server | `SubuserListModel` |  |  | subusers, empty, readOnly |
-| `server.terminal` | server | `ServerTerminalModel` |  |  | running, connecting, failed, scrolledUp, readOnly |
+| `server.terminal` | server | `ServerTerminalModel` |  |  | running, connecting, failed, scrolledUp, readOnly, structured, filtered, noSavedCommands |
 <!-- /generated:views -->
 
 ### The full example

@@ -4,6 +4,12 @@ export interface SiteSettings {
     logo: string | null;
     locale: string;
     userAvatarsEnabled: boolean;
+    google?: {
+        clientId: string;
+    };
+    discord?: {
+        enabled: boolean;
+    };
     recaptcha: {
         enabled: boolean;
         siteKey: string;

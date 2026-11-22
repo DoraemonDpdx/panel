@@ -12,6 +12,8 @@ const settings = () => import('./server/settings');
 const serverConsole = () => import('./server/console');
 const files = () => import('./server/files');
 const databases = () => import('./server/databases');
+const mods = () => import('./server/mods');
+const software = () => import('./server/software');
 const network = () => import('./server/network');
 const startup = () => import('./server/startup');
 
@@ -41,6 +43,7 @@ export const classicViews: ThemeViews = {
     'account.email': lazyView(account, 'EmailCard'),
     'account.avatar': lazyView(account, 'AvatarCard'),
     'account.twoFactor': lazyView(account, 'TwoFactorCard'),
+    'account.passkeys': lazyView(account, 'PasskeysCard'),
     'page.account.api': lazyView(account, 'ApiKeysPage'),
     'account.apiKeys.list': lazyView(account, 'ApiKeyList'),
     'account.apiKeys.create': lazyView(account, 'ApiKeyCreate'),
@@ -69,6 +72,7 @@ export const classicViews: ThemeViews = {
     'server.sftp': lazyView(settings, 'ServerSftp'),
     'server.debug': lazyView(settings, 'ServerDebug'),
     'server.rename': lazyView(settings, 'ServerRename'),
+    'server.ports': lazyView(settings, 'ServerPorts'),
     'server.reinstall': lazyView(settings, 'ServerReinstall'),
 
     'page.server.console': lazyView(serverConsole, 'ConsolePage'),
@@ -96,6 +100,10 @@ export const classicViews: ThemeViews = {
     'server.files.editor.actions': lazyView(files, 'FileEditorActions'),
     'page.server.databases': lazyView(databases, 'DatabasesPage'),
     'server.databases': lazyView(databases, 'Databases'),
+    'page.server.mods': lazyView(mods, 'ModsPage'),
+    'server.mods': lazyView(mods, 'Mods'),
+    'page.server.software': lazyView(software, 'SoftwarePage'),
+    'server.software': lazyView(software, 'Software'),
     'page.server.network': lazyView(network, 'NetworkPage'),
     'server.allocations': lazyView(network, 'Allocations'),
     'page.server.startup': lazyView(startup, 'StartupPage'),

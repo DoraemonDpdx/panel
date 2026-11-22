@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useAppForm, Form } from '@/components/form';
 import type { AdminSettings } from '@/api/admin/settings/queries';
 import { updateAdminAdvancedSettingsInput, useUpdateAdminAdvancedSettings } from '@/api/admin/settings/queries';
@@ -9,6 +10,7 @@ interface AdvancedSettingsFormValues {
     recaptchaEnabled: boolean;
     recaptchaSecretKey: string;
     recaptchaWebsiteKey: string;
+    curseforgeApiKey: string;
     guzzleTimeout: NumberInputValue;
     guzzleConnectTimeout: NumberInputValue;
     allocationsEnabled: boolean;
@@ -20,6 +22,7 @@ const advancedSettingsFormValues = (settings: AdminSettings): AdvancedSettingsFo
     recaptchaEnabled: settings.advanced['recaptcha:enabled'],
     recaptchaSecretKey: '',
     recaptchaWebsiteKey: settings.advanced['recaptcha:website_key'],
+    curseforgeApiKey: '',
     guzzleTimeout: settings.advanced['pterodactyl:guzzle:timeout'],
     guzzleConnectTimeout: settings.advanced['pterodactyl:guzzle:connect_timeout'],
     allocationsEnabled: settings.advanced['pterodactyl:client_features:allocations:enabled'],
@@ -30,6 +33,16 @@ const advancedSettingsFormValues = (settings: AdminSettings): AdvancedSettingsFo
 export default function AdvancedSettingsForm({ settings }: { settings: AdminSettings }) {
     const readOnly = settings.meta.load_environment_only;
     const updateAdvancedSettings = useUpdateAdminAdvancedSettings();
+    // "Remove key" is applied on save, by sending "!e" (the same marker the SMTP password uses).
+    const [removeCurseforgeKey, setRemoveCurseforgeKey] = useState(false);
+    const curseforgeKeySet = settings.meta.curseforge_api_key_set && !removeCurseforgeKey;
+    let curseforgeKeyStatus = 'Not set';
+
+    if (removeCurseforgeKey) {
+        curseforgeKeyStatus = 'Key will be removed when you save';
+    } else if (settings.meta.curseforge_api_key_set) {
+        curseforgeKeyStatus = 'Key saved';
+    }
 
     const form = useAppForm({
         defaultValues: advancedSettingsFormValues(settings),
@@ -44,6 +57,7 @@ export default function AdvancedSettingsForm({ settings }: { settings: AdminSett
                         recaptchaEnabled: value.recaptchaEnabled,
                         recaptchaSecretKey: value.recaptchaSecretKey,
                         recaptchaWebsiteKey: value.recaptchaWebsiteKey,
+                        curseforgeApiKey: removeCurseforgeKey ? '!e' : value.curseforgeApiKey,
                         guzzleTimeout: submittedNumber(value.guzzleTimeout),
                         guzzleConnectTimeout: submittedNumber(value.guzzleConnectTimeout),
                         allocationsEnabled: value.allocationsEnabled,
@@ -52,7 +66,12 @@ export default function AdvancedSettingsForm({ settings }: { settings: AdminSett
                         allocationsRangeEnd: value.allocationsRangeEnd === '' ? '' : Number(value.allocationsRangeEnd),
                     })
                 );
-                form.reset({ ...value, recaptchaSecretKey: '' });
+                setRemoveCurseforgeKey(false);
+                form.reset({
+                    ...value,
+                    recaptchaSecretKey: '',
+                    curseforgeApiKey: '',
+                });
             } catch {
                 // Error toast is handled by the mutation.
             }
@@ -105,11 +124,47 @@ export default function AdvancedSettingsForm({ settings }: { settings: AdminSett
                     </form.AppField>
                 </div>
             </TitledGreyBox>
+            <TitledGreyBox title='CurseForge' className='mt-6'>
+                <div className='mb-2 flex items-center justify-between gap-4 text-sm'>
+                    <span data-testid='curseforge-key-status' role='status'>
+                        {curseforgeKeyStatus}
+                    </span>
+                    {settings.meta.curseforge_api_key_set && (
+                        <button
+                            type='button'
+                            className='underline disabled:opacity-60'
+                            disabled={readOnly}
+                            aria-pressed={removeCurseforgeKey}
+                            onClick={() => setRemoveCurseforgeKey((removing) => !removing)}
+                        >
+                            {removeCurseforgeKey ? 'Keep key' : 'Remove key'}
+                        </button>
+                    )}
+                </div>
+                <form.AppField name='curseforgeApiKey'>
+                    {(field) => (
+                        <field.TextField
+                            type='password'
+                            id='curseforge_api_key'
+                            label='CurseForge API key'
+                            description={
+                                curseforgeKeySet
+                                    ? 'From console.curseforge.com. Enables CurseForge in the server Mods tab. Leave blank to keep the saved key.'
+                                    : 'From console.curseforge.com. Enables CurseForge in the server Mods tab.'
+                            }
+                            disabled={readOnly || removeCurseforgeKey}
+                            autoComplete='off'
+                        />
+                    )}
+                </form.AppField>
+            </TitledGreyBox>
             <TitledGreyBox title='HTTP Connections' className='mt-6'>
                 <div className='grid grid-cols-2 gap-4'>
                     <form.AppField
                         name='guzzleTimeout'
-                        validators={{ onChange: requiredNumber('An HTTP request timeout must be provided.') }}
+                        validators={{
+                            onChange: requiredNumber('An HTTP request timeout must be provided.'),
+                        }}
                     >
                         {(field) => (
                             <field.NumberField id='guzzle_timeout' label='HTTP Request Timeout' disabled={readOnly} />
@@ -117,7 +172,9 @@ export default function AdvancedSettingsForm({ settings }: { settings: AdminSett
                     </form.AppField>
                     <form.AppField
                         name='guzzleConnectTimeout'
-                        validators={{ onChange: requiredNumber('An HTTP connection timeout must be provided.') }}
+                        validators={{
+                            onChange: requiredNumber('An HTTP connection timeout must be provided.'),
+                        }}
                     >
                         {(field) => (
                             <field.NumberField

@@ -9,7 +9,12 @@ import GeneralSettingsForm from './GeneralSettingsForm';
 import AdvancedSettingsForm from './AdvancedSettingsForm';
 import MailSettingsForm from './MailSettingsForm';
 
-const mutations = vi.hoisted(() => ({ general: vi.fn(), advanced: vi.fn(), mail: vi.fn(), testMail: vi.fn() }));
+const mutations = vi.hoisted(() => ({
+    general: vi.fn(),
+    advanced: vi.fn(),
+    mail: vi.fn(),
+    testMail: vi.fn(),
+}));
 
 vi.mock('@/api/admin/settings/queries', async (importOriginal) => ({
     ...(await importOriginal<typeof SettingsQueries>()),
@@ -44,21 +49,34 @@ const settings: AdminSettings = {
         'recaptcha:enabled': false,
         'recaptcha:secret_key': '',
         'recaptcha:website_key': '',
+        'curseforge:api_key': '',
         'pterodactyl:guzzle:timeout': 10,
         'pterodactyl:guzzle:connect_timeout': 5,
         'pterodactyl:client_features:allocations:enabled': false,
         'pterodactyl:client_features:allocations:range_start': null,
         'pterodactyl:client_features:allocations:range_end': null,
     },
-    meta: { load_environment_only: true, show_recaptcha_warning: false },
+    meta: {
+        load_environment_only: true,
+        show_recaptcha_warning: false,
+        curseforge_api_key_set: false,
+    },
 };
 
 afterEach(cleanup);
 beforeEach(() => vi.clearAllMocks());
 
 const forms = [
-    { name: 'general', Component: GeneralSettingsForm, mutation: mutations.general },
-    { name: 'advanced', Component: AdvancedSettingsForm, mutation: mutations.advanced },
+    {
+        name: 'general',
+        Component: GeneralSettingsForm,
+        mutation: mutations.general,
+    },
+    {
+        name: 'advanced',
+        Component: AdvancedSettingsForm,
+        mutation: mutations.advanced,
+    },
     { name: 'mail', Component: MailSettingsForm, mutation: mutations.mail },
 ];
 
@@ -67,7 +85,12 @@ describe('mail settings', () => {
         const user = userEvent.setup();
 
         render(
-            <MailSettingsForm settings={{ ...settings, meta: { ...settings.meta, load_environment_only: false } }} />
+            <MailSettingsForm
+                settings={{
+                    ...settings,
+                    meta: { ...settings.meta, load_environment_only: false },
+                }}
+            />
         );
 
         const password = screen.getByLabelText('Password');
@@ -76,9 +99,96 @@ describe('mail settings', () => {
         await user.click(screen.getByRole('button', { name: 'Save Changes' }));
 
         expect(mutations.mail).toHaveBeenCalledWith({
-            body: { smtp: expect.objectContaining({ port: 587, password: 'smtp-secret' }) },
+            body: {
+                smtp: expect.objectContaining({
+                    port: 587,
+                    password: 'smtp-secret',
+                }),
+            },
         });
         expect(password).toHaveValue('');
+    });
+});
+
+describe('curseforge api key', () => {
+    const editable = (keySet: boolean): AdminSettings => ({
+        ...settings,
+        meta: {
+            ...settings.meta,
+            load_environment_only: false,
+            curseforge_api_key_set: keySet,
+        },
+    });
+
+    it('says whether a key is saved and never shows its value', () => {
+        const { rerender } = render(<AdvancedSettingsForm settings={editable(false)} />);
+
+        expect(screen.getByTestId('curseforge-key-status')).toHaveTextContent('Not set');
+        expect(screen.queryByRole('button', { name: 'Remove key' })).not.toBeInTheDocument();
+        expect(screen.getByLabelText('CurseForge API key')).toHaveValue('');
+        expect(screen.getByText(/Enables CurseForge in the server Mods tab/)).toBeInTheDocument();
+
+        rerender(<AdvancedSettingsForm settings={editable(true)} />);
+
+        expect(screen.getByTestId('curseforge-key-status')).toHaveTextContent('Key saved');
+        expect(screen.getByLabelText('CurseForge API key')).toHaveValue('');
+    });
+
+    it('sends a blank key when nothing is entered, so the saved key is kept', async () => {
+        const user = userEvent.setup();
+
+        render(<AdvancedSettingsForm settings={editable(true)} />);
+        await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+        expect(mutations.advanced).toHaveBeenCalledWith({
+            body: expect.objectContaining({ 'curseforge:api_key': null }),
+        });
+    });
+
+    it('sends the entered key once and then clears the field', async () => {
+        const user = userEvent.setup();
+
+        render(<AdvancedSettingsForm settings={editable(false)} />);
+        const input = screen.getByLabelText('CurseForge API key');
+
+        await user.type(input, 'cf-key-123');
+        await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+        expect(mutations.advanced).toHaveBeenCalledWith({
+            body: expect.objectContaining({
+                'curseforge:api_key': 'cf-key-123',
+            }),
+        });
+        expect(input).toHaveValue('');
+    });
+
+    it('removes the key by sending !e', async () => {
+        const user = userEvent.setup();
+
+        render(<AdvancedSettingsForm settings={editable(true)} />);
+        await user.click(screen.getByRole('button', { name: 'Remove key' }));
+
+        expect(screen.getByTestId('curseforge-key-status')).toHaveTextContent('Key will be removed when you save');
+
+        await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+        expect(mutations.advanced).toHaveBeenCalledWith({
+            body: expect.objectContaining({ 'curseforge:api_key': '!e' }),
+        });
+    });
+
+    it('cannot be changed in environment-only mode', () => {
+        render(
+            <AdvancedSettingsForm
+                settings={{
+                    ...settings,
+                    meta: { ...settings.meta, curseforge_api_key_set: true },
+                }}
+            />
+        );
+
+        expect(screen.getByLabelText('CurseForge API key')).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Remove key' })).toBeDisabled();
     });
 });
 
@@ -100,7 +210,14 @@ describe.each(forms)('$name settings', ({ Component, mutation }) => {
     });
 
     it('allows saving when settings are loaded dynamically', async () => {
-        render(<Component settings={{ ...settings, meta: { ...settings.meta, load_environment_only: false } }} />);
+        render(
+            <Component
+                settings={{
+                    ...settings,
+                    meta: { ...settings.meta, load_environment_only: false },
+                }}
+            />
+        );
 
         const save = screen.getByRole('button', { name: 'Save Changes' });
 

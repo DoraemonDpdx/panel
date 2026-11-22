@@ -12,9 +12,11 @@ import {
     type ScreenParent,
 } from '@/extensions/registry';
 import { ScreenBadge, ScreenGate } from '@/extensions/screenNavigation';
+import { useModsPlatform } from '@/api/server/mods/queries';
 import { hasPermission } from '@/plugins/usePermissions';
 import { getAreaNav, type AreaNavEntry } from '@/router/nav';
 import { useServerRouteId } from '@/router/params';
+import { appliesToWorkload, serverWorkload } from './workload';
 import {
     PanelLink,
     resolvePanelDestination,
@@ -80,13 +82,17 @@ const toNavItem = (area: NavArea, entry: AreaNavEntry, order: number, params: Re
     extensionId: entry.screen?.extensionId,
 });
 
-/** Server items need one of their subuser permissions and, for extension screens, a matching egg. */
+/** The panel's own mods tab, as opposed to an extension screen that happens to use the path `mods`. */
+const isCoreModsTab = (entry: AreaNavEntry): boolean => entry.segment === 'mods' && entry.screen === undefined;
+
+/** Server items need one of their subuser permissions, a workload profile they apply to and, for extension screens, a matching egg. */
 function isListed(entry: AreaNavEntry, server: Server | undefined): boolean {
     const permissions = server ? selectServerPermissions(server) : [];
     const required = entry.permission === undefined ? [] : [entry.permission].flat();
 
     return (
         (!required.length || required.some((permission) => hasPermission(permissions, permission))) &&
+        appliesToWorkload(entry.profiles, serverWorkload(server)) &&
         matchesScreenCondition(entry.screen?.when, server)
     );
 }
@@ -99,16 +105,27 @@ export function useNavigation(area: NavArea): NavigationModel {
     const id = useServerRouteId();
     const serverId = area === 'server' ? (id ?? '') : '';
     const server = useServerQuery(serverId).data;
+    const hasModsTab = area === 'server' && getAreaNav('server').some(isCoreModsTab);
+    const canReadMods = !!server && hasPermission(selectServerPermissions(server), 'mods.read');
+    const mods = useModsPlatform(serverId, hasModsTab && canReadMods).data;
 
     return useMemo(() => {
         const params: Record<string, string> = serverId ? { id: serverId } : {};
         const items = getAreaNav(area)
             .map((entry, order) => ({ entry, item: toNavItem(area, entry, order, params) }))
             .filter(({ entry }) => area !== 'server' || isListed(entry, server))
-            .map(({ item }) => item);
+            // The mods tab follows the server's detected platform, which names it too.
+            .filter(({ entry }) => !isCoreModsTab(entry) || mods?.eligible === true)
+            .map(({ item, entry }) => {
+                if (isCoreModsTab(entry) && mods?.project_type === 'plugin') {
+                    return Object.assign({}, item, { label: 'Plugins' });
+                }
+
+                return item;
+            });
 
         return { items };
-    }, [area, serverId, server]);
+    }, [area, serverId, server, mods]);
 }
 
 export interface ResourceTab {
