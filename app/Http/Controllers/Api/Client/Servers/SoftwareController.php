@@ -54,8 +54,6 @@ class SoftwareController extends ClientApiController
     #[ScribeResponse(self::UNSUPPORTED, status: 409, description: 'Not a Minecraft Java server.')]
     public function index(SoftwareReadRequest $request, Server $server): JsonResponse
     {
-        $this->assertJava($server);
-
         $types = [];
         foreach (SoftwareCatalog::TYPES as $type => $meta) {
             $types[] = ['type' => $type, ...$meta];
@@ -149,12 +147,10 @@ class SoftwareController extends ClientApiController
         return new JsonResponse($operation->toPayload(), 202);
     }
 
-    #[Endpoint('Convert to the Astrelyse egg', 'Moves a Minecraft Java server onto the Astrelyse egg, keeping its files. Only the server owner can do this.')]
+    #[Endpoint('Convert to the Astrelyse egg', 'Moves a server of any egg onto the Astrelyse Minecraft egg, keeping its files. Only the server owner can do this.')]
     #[ScribeResponse(['type' => 'fabric', 'minecraft' => '1.21.1', 'loader' => null, 'egg_managed' => true], status: 200, description: 'The server now runs the Astrelyse egg.')]
     public function convert(SoftwareManageRequest $request, Server $server): JsonResponse
     {
-        $this->assertJava($server);
-
         $user = $request->user();
         if ($server->owner_id !== $user->id && ! $user->root_admin) {
             throw new HttpException(403, 'Only the server owner can convert the egg.');

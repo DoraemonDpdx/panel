@@ -200,13 +200,16 @@ export default function EggCatalogContainer() {
             </div>
 
             {error && (
-                <Alert type='danger' className='mb-6'>
-                    <div className='flex flex-wrap items-center justify-between gap-3'>
-                        <span>{httpErrorToHuman(error)}</span>
+                <Alert
+                    type='danger'
+                    className='mb-6'
+                    action={
                         <Button isSecondary size='xsmall' disabled={isFetching} onClick={() => void refetch()}>
                             Retry
                         </Button>
-                    </div>
+                    }
+                >
+                    {httpErrorToHuman(error)}
                 </Alert>
             )}
 

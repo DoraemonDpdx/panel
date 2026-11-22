@@ -170,7 +170,7 @@ final readonly class SoftwareSwitcher
     }
 
     /**
-     * Moves a Minecraft Java server onto the Astrelyse egg, keeping its files.
+     * Moves a server of any egg onto the Astrelyse Minecraft egg, keeping its files.
      *
      * @return array{type: string|null, minecraft: string|null, loader: string|null, egg_managed: bool}
      *
@@ -182,15 +182,19 @@ final readonly class SoftwareSwitcher
             return $this->current($server);
         }
 
+        // Any egg may be converted. A server that is not a recognisable Java build starts as vanilla on the latest
+        // version, and its files stay where they are.
         $platform = $this->detector->detect($server);
         $type = $platform->platform;
-        throw_if($type === null || (! $platform->eligible && $type !== 'vanilla'), DisplayException::class, 'This server is not a Minecraft Java server.');
-        throw_unless(isset(SoftwareCatalog::TYPES[$type]), DisplayException::class, "Servers running $type cannot be converted.");
+        $minecraft = $platform->game_version;
+        if ($type === null || (! $platform->eligible && $type !== 'vanilla') || ! isset(SoftwareCatalog::TYPES[$type])) {
+            $type = 'vanilla';
+            $minecraft = null;
+        }
 
         $egg = Egg::query()->where('author', self::EGG_AUTHOR)->where('name', self::EGG_NAME)->first();
         throw_if($egg === null, DisplayException::class, 'The Astrelyse Minecraft egg is not installed on this panel.');
 
-        $minecraft = $platform->game_version;
         DB::transaction(function () use ($server, $egg, $type, $minecraft, $by): void {
             $from = $server->egg?->name;
             $server = $this->eggs->change($server, $egg, keepVariables: true);

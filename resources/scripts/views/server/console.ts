@@ -1,6 +1,7 @@
 import { useMemo, type ComponentType } from 'react';
 import type { Server } from '@/api/server/types';
 import { relationshipData } from '@/api/relationships';
+import { useServerResourceUsage } from '@/api/account/servers/queries';
 import { CHART_WINDOW_MS, type ServerGraphPoint, type ServerNetworkPoint } from '@/components/server/console/chart';
 import type { PowerAction } from '@/components/server/console/types';
 import { createSampleTerminal, useServerTerminal } from '@/components/server/console/useServerTerminal';
@@ -220,6 +221,8 @@ function useServerStatsModel(): ServerStatsModel {
     const server = useLoadedServer();
     const state = useServerStatus();
     const stats = useServerStats();
+    // Wings streams disk usage only while the server runs; offline, the polled resources are the only reading.
+    const polledDisk = useServerResourceUsage(server.attributes.uuid).data?.attributes.resources.disk_bytes ?? 0;
 
     return useMemo(() => {
         const { limits } = server.attributes;
@@ -230,10 +233,10 @@ function useServerStatsModel(): ServerStatsModel {
             uptime: stats.uptime,
             cpu: metric(stats.cpu, limits.cpu),
             memory: metric(stats.memory, mbToBytes(limits.memory)),
-            disk: metric(stats.disk, mbToBytes(limits.disk)),
+            disk: metric(stats.disk || polledDisk, mbToBytes(limits.disk)),
             network: { rx: stats.rx, tx: stats.tx },
         };
-    }, [server, state, stats]);
+    }, [server, state, stats, polledDisk]);
 }
 
 function useServerGraphsModel(): ServerGraphsModel {

@@ -68,9 +68,9 @@ function Tile({ icon: Icon, label, value, limit, percent = null, alarm = null, t
                     </span>
                 )}
             </div>
-            <div className='truncate font-mono text-base font-semibold text-foreground tabular-nums'>
-                {value}
-                {limit != null && <span className='ml-1.5 text-xs font-normal text-muted-foreground'>{limit}</span>}
+            <div className='flex min-w-0 flex-wrap items-baseline gap-x-1.5 font-mono text-base font-semibold text-foreground tabular-nums'>
+                <span className='break-all'>{value}</span>
+                {limit != null && <span className='text-xs font-normal text-muted-foreground'>{limit}</span>}
             </div>
             {trend}
             {percent !== null && (

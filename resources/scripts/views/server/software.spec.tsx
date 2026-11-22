@@ -282,16 +282,16 @@ describe('software tab visibility', () => {
         return screen.getAllByRole('listitem').map((entry) => entry.textContent);
     };
 
-    it('lists Software right after Console on a Java Minecraft server', async () => {
+    it('lists Software right after Console on a Minecraft server', async () => {
         expect(await tabs(['minecraft'])).toEqual(['Console', 'Software']);
     });
 
-    it('hides it on a Bedrock server', async () => {
-        expect(await tabs(['minecraft', 'bedrock'])).toEqual(['Console']);
+    it('lists it on a Bedrock server too, so it can be converted', async () => {
+        expect(await tabs(['minecraft', 'bedrock'])).toEqual(['Console', 'Software']);
     });
 
-    it('hides it on a server that is not a Minecraft game', async () => {
-        expect(await tabs(['source'])).toEqual(['Console']);
+    it('lists it on a server that is not a Minecraft game, so it can be converted', async () => {
+        expect(await tabs(['source'])).toEqual(['Console', 'Software']);
     });
 
     it('hides it without software.read', async () => {

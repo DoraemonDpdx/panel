@@ -444,10 +444,17 @@
 
     /* List layout: identity, address and metrics side by side from lg. */
     @media (min-width: 64rem) {
+        /* !important: the card root carries the flex-col and gap-4 utilities, which sit in a later layer and would
+           otherwise keep this a centred column whose children shrink-wrap their text and overflow. */
         .sh-card-row {
-            flex-direction: row;
+            flex-direction: row !important;
             align-items: center;
-            gap: 1.5rem;
+            gap: 1.5rem !important;
+        }
+
+        /* Without min-width: 0 a long description sets the column's floor and shoves the chip out of the card. */
+        .sh-card-row > * {
+            min-width: 0;
         }
 
         .sh-card-row > :nth-child(1) {

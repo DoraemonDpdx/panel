@@ -35,23 +35,26 @@ function ConvertNotice({ model }: { model: ServerSoftwareModel }) {
     }
 
     return (
-        <div className='mb-4 flex flex-wrap items-start gap-2'>
-            <Alert type='warning' className='min-w-0 flex-1'>
-                This server does not use the Astrelyse Minecraft egg, so its software can&apos;t be changed here yet.
-                Converting keeps all your files.
-            </Alert>
-            {canConvert && (
-                <Button
-                    size='xsmall'
-                    isSecondary
-                    color='grey'
-                    isLoading={type.convert.pending}
-                    onClick={() => void type.convert.run()}
-                >
-                    Convert
-                </Button>
-            )}
-        </div>
+        <Alert
+            type='warning'
+            className='mb-4'
+            action={
+                canConvert && (
+                    <Button
+                        size='xsmall'
+                        isSecondary
+                        color='grey'
+                        isLoading={type.convert.pending}
+                        onClick={() => void type.convert.run()}
+                    >
+                        Convert
+                    </Button>
+                )
+            }
+        >
+            This server does not use the Astrelyse Minecraft egg, so its software can&apos;t be changed here yet.
+            Converting keeps all your files.
+        </Alert>
     );
 }
 

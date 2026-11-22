@@ -142,12 +142,12 @@ test('the index reports the current software, the types and the latest operation
         ->and(collect($response->json('types'))->firstWhere('type', 'vanilla')['kind'])->toBe('vanilla');
 });
 
-test('a server that is not Minecraft Java gets 409', function (): void {
+test('a server on any other egg opens the page as not managed, and has no catalog until converted', function (): void {
     [$user, $server] = $this->generateTestAccount(MANAGE);
     $server->egg->tags()->detach();
     $server->unsetRelation('egg');
 
-    $this->actingAs($user)->getJson($this->link($server, '/software'))->assertStatus(409)->assertExactJson(['error' => 'software_unsupported']);
+    $this->actingAs($user)->getJson($this->link($server, '/software'))->assertOk()->assertJsonPath('current.egg_managed', false);
     $this->actingAs($user)->getJson($this->link($server, '/software/catalog?type=fabric'))->assertStatus(409);
 });
 
@@ -451,10 +451,16 @@ test('only the owner can convert', function (): void {
     expect($server->refresh()->egg_id)->not->toBe(astrelyseEgg()->id);
 });
 
-test('a server that is not Minecraft cannot be converted', function (): void {
+test('a server on any egg can be converted, starting as vanilla when it is no Java build', function (): void {
     [$user, $server] = $this->generateTestAccount();
+    $server->egg->tags()->detach();
+    $server->unsetRelation('egg');
+    astrelyseEgg();
 
-    $this->actingAs($user)->postJson($this->link($server, '/software/convert'))->assertStatus(409);
+    $this->actingAs($user)->postJson($this->link($server, '/software/convert'))->assertOk()
+        ->assertJsonPath('egg_managed', true)
+        ->assertJsonPath('type', 'vanilla');
+    expect($server->refresh()->egg_id)->toBe(astrelyseEgg()->id);
 });
 
 test('an operation can be read only through its own server', function (): void {

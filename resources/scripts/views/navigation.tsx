@@ -85,16 +85,6 @@ const toNavItem = (area: NavArea, entry: AreaNavEntry, order: number, params: Re
 /** The panel's own mods tab, as opposed to an extension screen that happens to use the path `mods`. */
 const isCoreModsTab = (entry: AreaNavEntry): boolean => entry.segment === 'mods' && entry.screen === undefined;
 
-/** The panel's own software tab, as opposed to an extension screen that happens to use the path `software`. */
-const isCoreSoftwareTab = (entry: AreaNavEntry): boolean => entry.segment === 'software' && entry.screen === undefined;
-
-/** Software changes what a Java Minecraft server runs, so only those servers list it. */
-const runsMinecraftJava = (server: Server | undefined): boolean => {
-    const tags = server?.attributes.egg_tags ?? [];
-
-    return tags.includes('minecraft') && !tags.includes('bedrock');
-};
-
 /** Server items need one of their subuser permissions, a workload profile they apply to and, for extension screens, a matching egg. */
 function isListed(entry: AreaNavEntry, server: Server | undefined): boolean {
     const permissions = server ? selectServerPermissions(server) : [];
@@ -126,7 +116,6 @@ export function useNavigation(area: NavArea): NavigationModel {
             .filter(({ entry }) => area !== 'server' || isListed(entry, server))
             // The mods tab follows the server's detected platform, which names it too.
             .filter(({ entry }) => !isCoreModsTab(entry) || mods?.eligible === true)
-            .filter(({ entry }) => !isCoreSoftwareTab(entry) || runsMinecraftJava(server))
             .map(({ item, entry }) => {
                 if (isCoreModsTab(entry) && mods?.project_type === 'plugin') {
                     return Object.assign({}, item, { label: 'Plugins' });
